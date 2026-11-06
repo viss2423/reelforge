@@ -44,7 +44,9 @@ export const PackIndex = z.object({
     z.object({
       family: z.string(),
       license: z.string().default('OFL-1.1'),
-      files: z.array(PackFile.extend({ weight: z.number().int(), italic: z.boolean().default(false) })),
+      files: z.array(
+        PackFile.extend({ weight: z.number().int(), italic: z.boolean().default(false) }),
+      ),
     }),
   ),
 })
@@ -81,11 +83,51 @@ export const FilterPreset = PackItemBase.extend({
 export const AnimationPreset = PackItemBase.extend({
   kind: z.enum(['in', 'out', 'loop']),
   tracks: z.object({
-    opacity: z.array(z.object({ t: z.number().min(0).max(1), value: z.number(), easing: Easing.default('easeOut') })).optional(),
-    scale: z.array(z.object({ t: z.number().min(0).max(1), value: z.number(), easing: Easing.default('easeOut') })).optional(),
-    x: z.array(z.object({ t: z.number().min(0).max(1), value: z.number(), easing: Easing.default('easeOut') })).optional(),
-    y: z.array(z.object({ t: z.number().min(0).max(1), value: z.number(), easing: Easing.default('easeOut') })).optional(),
-    rotation: z.array(z.object({ t: z.number().min(0).max(1), value: z.number(), easing: Easing.default('easeOut') })).optional(),
+    opacity: z
+      .array(
+        z.object({
+          t: z.number().min(0).max(1),
+          value: z.number(),
+          easing: Easing.default('easeOut'),
+        }),
+      )
+      .optional(),
+    scale: z
+      .array(
+        z.object({
+          t: z.number().min(0).max(1),
+          value: z.number(),
+          easing: Easing.default('easeOut'),
+        }),
+      )
+      .optional(),
+    x: z
+      .array(
+        z.object({
+          t: z.number().min(0).max(1),
+          value: z.number(),
+          easing: Easing.default('easeOut'),
+        }),
+      )
+      .optional(),
+    y: z
+      .array(
+        z.object({
+          t: z.number().min(0).max(1),
+          value: z.number(),
+          easing: Easing.default('easeOut'),
+        }),
+      )
+      .optional(),
+    rotation: z
+      .array(
+        z.object({
+          t: z.number().min(0).max(1),
+          value: z.number(),
+          easing: Easing.default('easeOut'),
+        }),
+      )
+      .optional(),
   }),
   /** Character-level reveal (typewriter) */
   perCharacter: z.boolean().default(false),
@@ -98,7 +140,18 @@ export const TransitionPreset = PackItemBase.extend({
 
 /** Effects are implemented natively in core (compiler + preview); packs parameterise them. */
 export const EffectPreset = PackItemBase.extend({
-  effect: z.enum(['shake', 'zoomPulse', 'rgbSplit', 'flash', 'blurIn', 'vhs', 'glow', 'beatZoom', 'strobe', 'filmGrain']),
+  effect: z.enum([
+    'shake',
+    'zoomPulse',
+    'rgbSplit',
+    'flash',
+    'blurIn',
+    'vhs',
+    'glow',
+    'beatZoom',
+    'strobe',
+    'filmGrain',
+  ]),
   params: z.record(z.string(), z.number()).default({}),
 })
 
@@ -114,7 +167,9 @@ export const StickerPreset = PackItemBase.extend({
  */
 export const TemplatePreset = PackItemBase.extend({
   description: z.string().default(''),
-  fps: z.union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)]).default(30),
+  fps: z
+    .union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)])
+    .default(30),
   slots: z.array(
     z.object({
       duration: Us,
@@ -128,7 +183,9 @@ export const TemplatePreset = PackItemBase.extend({
   ),
   captionStyle: z.string().optional(),
   /** Free-text music suggestion (trending sound name / BPM); no copyrighted audio is shipped. */
-  musicHint: z.object({ title: z.string(), bpm: z.number().optional(), url: z.string().optional() }).optional(),
+  musicHint: z
+    .object({ title: z.string(), bpm: z.number().optional(), url: z.string().optional() })
+    .optional(),
   background: HexColor.optional(),
 })
 

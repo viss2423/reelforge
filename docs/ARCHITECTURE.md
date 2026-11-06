@@ -39,14 +39,14 @@ edits; edits sync live between devices.
 
 ## Repository layout and ownership
 
-| Path | Package | Responsibility |
-| --- | --- | --- |
-| `packages/core` | `@reelforge/core` | schema (zod), time utils, animation/easing evaluation, timeline ops, ASS generation, FFmpeg render compiler, pack schema |
-| `apps/server` | `@reelforge/server` | Fastify API, auth/pairing, HTTPS/local CA, SQLite, uploads, media derivation, job queue, WebSocket events, export runner, AI jobs, pack sync, serving the web build |
-| `apps/web` | `@reelforge/web` | React PWA: projects, media library/upload, editor (timeline, tools, inspector), preview engine, export UI, pairing |
-| `packs/` | — | Trend packs (JSON + LUTs + stickers) and OFL fonts, auto-pulled by every install |
-| `scripts/` | — | `setup.mjs` (downloads whisper.cpp + models, checks FFmpeg), Windows autostart/firewall scripts, pack build tool |
-| `docs/` | — | Architecture, API, contributing |
+| Path            | Package             | Responsibility                                                                                                                                                      |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/core` | `@reelforge/core`   | schema (zod), time utils, animation/easing evaluation, timeline ops, ASS generation, FFmpeg render compiler, pack schema                                            |
+| `apps/server`   | `@reelforge/server` | Fastify API, auth/pairing, HTTPS/local CA, SQLite, uploads, media derivation, job queue, WebSocket events, export runner, AI jobs, pack sync, serving the web build |
+| `apps/web`      | `@reelforge/web`    | React PWA: projects, media library/upload, editor (timeline, tools, inspector), preview engine, export UI, pairing                                                  |
+| `packs/`        | —                   | Trend packs (JSON + LUTs + stickers) and OFL fonts, auto-pulled by every install                                                                                    |
+| `scripts/`      | —                   | `setup.mjs` (downloads whisper.cpp + models, checks FFmpeg), Windows autostart/firewall scripts, pack build tool                                                    |
+| `docs/`         | —                   | Architecture, API, contributing                                                                                                                                     |
 
 ## Conventions
 
@@ -157,51 +157,51 @@ Auth is a device token sent as `Authorization: Bearer <token>` **or** the `rf_to
 HttpOnly cookie (so `<video src>` works). Loopback clients on the host may obtain a token
 without a code.
 
-| Method | Path | Body → Response |
-| --- | --- | --- |
-| GET | `/api/health` | → `{ ok, version }` |
-| GET | `/api/pair/info` | loopback only → `{ code, expiresAt, urls[], qrSvg }` |
-| POST | `/api/pair` | `{ code, deviceName }` → `{ token, deviceId }` + cookie (rate limited) |
-| POST | `/api/pair/local` | loopback only → `{ token, deviceId }` + cookie |
-| GET | `/api/devices` / DELETE `/api/devices/:id` | list / revoke paired devices |
-| GET | `/api/system` | toolchain, encoders, CPU, RAM, disk free, versions |
-| GET | `/api/projects` | → summaries |
-| POST | `/api/projects` | `{ name, templateRef?, assetIds? }` → Project |
-| GET | `/api/projects/:id` | → Project |
-| PUT | `/api/projects/:id` | `{ project, expectedRevision, deviceId }` → `{ revision }` · 409 `{ project }` |
-| DELETE | `/api/projects/:id` | |
-| POST | `/api/projects/:id/duplicate` | → Project |
-| POST | `/api/uploads` | `{ name, size, mime }` → `{ uploadId, chunkSize }` |
-| PUT | `/api/uploads/:id/chunks/:index` | raw bytes → `{ received }` (idempotent) |
-| GET | `/api/uploads/:id` | → `{ received: number[] }` (resume) |
-| POST | `/api/uploads/:id/complete` | → Asset (enqueues probe→proxy/thumbnails/waveform) |
-| GET | `/api/assets` · `/api/assets/:id` · DELETE `/api/assets/:id` | |
-| GET | `/api/assets/:id/original` · `/proxy` | video/audio bytes, HTTP Range |
-| GET | `/api/assets/:id/thumbs.jpg` · `/thumbs.json` · `/poster.jpg` · `/waveform.json` | |
-| POST | `/api/jobs` | `{ kind, payload, projectId?, assetId? }` → Job |
-| GET | `/api/jobs?active=1&projectId=` · `/api/jobs/:id` | |
-| POST | `/api/jobs/:id/cancel` | |
-| GET | `/api/exports/:jobId/file` | MP4, Range, `?download=1` sets Content-Disposition |
-| GET | `/api/projects/:id/ass` | generated `.ass` for the preview (JASSUB) |
-| GET | `/api/packs` | → `{ index, manifests }` |
-| GET | `/api/packs/files/*` | LUTs, stickers, thumbs, fonts (immutable cache headers) |
-| POST | `/api/packs/sync` | trigger update now |
-| WS | `/api/events` | stream of `ServerEvent` (zod in core) |
+| Method | Path                                                                             | Body → Response                                                                |
+| ------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| GET    | `/api/health`                                                                    | → `{ ok, version }`                                                            |
+| GET    | `/api/pair/info`                                                                 | loopback only → `{ code, expiresAt, urls[], qrSvg }`                           |
+| POST   | `/api/pair`                                                                      | `{ code, deviceName }` → `{ token, deviceId }` + cookie (rate limited)         |
+| POST   | `/api/pair/local`                                                                | loopback only → `{ token, deviceId }` + cookie                                 |
+| GET    | `/api/devices` / DELETE `/api/devices/:id`                                       | list / revoke paired devices                                                   |
+| GET    | `/api/system`                                                                    | toolchain, encoders, CPU, RAM, disk free, versions                             |
+| GET    | `/api/projects`                                                                  | → summaries                                                                    |
+| POST   | `/api/projects`                                                                  | `{ name, templateRef?, assetIds? }` → Project                                  |
+| GET    | `/api/projects/:id`                                                              | → Project                                                                      |
+| PUT    | `/api/projects/:id`                                                              | `{ project, expectedRevision, deviceId }` → `{ revision }` · 409 `{ project }` |
+| DELETE | `/api/projects/:id`                                                              |                                                                                |
+| POST   | `/api/projects/:id/duplicate`                                                    | → Project                                                                      |
+| POST   | `/api/uploads`                                                                   | `{ name, size, mime }` → `{ uploadId, chunkSize }`                             |
+| PUT    | `/api/uploads/:id/chunks/:index`                                                 | raw bytes → `{ received }` (idempotent)                                        |
+| GET    | `/api/uploads/:id`                                                               | → `{ received: number[] }` (resume)                                            |
+| POST   | `/api/uploads/:id/complete`                                                      | → Asset (enqueues probe→proxy/thumbnails/waveform)                             |
+| GET    | `/api/assets` · `/api/assets/:id` · DELETE `/api/assets/:id`                     |                                                                                |
+| GET    | `/api/assets/:id/original` · `/proxy`                                            | video/audio bytes, HTTP Range                                                  |
+| GET    | `/api/assets/:id/thumbs.jpg` · `/thumbs.json` · `/poster.jpg` · `/waveform.json` |                                                                                |
+| POST   | `/api/jobs`                                                                      | `{ kind, payload, projectId?, assetId? }` → Job                                |
+| GET    | `/api/jobs?active=1&projectId=` · `/api/jobs/:id`                                |                                                                                |
+| POST   | `/api/jobs/:id/cancel`                                                           |                                                                                |
+| GET    | `/api/exports/:jobId/file`                                                       | MP4, Range, `?download=1` sets Content-Disposition                             |
+| GET    | `/api/projects/:id/ass`                                                          | generated `.ass` for the preview (JASSUB)                                      |
+| GET    | `/api/packs`                                                                     | → `{ index, manifests }`                                                       |
+| GET    | `/api/packs/files/*`                                                             | LUTs, stickers, thumbs, fonts (immutable cache headers)                        |
+| POST   | `/api/packs/sync`                                                                | trigger update now                                                             |
+| WS     | `/api/events`                                                                    | stream of `ServerEvent` (zod in core)                                          |
 
 The server also serves `apps/web/dist` at `/` (SPA fallback) and, on plain HTTP, a pairing
 landing page with the local CA download so phones can trust HTTPS and install the PWA.
 
 ### Job kinds → resource class
 
-| kind | class | notes |
-| --- | --- | --- |
-| probe, waveform, thumbnails | io / cpu | fast, high priority |
-| proxy | gpu-encode | 540×960, H.264, GOP 15, AAC — instant scrubbing on phones |
-| export, preview | gpu-encode | AMF/NVENC/QSV → libx264/libx265/libsvtav1 fallback |
-| transcribe | ai | whisper.cpp, word timestamps, cached per asset |
-| silence, scenes | cpu | FFmpeg `silencedetect` / `scdet` |
-| beats | cpu | onset/tempo detection in a worker thread on decoded PCM |
-| reframe | ai | ONNX face detection (onnxruntime-node, DirectML on Windows) + smoothing |
+| kind                        | class      | notes                                                                   |
+| --------------------------- | ---------- | ----------------------------------------------------------------------- |
+| probe, waveform, thumbnails | io / cpu   | fast, high priority                                                     |
+| proxy                       | gpu-encode | 540×960, H.264, GOP 15, AAC — instant scrubbing on phones               |
+| export, preview             | gpu-encode | AMF/NVENC/QSV → libx264/libx265/libsvtav1 fallback                      |
+| transcribe                  | ai         | whisper.cpp, word timestamps, cached per asset                          |
+| silence, scenes             | cpu        | FFmpeg `silencedetect` / `scdet`                                        |
+| beats                       | cpu        | onset/tempo detection in a worker thread on decoded PCM                 |
+| reframe                     | ai         | ONNX face detection (onnxruntime-node, DirectML on Windows) + smoothing |
 
 ## Web (`@reelforge/web`)
 

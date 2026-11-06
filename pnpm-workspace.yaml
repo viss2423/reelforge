@@ -2,8 +2,20 @@ packages:
   - apps/*
   - packages/*
 
+minimumReleaseAgeExclude:
+  - '@oxlint-tsgolint/darwin-arm64@7.0.2006'
+  - '@oxlint-tsgolint/darwin-x64@7.0.2006'
+  - '@oxlint-tsgolint/linux-arm64@7.0.2006'
+  - '@oxlint-tsgolint/linux-x64@7.0.2006'
+  - '@oxlint-tsgolint/win32-arm64@7.0.2006'
+  - '@oxlint-tsgolint/win32-x64@7.0.2006'
+  - oxlint-tsgolint@7.0.2006
+
 onlyBuiltDependencies:
   - better-sqlite3
   - onnxruntime-node
   - '@napi-rs/canvas'
   - esbuild
+
+engineStrict: true
+autoInstallPeers: true

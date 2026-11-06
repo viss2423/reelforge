@@ -41,7 +41,12 @@ export interface Logger {
 /** Persistence API (implemented by src/db). Synchronous: better-sqlite3. */
 export interface Store {
   getProject(id: string): Project | undefined
-  listProjects(): Array<Pick<Project, 'id' | 'name' | 'updatedAt' | 'createdAt'> & { thumbAssetId?: string; duration: number }>
+  listProjects(): Array<
+    Pick<Project, 'id' | 'name' | 'updatedAt' | 'createdAt'> & {
+      thumbAssetId?: string
+      duration: number
+    }
+  >
   /** Throws RevisionConflictError if `expectedRevision` != stored revision. Returns new revision. */
   saveProject(project: Project, expectedRevision: number): number
   deleteProject(id: string): void
@@ -77,7 +82,11 @@ export interface JobContext<P = unknown> {
   store: Store
   log: Logger
   /** Enqueue a follow-up job (e.g. probe -> proxy/thumbnails/waveform). */
-  enqueue<Q>(kind: JobKind, payload: Q, opts?: { projectId?: string; assetId?: string; priority?: number }): Job
+  enqueue<Q>(
+    kind: JobKind,
+    payload: Q,
+    opts?: { projectId?: string; assetId?: string; priority?: number },
+  ): Job
   emit(event: ServerEvent): void
 }
 
@@ -99,12 +108,38 @@ export interface JobDefinition<P = unknown> {
 }
 
 /** Payloads */
-export interface ProbePayload { assetId: string }
-export interface AssetDerivePayload { assetId: string }
-export interface ExportPayload { projectId: string; settings: import('@reelforge/core').ExportSettings }
-export interface PreviewPayload { projectId: string; start: number; end: number }
-export interface TranscribePayload { assetId: string; language?: string; model?: string }
-export interface SilencePayload { assetId: string; thresholdDb?: number; minSilence?: number }
-export interface BeatsPayload { assetId: string }
-export interface ScenesPayload { assetId: string; threshold?: number }
-export interface ReframePayload { assetId: string }
+export interface ProbePayload {
+  assetId: string
+}
+export interface AssetDerivePayload {
+  assetId: string
+}
+export interface ExportPayload {
+  projectId: string
+  settings: import('@reelforge/core').ExportSettings
+}
+export interface PreviewPayload {
+  projectId: string
+  start: number
+  end: number
+}
+export interface TranscribePayload {
+  assetId: string
+  language?: string
+  model?: string
+}
+export interface SilencePayload {
+  assetId: string
+  thresholdDb?: number
+  minSilence?: number
+}
+export interface BeatsPayload {
+  assetId: string
+}
+export interface ScenesPayload {
+  assetId: string
+  threshold?: number
+}
+export interface ReframePayload {
+  assetId: string
+}

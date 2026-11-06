@@ -51,7 +51,9 @@ export type Animatable = z.infer<typeof Animatable>
 export const ProjectSettings = z.object({
   width: z.literal(1080).default(1080),
   height: z.literal(1920).default(1920),
-  fps: z.union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)]).default(30),
+  fps: z
+    .union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)])
+    .default(30),
   background: HexColor.default('#000000'),
   /** Optional blurred-fill behind letterboxed media (very common on Reels). */
   backgroundBlur: z.boolean().default(false),
@@ -236,7 +238,9 @@ export const CaptionStyle = z.object({
   /** Scale of the active word (1 = none). */
   activeScale: z.number().min(1).max(2).default(1.15),
   /** How words appear. */
-  mode: z.enum(['karaoke', 'word-by-word', 'line', 'pop', 'bounce', 'typewriter']).default('karaoke'),
+  mode: z
+    .enum(['karaoke', 'word-by-word', 'line', 'pop', 'bounce', 'typewriter'])
+    .default('karaoke'),
   maxWordsPerLine: z.number().int().min(1).max(12).default(3),
   maxLines: z.number().int().min(1).max(3).default(1),
   /** Vertical anchor of the caption block, in px (center). */
@@ -282,7 +286,9 @@ export const MediaClip = ClipBase.extend({
   /** Audio embedded in the video. */
   audio: AudioProps.default(AudioProps.parse({})),
   /** Blend mode for overlay tracks. */
-  blendMode: z.enum(['normal', 'screen', 'multiply', 'overlay', 'lighten', 'darken', 'add']).default('normal'),
+  blendMode: z
+    .enum(['normal', 'screen', 'multiply', 'overlay', 'lighten', 'darken', 'add'])
+    .default('normal'),
   /** Ken-Burns style auto motion for images. */
   autoMotion: z.enum(['none', 'zoomIn', 'zoomOut', 'panLeft', 'panRight']).default('none'),
 })
@@ -325,12 +331,7 @@ export const StickerClip = ClipBase.extend({
 })
 export type StickerClip = z.infer<typeof StickerClip>
 
-export const Clip = z.discriminatedUnion('type', [
-  MediaClip,
-  AudioClip,
-  TextClip,
-  StickerClip,
-])
+export const Clip = z.discriminatedUnion('type', [MediaClip, AudioClip, TextClip, StickerClip])
 export type Clip = z.infer<typeof Clip>
 
 /* ------------------------------------------------------------------ captions */
@@ -451,7 +452,9 @@ export type Asset = z.infer<typeof Asset>
 
 export const ExportSettings = z.object({
   resolution: z.enum(['720p', '1080p', '1440p', '2160p']).default('1080p'),
-  fps: z.union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)]).optional(),
+  fps: z
+    .union([z.literal(24), z.literal(25), z.literal(30), z.literal(50), z.literal(60)])
+    .optional(),
   codec: z.enum(['h264', 'hevc', 'av1']).default('h264'),
   /** 'auto' prefers GPU (AMF/NVENC/QSV/VideoToolbox) and falls back to CPU. */
   encoder: z.enum(['auto', 'gpu', 'cpu']).default('auto'),
