@@ -25,6 +25,8 @@ export interface CompileContext {
   resolveSticker(ref: string): string | undefined
   resolveEffect(ref: string): EffectPreset | undefined
   encoder: EncoderChoice
+  /** Optional RNNoise model (.rnnn) for `arnndn`; when absent denoise uses `afftdn`. */
+  rnnoiseModel?: string
 }
 
 export interface RenderPlan {

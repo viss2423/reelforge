@@ -29,7 +29,7 @@ phone, tablet and laptop get the same installable app and edit in sync.
 
 ```bash
 pnpm install
-pnpm setup     # downloads whisper.cpp + models, checks FFmpeg & GPU encoders
+pnpm bootstrap # downloads whisper.cpp + models, checks FFmpeg & GPU encoders
 pnpm build
 pnpm start     # prints a QR code — scan it with your phone
 ```
