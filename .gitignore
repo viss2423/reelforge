@@ -1,0 +1,33 @@
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.turbo/
+.vite/
+
+# runtime data (projects, media, renders, models, certs) — never commit
+data/
+.reelforge/
+models/
+bin/
+
+# test artifacts
+playwright-report/
+test-results/
+apps/**/test-fixtures/generated/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# os / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log

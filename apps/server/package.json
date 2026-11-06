@@ -1,0 +1,19 @@
+{
+  "name": "@reelforge/server",
+  "version": "0.1.0",
+  "description": "ReelForge server: media processing, AI and rendering engine that runs on your machine.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch src/index.ts",
+    "start": "node src/index.ts",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@reelforge/core": "workspace:*",
+    "zod": "^4.6.7"
+  }
+}
