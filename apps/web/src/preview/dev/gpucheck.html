@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReelForge GPU self-check</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          13px/1.4 ui-monospace,
+          monospace;
+        background: #111;
+        color: #ddd;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+      }
+      .fail {
+        color: #ff6b6b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>GPU self-check</h1>
+    <p>
+      Renders every shader path with the real compositor and compares against the CPU references.
+    </p>
+    <pre id="out">running…</pre>
+    <script type="module" src="./gpucheck.ts"></script>
+  </body>
+</html>
