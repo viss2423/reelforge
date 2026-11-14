@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Components only use the semantic Tailwind colours below (bg-surface,
+ * text-muted, border-line, bg-accent …); the raw values switch with [data-theme].
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-canvas: var(--rf-canvas);
+  --color-surface: var(--rf-surface);
+  --color-surface-2: var(--rf-surface-2);
+  --color-surface-3: var(--rf-surface-3);
+  --color-line: var(--rf-line);
+  --color-fg: var(--rf-fg);
+  --color-muted: var(--rf-muted);
+  --color-subtle: var(--rf-subtle);
+  --color-accent: var(--rf-accent);
+  --color-accent-hover: var(--rf-accent-hover);
+  --color-accent-fg: #ffffff;
+  --color-violet: var(--rf-violet);
+  --color-success: var(--rf-success);
+  --color-warning: var(--rf-warning);
+  --color-danger: var(--rf-danger);
+  --color-scrim: var(--rf-scrim);
+  --color-preview: #000000;
+}
+
+@theme {
+  --font-sans:
+    'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, monospace;
+  --radius-card: 1rem;
+  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 12px 40px rgb(0 0 0 / 0.4);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-slide-up: slide-up 280ms var(--ease-spring);
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+}
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --rf-canvas: #0b0b10;
+  --rf-surface: #15151c;
+  --rf-surface-2: #1d1d26;
+  --rf-surface-3: #272731;
+  --rf-line: #2d2d39;
+  --rf-fg: #f4f4f7;
+  --rf-muted: #a3a3b2;
+  --rf-subtle: #6c6c7c;
+  --rf-accent: #ff2d7a;
+  --rf-accent-hover: #ff4c8e;
+  --rf-violet: #8b5cf6;
+  --rf-success: #22c55e;
+  --rf-warning: #f59e0b;
+  --rf-danger: #ef4444;
+  --rf-scrim: rgb(0 0 0 / 0.6);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --rf-canvas: #f5f5f8;
+  --rf-surface: #ffffff;
+  --rf-surface-2: #efeff4;
+  --rf-surface-3: #e4e4eb;
+  --rf-line: #dadae3;
+  --rf-fg: #121218;
+  --rf-muted: #5a5a6a;
+  --rf-subtle: #8b8b9a;
+  --rf-accent: #e5126a;
+  --rf-accent-hover: #f0247a;
+  --rf-violet: #7c3aed;
+  --rf-success: #16a34a;
+  --rf-warning: #d97706;
+  --rf-danger: #dc2626;
+  --rf-scrim: rgb(0 0 0 / 0.4);
+}
+
+/* Safe-area helpers for notches / home indicators. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+@utility pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+@utility touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-canvas text-fg font-sans antialiased;
+    overscroll-behavior: none;
+    font-size: 15px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--rf-accent);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
