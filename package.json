@@ -14,7 +14,7 @@
     "build": "pnpm -r build",
     "start": "pnpm --filter @reelforge/server start",
     "bootstrap": "node scripts/setup.mjs",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r typecheck && tsc -p scripts/lib/tsconfig.json",
     "lint": "oxlint --type-aware",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

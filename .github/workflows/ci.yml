@@ -30,6 +30,7 @@ jobs:
           ffmpeg-version: release
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
+      - run: node scripts/build-packs.mjs --check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

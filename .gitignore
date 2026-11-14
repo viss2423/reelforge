@@ -31,3 +31,6 @@ Thumbs.db
 !.vscode/extensions.json
 .idea/
 *.log
+
+# local agent/editor state
+.claude/
