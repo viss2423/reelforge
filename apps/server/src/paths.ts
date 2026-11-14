@@ -16,6 +16,15 @@ export const assetDir = (paths: DataPaths, assetId: string): string => {
   return path.join(paths.media, assetId)
 }
 
+/**
+ * Export output location for a job (`<exports>/<jobId>.mp4`). The render job writes here; the
+ * download route and retention cleanup read/remove the same path.
+ */
+export const exportFile = (paths: DataPaths, jobId: string): string => {
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(jobId)) throw new Error(`invalid job id: ${jobId}`)
+  return path.join(paths.exports, `${jobId}.mp4`)
+}
+
 export type AssetVariant =
   'original' | 'proxy' | 'thumbs' | 'thumbsIndex' | 'poster' | 'waveform' | 'pcm'
 

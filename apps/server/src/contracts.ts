@@ -29,6 +29,10 @@ export interface Toolchain {
   whisper?: string
   whisperModels: string[]
   cpuThreads: number
+  /** Verified hardware decode API (e.g. for large 4K/HEVC sources), if any. */
+  hwDecode?: 'd3d11va' | 'videotoolbox'
+  /** `ffmpeg -hwaccels` output. */
+  hwaccels?: string[]
 }
 
 export interface Logger {
@@ -38,7 +42,7 @@ export interface Logger {
   debug(obj: unknown, msg?: string): void
 }
 
-/** Persistence API (implemented by src/db). Synchronous: better-sqlite3. */
+/** Persistence API (implemented by src/db). Synchronous: built-in `node:sqlite` DatabaseSync. */
 export interface Store {
   getProject(id: string): Project | undefined
   listProjects(): Array<
