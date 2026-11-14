@@ -9,16 +9,24 @@
  * - `REELFORGE_WEB_DIST`        web build directory to serve at `/` (SPA fallback)
  * - `REELFORGE_TEST_PAIR_CODE`  fixed, reusable code accepted by `POST /api/pair`
  * - `REELFORGE_PACKS_SYNC=off`  don't pull packs from GitHub (serve the repo's ./packs)
+ *
+ * Set `RF_E2E_TOOLS_DATA` to a data dir populated by `pnpm bootstrap` to run the real-AI
+ * specs (whisper.cpp captions); its toolchain is hard-linked into the run's data dir.
  */
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
 import { BASE_URL, E2E_DATA, E2E_PAIR_CODE, HTTPS_PORT, HTTP_PORT } from './e2e/env.ts'
+import { linkTools } from './e2e/tools.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
+// Before the web server boots: it detects whisper.cpp and the models once, at startup.
+linkTools()
 
 export default defineConfig({
   testDir: './e2e',
+  // The real phone has its own config (playwright.android.config.ts).
+  testIgnore: ['android/**'],
   globalSetup: './e2e/global-setup.ts',
   globalTeardown: './e2e/global-teardown.ts',
   // One host does all rendering; parallel exports would only measure contention.
@@ -35,6 +43,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
     acceptDownloads: true,
+    // Long tests (the full flow) would otherwise spend their whole budget on one stuck click.
+    actionTimeout: 30_000,
   },
   projects: [
     { name: 'Pixel 9', use: { ...devices['Pixel 9'] } },

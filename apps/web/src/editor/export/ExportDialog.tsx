@@ -174,7 +174,7 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
           <ExportActions job={job} projectName={projectName} />
         </div>
       ) : job.status === 'failed' ? (
-        <p className="flex gap-2 text-danger">
+        <p className="flex gap-2 text-danger" data-testid="export-failed">
           <CircleAlert size={18} className="mt-0.5 shrink-0" />
           {job.error ?? 'Export failed'}
         </p>

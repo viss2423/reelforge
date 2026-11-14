@@ -60,6 +60,62 @@ export const SystemInfo = z.looseObject({
 })
 export type SystemInfo = z.infer<typeof SystemInfo>
 
+/** `GET /api/system` as the server sends it: tool details are nested under `toolchain`. */
+export const SystemWire = z.looseObject({
+  version: z.string(),
+  hostname: z.string().optional(),
+  platform: z.string().optional(),
+  cpu: z.looseObject({ model: z.string(), threads: z.number() }).optional(),
+  memory: z.looseObject({ total: z.number(), free: z.number() }).optional(),
+  disk: z.looseObject({ free: z.number(), total: z.number() }).nullish(),
+  toolchain: z
+    .looseObject({
+      ffmpegVersion: z.string().optional(),
+      hwEncoders: Encoders.optional(),
+      whisper: z.string().nullish(),
+      whisperModels: z.array(z.string()).optional(),
+    })
+    .optional(),
+  urls: z.array(z.string()).optional(),
+  tailscale: z
+    .looseObject({
+      running: z.boolean().optional(),
+      dnsName: z.string().optional(),
+      ips: z.array(z.string()).optional(),
+    })
+    .nullish(),
+})
+export type SystemWire = z.infer<typeof SystemWire>
+
+/** `ggml-large-v3-turbo-q5_0.bin` → `large-v3-turbo-q5_0`. */
+const modelName = (file: string): string => file.replace(/^ggml-/, '').replace(/\.bin$/, '')
+
+/** Flattens the server's `/api/system` payload into what the UI shows. */
+export const toSystemInfo = (w: SystemWire): SystemInfo => {
+  const t = w.toolchain
+  const ts = w.tailscale?.running ? w.tailscale : undefined
+  return {
+    version: w.version,
+    ...(w.hostname !== undefined && { hostname: w.hostname }),
+    ...(w.platform !== undefined && { platform: w.platform }),
+    ...(w.cpu && { cpu: w.cpu }),
+    ...(w.memory && { memory: w.memory }),
+    ...(w.disk && { disk: w.disk }),
+    ...(t?.ffmpegVersion !== undefined && { ffmpegVersion: t.ffmpegVersion }),
+    ...(t?.hwEncoders && { hwEncoders: t.hwEncoders }),
+    ...(t && {
+      whisper: { installed: !!t.whisper, models: (t.whisperModels ?? []).map(modelName) },
+    }),
+    ...(w.urls && { urls: w.urls }),
+    ...(ts && {
+      tailscale: {
+        ...(ts.dnsName !== undefined && { hostname: ts.dnsName }),
+        ...(ts.ips?.[0] !== undefined && { ip: ts.ips[0] }),
+      },
+    }),
+  }
+}
+
 export const UploadInit = z.looseObject({
   uploadId: z.string().min(1),
   chunkSize: z.number().int().positive(),

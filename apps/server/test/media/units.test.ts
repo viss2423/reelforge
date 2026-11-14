@@ -218,7 +218,7 @@ describe('proxyArgs', () => {
     const s = args.join(' ')
     expect(s).toContain('-vf scale=540:960:flags=bilinear,format=yuv420p,setsar=1')
     expect(s).toContain('keyint=15:min-keyint=15:scenecut=0:bframes=0')
-    expect(s).toContain('-c:a aac -b:a 128k -ar 48000 -ac 2')
+    expect(s).toContain('-c:a aac -aac_coder fast -b:a 128k -ar 48000 -ac 2')
     expect(s).toContain('-movflags +faststart')
     expect(s).not.toContain('-hwaccel')
     expect(s).not.toContain('-fps_mode')

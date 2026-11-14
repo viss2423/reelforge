@@ -174,6 +174,43 @@ describe('endpoints', () => {
     expect(packs.index.version).toBe('7')
     expect(packs.manifests.map((m) => m.id)).toEqual(['core'])
   })
+
+  it('flattens the server /api/system payload (toolchain, tailscale)', async () => {
+    const wire = {
+      version: '0.1.0',
+      hostname: 'laptop',
+      cpu: { model: 'Ryzen 7', threads: 16 },
+      disk: null,
+      toolchain: {
+        ffmpeg: 'C:/ffmpeg.exe',
+        ffmpegVersion: '9.0.2',
+        hwEncoders: { h264: 'h264_amf', hevc: 'hevc_amf' },
+        hwDecode: null,
+        whisper: 'C:/whisper-cli.exe',
+        whisperModels: ['ggml-base.bin', 'ggml-large-v3-turbo-q5_0.bin'],
+      },
+      urls: ['https://192.168.1.2:8443'],
+      tailscale: { installed: true, running: true, dnsName: 'laptop.ts.net', ips: ['100.1.2.3'] },
+    }
+    const { client } = setup(() => json(200, wire))
+    expect(await client.system()).toEqual({
+      version: '0.1.0',
+      hostname: 'laptop',
+      cpu: { model: 'Ryzen 7', threads: 16 },
+      ffmpegVersion: '9.0.2',
+      hwEncoders: { h264: 'h264_amf', hevc: 'hevc_amf' },
+      whisper: { installed: true, models: ['base', 'large-v3-turbo-q5_0'] },
+      urls: ['https://192.168.1.2:8443'],
+      tailscale: { hostname: 'laptop.ts.net', ip: '100.1.2.3' },
+    })
+    // No whisper, Tailscale not running.
+    const bare = { ...wire, toolchain: { whisper: null }, tailscale: { running: false, ips: [] } }
+    const { client: c2 } = setup(() => json(200, bare))
+    const info = await c2.system()
+    expect(info.whisper).toEqual({ installed: false, models: [] })
+    expect(info.hwEncoders).toBeUndefined()
+    expect(info.tailscale).toBeUndefined()
+  })
 })
 
 describe('URLs', () => {

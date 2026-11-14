@@ -18,6 +18,20 @@ export const SAMPLE_VIDEO = path.join(E2E_FIXTURES, 'sample-vertical.mp4')
 /** Duration of SAMPLE_VIDEO in seconds. */
 export const SAMPLE_SECONDS = 3
 
+/** Full-flow media (global setup): two picture clips, a spoken clip and a music track. */
+export const FLOW_MEDIA = {
+  /** 4 s testsrc2 + 330 Hz tone. */
+  clipA: path.join(E2E_FIXTURES, 'flow-a.mp4'),
+  /** 4 s SMPTE bars + 550 Hz tone. */
+  clipB: path.join(E2E_FIXTURES, 'flow-b.mp4'),
+  /** Black picture + SAPI text-to-speech with two 1.5 s pauses (Windows only). */
+  speech: path.join(E2E_FIXTURES, 'flow-speech.mp4'),
+  /** 16 s, 120 BPM decaying click over a pad: strong, regular onsets. */
+  music: path.join(E2E_FIXTURES, 'flow-music.m4a'),
+} as const
+/** Seconds of each picture clip in FLOW_MEDIA. */
+export const FLOW_CLIP_SECONDS = 4
+
 /** Fixed pairing code the server accepts when REELFORGE_TEST_PAIR_CODE is set. */
 export const E2E_PAIR_CODE = '246810'
 

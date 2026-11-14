@@ -274,6 +274,29 @@ describe.skipIf(!HAVE_FFMPEG)('render e2e', { timeout: 180_000 }, () => {
     expectDuration(await probe(result.file), expected)
   })
 
+  it('renders a transition that follows hard cuts (concat → xfade time bases)', async () => {
+    // Silence removal leaves several back-to-back pieces; a transition into the next clip
+    // then joins a concat output to a clip chain.
+    const project = makeProject([
+      {
+        kind: 'main',
+        clips: mainClips([
+          { duration: 700_000, in: 0 },
+          { duration: 700_000, in: 1_000_000 },
+          { duration: 700_000, in: 2_000_000 },
+          {
+            duration: 1_000_000,
+            assetId: 'port',
+            transitionIn: { type: 'fade', duration: 300_000 },
+          },
+        ]),
+      },
+    ])
+    const { result } = await exportProject(project, { encoder: 'cpu' })
+    expect(result.duration).toBe(2_800_000)
+    expectDuration(await probe(result.file), 2.8)
+  })
+
   it('applies every effect and stays within the clip timing', async () => {
     const effects = [
       'shake',

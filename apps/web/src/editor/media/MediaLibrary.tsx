@@ -164,7 +164,8 @@ function UploadRow({ task }: { task: UploadTask }) {
   )
 }
 
-function AssetTile({
+/** One library tile: poster (once the host has made it), duration, proxy state. */
+export function AssetTile({
   asset,
   used,
   onAdd,
@@ -200,7 +201,9 @@ function AssetTile({
           <span className="absolute inset-0 grid place-items-center bg-gradient-to-br from-violet/30 to-accent/30 text-fg">
             <Music size={26} />
           </span>
-        ) : posterFailed ? (
+        ) : asset.thumbnails !== 'ready' || posterFailed ? (
+          // The poster only exists once the host's thumbnails job is done; asking earlier
+          // would 404 and leave the tile on the placeholder for good.
           <span className="absolute inset-0 grid place-items-center text-subtle">
             <ImageIcon size={24} />
           </span>

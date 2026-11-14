@@ -51,8 +51,9 @@ export const createProject = async (page: Page): Promise<string> => {
 
 /** Makes the media library visible (opens the sheet on phones) and returns its region. */
 export const openMediaLibrary = async (page: Page) => {
-  if (!isDesktop(page)) await page.getByTestId('add-media').click()
   const library = page.getByRole('region', { name: 'Media' })
+  // On phones the sheet stays open after an upload (and then covers the Add media button).
+  if (!isDesktop(page) && !(await library.isVisible())) await page.getByTestId('add-media').click()
   await expect(library).toBeVisible()
   return library
 }

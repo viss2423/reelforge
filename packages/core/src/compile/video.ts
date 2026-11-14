@@ -40,8 +40,12 @@ export function buildMainTrack(
   const flush = (): void => {
     if (pending.length === 0) return
     const inputs = acc === undefined ? pending : [acc, ...pending]
+    // `concat` outputs in the 1/1000000 time base while every clip chain is 1/fps; `xfade`
+    // refuses inputs whose time bases differ, so a transition after hard cuts needs settb.
     acc =
-      inputs.length === 1 ? inputs[0]! : g.add(inputs, [`concat=n=${inputs.length}:v=1:a=0`])[0]!
+      inputs.length === 1
+        ? inputs[0]!
+        : g.add(inputs, [`concat=n=${inputs.length}:v=1:a=0`, `settb=1/${fps}`])[0]!
     accFrames += pendingFrames
     pending = []
     pendingFrames = 0

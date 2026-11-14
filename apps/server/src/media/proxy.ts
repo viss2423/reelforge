@@ -51,8 +51,11 @@ export const proxyArgs = (
   const fps = info.fps ?? 30
   if (fps > 60) args.push('-fps_mode', 'cfr', '-r', '60')
   else if (info.vfr && info.fpsRational) args.push('-fps_mode', 'cfr', '-r', info.fpsRational)
+  // The fast AAC coder: proxy audio only feeds the preview, and the default two-loop coder
+  // made the audio the slowest stream of a proxy job (a 60 s clip: ~5 s of AAC vs ~3 s for
+  // decode + scale + GPU encode).
   if (info.audioStreamIndex !== undefined)
-    args.push('-c:a', 'aac', '-b:a', '128k', '-ar', '48000', '-ac', '2')
+    args.push('-c:a', 'aac', '-aac_coder', 'fast', '-b:a', '128k', '-ar', '48000', '-ac', '2')
   args.push(
     '-sn',
     '-dn',

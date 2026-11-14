@@ -14,10 +14,12 @@ test.describe.configure({ mode: 'serial' })
 
 /**
  * Assets are library-wide and every device project shares one server, so each Playwright
- * project uploads the sample under its own name to keep tiles unambiguous.
+ * project uploads the sample under its own name to keep tiles unambiguous. A serial group
+ * retries from its first test, so the attempt is part of the name too (the first attempt's
+ * upload is still in the library).
  */
 const sampleName = (info: TestInfo, tag: string): string =>
-  `${tag}-${info.project.name.replace(/\W+/g, '-').toLowerCase()}.mp4`
+  `${tag}-${info.project.name.replace(/\W+/g, '-').toLowerCase()}-r${info.retry}.mp4`
 const sampleFile = async (name: string) => ({
   name,
   mimeType: 'video/mp4',

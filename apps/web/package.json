@@ -18,7 +18,8 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sw.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test -c playwright.mock.config.ts"
+    "test:e2e:ui": "playwright test -c playwright.mock.config.ts",
+    "test:e2e:android": "playwright test -c playwright.android.config.ts"
   },
   "dependencies": {
     "@reelforge/core": "workspace:*",

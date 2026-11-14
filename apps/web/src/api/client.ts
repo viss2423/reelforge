@@ -19,7 +19,9 @@ import {
   PairResult,
   ProjectSummary,
   SaveResult,
-  SystemInfo,
+  SystemWire,
+  toSystemInfo,
+  type SystemInfo,
   UploadInit,
   UploadStatus,
   type Packs,
@@ -185,8 +187,12 @@ export class ApiClient {
   revokeDevice(id: string): Promise<void> {
     return this.request('DELETE', `/api/devices/${enc(id)}`)
   }
-  system(signal?: AbortSignal): Promise<SystemInfo> {
-    return this.request('GET', '/api/system', { schema: import.meta.env.DEV && SystemInfo, signal })
+  async system(signal?: AbortSignal): Promise<SystemInfo> {
+    const wire = await this.request<SystemWire>('GET', '/api/system', {
+      schema: import.meta.env.DEV && SystemWire,
+      signal,
+    })
+    return toSystemInfo(wire)
   }
 
   /* ---------------------------------------------------------------- projects */
