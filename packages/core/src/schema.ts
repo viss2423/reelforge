@@ -437,6 +437,10 @@ export const Asset = z.object({
   hasVideo: z.boolean().default(false),
   videoCodec: z.string().optional(),
   audioCodec: z.string().optional(),
+  /** ffprobe `color_transfer` of the video stream (`arib-std-b67`/`smpte2084` = HDR). */
+  colorTransfer: z.string().optional(),
+  /** ffprobe `color_primaries` of the video stream (e.g. `bt709`, `bt2020`). */
+  colorPrimaries: z.string().optional(),
   /** Processing state of derived files */
   proxy: z.enum(['pending', 'processing', 'ready', 'failed', 'not-needed']).default('pending'),
   thumbnails: z.enum(['pending', 'ready', 'failed']).default('pending'),
