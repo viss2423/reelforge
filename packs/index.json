@@ -1,0 +1,360 @@
+{
+  "version": "2026.11.6+2150db6f213c",
+  "updatedAt": "2026-11-06",
+  "minAppVersion": "0.1.0",
+  "packs": [
+    {
+      "id": "essentials",
+      "version": "1.0.0",
+      "name": "Essentials",
+      "description": "Timeless basics: clean captions, titles, labels, classic looks, every transition and the annotation stickers every creator reaches for.",
+      "curatedAt": "2026-11-06",
+      "tags": ["base", "classic"]
+    },
+    {
+      "id": "trending-2026-11",
+      "version": "1.0.0",
+      "name": "Trending · November 2026",
+      "description": "What feeds look like right now: bold podcast captions, word-by-word pops, \"2026 is the new 2016\" throwback grades, beat-synced photo dumps, reveal carousels, whip/flash/glitch cuts and the holiday-season warm-up.",
+      "curatedAt": "2026-11-06",
+      "tags": ["trending", "2026-11", "holiday"]
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Anton",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Anton/Anton-Regular.ttf",
+          "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+          "size": 170812,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Archivo Black",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Archivo Black/ArchivoBlack-Regular.ttf",
+          "sha256": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180",
+          "size": 90988,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Bangers",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Bangers/Bangers-Regular.ttf",
+          "sha256": "4160a7311de9342674cce9160cde9fcbb30f48190397d86ff1b70b455af65824",
+          "size": 93148,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Bebas Neue",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Bebas Neue/BebasNeue-Regular.ttf",
+          "sha256": "08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73",
+          "size": 61400,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Caveat",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Caveat/Caveat-Regular.ttf",
+          "sha256": "e325214fb118f73f95463937de240bb97613958a697a2c6230d635617cd92438",
+          "size": 266048,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Caveat/Caveat-Bold.ttf",
+          "sha256": "dc56eb5f8b47cfee23ca0750dd257b26bcf31713b59efab0e885545a49da5602",
+          "size": 266448,
+          "weight": 700,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Inter",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Inter/Inter-Regular.ttf",
+          "sha256": "10d8ca8e93aaff9e8250225118cd88354f82bfa6e5613edc262e8da38e87e82e",
+          "size": 341368,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Inter/Inter-SemiBold.ttf",
+          "sha256": "2539cb09f55113b38a43d3cace11348a8c25f77e521384740e58f440b310223d",
+          "size": 342660,
+          "weight": 600,
+          "italic": false
+        },
+        {
+          "path": "fonts/Inter/Inter-ExtraBold.ttf",
+          "sha256": "4212c19f782c3c5c36772137e71fd505d120202b644134128a70ce52a0f0c7b4",
+          "size": 343968,
+          "weight": 800,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Lilita One",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Lilita One/LilitaOne-Regular.ttf",
+          "sha256": "f5b641c45c69d772ee4eda687bc9fda411d5cad6b0b45371491da4580cbc8d59",
+          "size": 28092,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Montserrat",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Montserrat/Montserrat-Regular.ttf",
+          "sha256": "f3dc47652d5c2aa89c8bc66441e28cc9707c36453c7fc588bc6b892e6309e1e5",
+          "size": 374468,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Montserrat/Montserrat-SemiBold.ttf",
+          "sha256": "aa1778e6cb282c4b2f1686c15500cc2e53942a91859f9fb6f919fed8188e4607",
+          "size": 374640,
+          "weight": 600,
+          "italic": false
+        },
+        {
+          "path": "fonts/Montserrat/Montserrat-Bold.ttf",
+          "sha256": "af614e2666c4287692962d882f518372bfb4f899c87ed160a1844a86c7740861",
+          "size": 374632,
+          "weight": 700,
+          "italic": false
+        },
+        {
+          "path": "fonts/Montserrat/Montserrat-ExtraBold.ttf",
+          "sha256": "9fd3a14c683098e6cd0272df057e1644e0bbe53456802397b8fe70e30ff14eac",
+          "size": 374656,
+          "weight": 800,
+          "italic": false
+        },
+        {
+          "path": "fonts/Montserrat/Montserrat-Black.ttf",
+          "sha256": "5430fe54669e99cf19075388de1cedc11f341decb0cc1f77572ab962ac0d5592",
+          "size": 373888,
+          "weight": 900,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Oswald",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Oswald/Oswald-Regular.ttf",
+          "sha256": "2196f75aaf92ea327a2f4350098e49321bbe40d443835e963297d9049ec1bf43",
+          "size": 88568,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Oswald/Oswald-SemiBold.ttf",
+          "sha256": "a6d7794b216049b1a05e81173b42b6c40eb741c9cbf7833cc938ed428dc71771",
+          "size": 88952,
+          "weight": 600,
+          "italic": false
+        },
+        {
+          "path": "fonts/Oswald/Oswald-Bold.ttf",
+          "sha256": "e60fbca4a51913cc1c8d9975c5208f4000f0408b511d4300aea17767d962d5f8",
+          "size": 88964,
+          "weight": 700,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Pacifico",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Pacifico/Pacifico-Regular.ttf",
+          "sha256": "5b6c0d5334a7bf77dea52b975c5a0c408878c0f7115ed5b6fb151f634b7bf701",
+          "size": 329380,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Permanent Marker",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "path": "fonts/Permanent Marker/PermanentMarker-Regular.ttf",
+          "sha256": "28f82c8a7943cb8e9d599f8554da1d4fc75dbcf69b9885ad6c0611d20c6946c5",
+          "size": 74632,
+          "weight": 400,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Playfair Display",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Playfair Display/PlayfairDisplay-Regular.ttf",
+          "sha256": "1609a54fa3ad1abc8d0037132f73700333241ea0b65672079998e352f151dea7",
+          "size": 123240,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Playfair Display/PlayfairDisplay-Italic.ttf",
+          "sha256": "6021680663c58b344d8404c289c755aadc662a02189ffe4f5ca79378f9e97840",
+          "size": 110816,
+          "weight": 400,
+          "italic": true
+        },
+        {
+          "path": "fonts/Playfair Display/PlayfairDisplay-Bold.ttf",
+          "sha256": "adefc53e7b3d483f1fa5e85edd82b7689ca79db25a1f6786bd7949cdcfeec601",
+          "size": 123536,
+          "weight": 700,
+          "italic": false
+        },
+        {
+          "path": "fonts/Playfair Display/PlayfairDisplay-BoldItalic.ttf",
+          "sha256": "954e20ee10ae685d0a5a6e6ee380165ea9c8eb329c0e22a58739496714f66991",
+          "size": 111128,
+          "weight": 700,
+          "italic": true
+        }
+      ]
+    },
+    {
+      "family": "Poppins",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Poppins/Poppins-Regular.ttf",
+          "sha256": "7e65201e9b79159e2300267cc885e16c8dcef2424cdfa09a29bfb0980a94a7ba",
+          "size": 160316,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Poppins/Poppins-SemiBold.ttf",
+          "sha256": "298abea293361fe9704c4cdc3193002a11a8b64cc520f81b0a3d813de25be149",
+          "size": 157380,
+          "weight": 600,
+          "italic": false
+        },
+        {
+          "path": "fonts/Poppins/Poppins-Bold.ttf",
+          "sha256": "983676516167748b74de6f4771fb384c664fd913acb8b471122ecacf5da5ea6c",
+          "size": 155996,
+          "weight": 700,
+          "italic": false
+        },
+        {
+          "path": "fonts/Poppins/Poppins-ExtraBold.ttf",
+          "sha256": "62e554b16b41e1d64a0425f488fba1d5a462da115f421b1d214d0ff0d66ed4eb",
+          "size": 154908,
+          "weight": 800,
+          "italic": false
+        },
+        {
+          "path": "fonts/Poppins/Poppins-Black.ttf",
+          "sha256": "bcf3875a5a2a7a7baa32df265dcf6bfeb15242620fbc96e4d3088602d326c4ef",
+          "size": 153500,
+          "weight": 900,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Roboto",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Roboto/Roboto-Regular.ttf",
+          "sha256": "44ef73d419b78ea7246aeca035e1a6c2a91871c76d205d877abd8b020b000e01",
+          "size": 157576,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Roboto/Roboto-Bold.ttf",
+          "sha256": "4da8450d1bdf95ed09b8c31b2f74b935c54c3e95809af80f554bc03ce52c651c",
+          "size": 158320,
+          "weight": 700,
+          "italic": false
+        },
+        {
+          "path": "fonts/Roboto/Roboto-Black.ttf",
+          "sha256": "65e5bdf58894a5d2279e0e220e7e348768d1b50d3662cb5ecf4164463c976950",
+          "size": 158704,
+          "weight": 900,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "family": "Rubik",
+      "license": "OFL-1.1",
+      "files": [
+        {
+          "path": "fonts/Rubik/Rubik-Regular.ttf",
+          "sha256": "e4a22b7d9e59c1823625fd2e116cd6a8fcb76f8297a31d406b6bca82d933a334",
+          "size": 212196,
+          "weight": 400,
+          "italic": false
+        },
+        {
+          "path": "fonts/Rubik/Rubik-Bold.ttf",
+          "sha256": "5fed98eb9dfc378bc0bc456ff62b4b8e187868c0a541269f87c30aeb22f0e42c",
+          "size": 212272,
+          "weight": 700,
+          "italic": false
+        },
+        {
+          "path": "fonts/Rubik/Rubik-Black.ttf",
+          "sha256": "a90de77744d2d52ac1301857c714f7594d783c7546c13294cc84a3a68dab5525",
+          "size": 211716,
+          "weight": 900,
+          "italic": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2702 @@
+{
+  "id": "trending-2026-11",
+  "version": "1.0.0",
+  "name": "Trending · November 2026",
+  "description": "What feeds look like right now: bold podcast captions, word-by-word pops, \"2026 is the new 2016\" throwback grades, beat-synced photo dumps, reveal carousels, whip/flash/glitch cuts and the holiday-season warm-up.",
+  "author": "ReelForge community",
+  "license": "CC0-1.0",
+  "curatedAt": "2026-11-06",
+  "files": [
+    {
+      "path": "luts/autumn-amber.cube",
+      "sha256": "a24c92c4676a0ce8bf62d76bbed1be7df749c062c04212f15a731a2e746b8777",
+      "size": 690089
+    },
+    {
+      "path": "luts/bleach-bypass.cube",
+      "sha256": "7f05c9e2e488afcd3dd475311fc2150413d2bfa4a86671cfba0fd7adf4b75009",
+      "size": 742869
+    },
+    {
+      "path": "luts/cozy-holiday.cube",
+      "sha256": "8c84b91ce62056dcdc805a35dce8c307b6ad39f1dfbd5c054cc5244bd4707063",
+      "size": 715889
+    },
+    {
+      "path": "luts/cross-process.cube",
+      "sha256": "2dd8ed1ca47ffc3ac037849b9fbfe1373b5abb5c11f83e5c02e97a4081838f97",
+      "size": 694168
+    },
+    {
+      "path": "luts/cyberpunk.cube",
+      "sha256": "bc6b682793132bb94ac24381cefe97f1e78e702f95b4277829c48027cda396fb",
+      "size": 660341
+    },
+    {
+      "path": "luts/lofi-faded.cube",
+      "sha256": "dbd9bfeb0670e5904fee1efb31cf142d7887f69b11d429b8f000476dd77024a8",
+      "size": 742742
+    },
+    {
+      "path": "luts/moody-red-pop.cube",
+      "sha256": "2ee59491ab5c43ae04f950fc2ab367412b4bffc19fdbc1913204afdb03cd6ca0",
+      "size": 739963
+    },
+    {
+      "path": "luts/night-neon.cube",
+      "sha256": "06528f4b07f3909557ce249c09480f3b099e5bbbe4aa481ff2ad80b37cd9094d",
+      "size": 699798
+    },
+    {
+      "path": "luts/pastel-dream.cube",
+      "sha256": "3410c0aeb7d9e8431ed366cf5a02e1369c3aa4e52cdb10eb947001b27a69e07e",
+      "size": 730293
+    },
+    {
+      "path": "luts/phone-cinematic.cube",
+      "sha256": "01c63efb2d6e8bd55027c53b2a161d75515108315c13d43aa87237a5c8fd1e2d",
+      "size": 742183
+    },
+    {
+      "path": "luts/sepia-memory.cube",
+      "sha256": "b41350dfa152961644a1dfc04863d65f01097ea33b26ce18260bd750fb098ea3",
+      "size": 743141
+    },
+    {
+      "path": "luts/thriller-green.cube",
+      "sha256": "142603d33b0ee9d19da88c15ab1cf8276e64ba72bcd3c0d171714c5bf9a1bd7d",
+      "size": 736541
+    },
+    {
+      "path": "luts/throwback-2016.cube",
+      "sha256": "4c836b818ec98b17683d9e82eca21c131f049f31767aa5bbbd082f88602ac774",
+      "size": 742826
+    },
+    {
+      "path": "luts/warm-400-film.cube",
+      "sha256": "515b6def097373312168535085b9e5981237acb5f38534dad30d9daf280fb3ab",
+      "size": 742874
+    },
+    {
+      "path": "luts/winter-frost.cube",
+      "sha256": "70217422bac56408110724c2b0397f3052f6cce863517418388b732b9674951b",
+      "size": 712696
+    },
+    {
+      "path": "luts/y2k-digicam.cube",
+      "sha256": "d82b67fd307433f50a564f64ae4f40aec44aa0a8b2566478354653926a0ae8ef",
+      "size": 711835
+    },
+    {
+      "path": "stickers/face-heart-eyes.png",
+      "sha256": "cf465e4057cbd0b346064a8ecb1b623957b4003dabac13c5fbb572b0fc1ab12e",
+      "size": 53368
+    },
+    {
+      "path": "stickers/face-laugh-tears.png",
+      "sha256": "3b065a805c2fe597051b6370433d81f87b02571cec5b43b104e03b61bcc36808",
+      "size": 55206
+    },
+    {
+      "path": "stickers/face-smile.png",
+      "sha256": "279455106f8f7a522983e52f62bdde200d16a1aa83cc87eee15e38bd7c11b2eb",
+      "size": 55166
+    },
+    {
+      "path": "stickers/fire.png",
+      "sha256": "6412ea4a36727a405cb625b7b2122b788250a139e80bb120bae4c4053d61aa4d",
+      "size": 31008
+    },
+    {
+      "path": "stickers/follow-pill.png",
+      "sha256": "701d7e7e54cdbd4d5efc63dd8a2fda313490f0878d284daf64eebc907c38be4c",
+      "size": 19087
+    },
+    {
+      "path": "stickers/hundred.png",
+      "sha256": "a60ad29fc41b3da24b0a900c0913ef0108dedc3d132be3ca0852bb1453fb7e08",
+      "size": 21455
+    },
+    {
+      "path": "stickers/like-pill.png",
+      "sha256": "739fa9d8c6f146646fec8058864570ea52deaaa108fca8fa632c71c30d2ea0ef",
+      "size": 16615
+    },
+    {
+      "path": "stickers/new-burst.png",
+      "sha256": "043d6c01aacfee175d89b2c183bd523cec65b2342bd35586d1e5782d37c2c42a",
+      "size": 65812
+    },
+    {
+      "path": "stickers/notification-badge.png",
+      "sha256": "fec87bca0718e8a4c4f822856c129ff2c155801bec53217665c2dd52e3df717a",
+      "size": 36654
+    },
+    {
+      "path": "stickers/subscribe-pill.png",
+      "sha256": "b5ce7a49e89e3eaf3abb8c44ed9ea6b990831de60c4b355b16459eccecd7bd6b",
+      "size": 26605
+    },
+    {
+      "path": "stickers/swipe-up.png",
+      "sha256": "752bea4ac2749f4915098aa8349cecb2e76b24fed302e0a2b2a456a0db601133",
+      "size": 22252
+    },
+    {
+      "path": "stickers/typing-bubble.png",
+      "sha256": "839719090a7f6e91530cbefff903a287703a0ecc28c89f55ddfd9b14c9386594",
+      "size": 16587
+    },
+    {
+      "path": "stickers/wow-burst.png",
+      "sha256": "da995f23cab5853ae5a0698dcdfb94bb29c78cb29faf060cbdb33928ff7a74be",
+      "size": 69574
+    },
+    {
+      "path": "stickers/y2k-star.png",
+      "sha256": "badb8753e3b556a9b6e3b209f90a61ab21c97a998f80972c9d75528acc64e817",
+      "size": 31411
+    },
+    {
+      "path": "thumbs/caption-bold-podcast.webp",
+      "sha256": "06d001a8aa2f59502710c2bbea18ae9b082687286bc45a4e6c690077d22910be",
+      "size": 5404
+    },
+    {
+      "path": "thumbs/caption-candy-pop.webp",
+      "sha256": "0133051119f4f23ea9905b57d4db3be2207a712bebbf6459242420b47d4eb16a",
+      "size": 5408
+    },
+    {
+      "path": "thumbs/caption-editorial-serif.webp",
+      "sha256": "8179ce687fca74b23ae88df5bb0883f83484b43f3347f6aa4a23c4a18a42c697",
+      "size": 3852
+    },
+    {
+      "path": "thumbs/caption-gamer-yellow.webp",
+      "sha256": "a06c11d6f19bc05be8d5a4bb4dd141453e8563aac21e543368a657b27eb86f25",
+      "size": 5074
+    },
+    {
+      "path": "thumbs/caption-glitch-split.webp",
+      "sha256": "b83ef69e609197cf092cdd038c8420ded06004deeb3f17108cdd47eeb346431c",
+      "size": 4890
+    },
+    {
+      "path": "thumbs/caption-kinetic-bounce.webp",
+      "sha256": "c8105bae5fdd5d5e6557b499169fd6fbec2b05b91c4d342e2b8863606bd9efbd",
+      "size": 4762
+    },
+    {
+      "path": "thumbs/caption-marker-highlight.webp",
+      "sha256": "1d8700d7a931ba66a4aa51ca69179c1a57622e57a8902211e154f6a6c6361558",
+      "size": 5434
+    },
+    {
+      "path": "thumbs/caption-minimal-lowercase.webp",
+      "sha256": "ffc56ec3de297a488906cf2a052fa479b7218e63fabd5e4a477a0c0a2e41d6de",
+      "size": 3834
+    },
+    {
+      "path": "thumbs/caption-neon-glow.webp",
+      "sha256": "636b3f4ca903f775ac37a8a98c23c85a5e4864c4ee5ae6023b47f6faf2a05836",
+      "size": 3862
+    },
+    {
+      "path": "thumbs/caption-podcast-green.webp",
+      "sha256": "65498e2972108ec82a613705f993a0ad24e271ef6796628cf699b2cdea7b5a5c",
+      "size": 5092
+    },
+    {
+      "path": "thumbs/caption-red-box-pop.webp",
+      "sha256": "55493ef2e46926c563f66bc4e3c1435d8ad0ea84c14e6ba3ff4b1abc7ac439f0",
+      "size": 4880
+    },
+    {
+      "path": "thumbs/caption-sunset-sweep.webp",
+      "sha256": "af29a1549e6dfa507b5abeac85a3ecffdf911ce313ab66944926216efcbe0b47",
+      "size": 4632
+    },
+    {
+      "path": "thumbs/caption-text-message.webp",
+      "sha256": "ecfedded7ec4ebfb3b2c7735f51cbd984ea46410979688efa5768ff7a9573ddb",
+      "size": 3600
+    },
+    {
+      "path": "thumbs/caption-throwback-bar.webp",
+      "sha256": "68c8cd701830ee87956b37da98511c91daf39f3535324736f04520c0d6713872",
+      "size": 4714
+    },
+    {
+      "path": "thumbs/filter-autumn-amber.webp",
+      "sha256": "b939c5415851267996dc29dac0c46e71449d222b3ddfb582e0c508ff167def56",
+      "size": 3500
+    },
+    {
+      "path": "thumbs/filter-bleach-bypass.webp",
+      "sha256": "a0101e94815700f24af3e0f90e5a637194810591e59fa77b261a19ce90229ecc",
+      "size": 2944
+    },
+    {
+      "path": "thumbs/filter-cozy-holiday.webp",
+      "sha256": "461c8dbcde8dd9520c5d408522fbe5b8c6947f6f4d1dee1e08e29e89f99bd791",
+      "size": 3424
+    },
+    {
+      "path": "thumbs/filter-cross-process.webp",
+      "sha256": "5961d2ad46925f80de3aaf9769312fde1eadc162aa99286189f8e91bf5fccf06",
+      "size": 3558
+    },
+    {
+      "path": "thumbs/filter-cyberpunk.webp",
+      "sha256": "68ddf0ef0a8d800e45b18c2ef14c500c17a9e4dd93bac2b6e981e29a0f5754ec",
+      "size": 3520
+    },
+    {
+      "path": "thumbs/filter-lofi-faded.webp",
+      "sha256": "ff2c9409065dd4471337ac34b069caa65096bfed872df62df4e66d0779542cc0",
+      "size": 2410
+    },
+    {
+      "path": "thumbs/filter-moody-red-pop.webp",
+      "sha256": "8777ec341b92c05e808559d89e85680993de3a85417e335b11bd02ab43e75570",
+      "size": 3006
+    },
+    {
+      "path": "thumbs/filter-night-neon.webp",
+      "sha256": "217f2dd7c2d33e76061490a2460f2eb2a47f72ad6e34a25b8ac9aa381fddd1b0",
+      "size": 3552
+    },
+    {
+      "path": "thumbs/filter-pastel-dream.webp",
+      "sha256": "cf31dad213dfb9b743ac49ec0cec626a3cd74541c86dea2490eda5970258ad9d",
+      "size": 2622
+    },
+    {
+      "path": "thumbs/filter-phone-cinematic.webp",
+      "sha256": "42d712ccf6d5b68f0704952b5acd1ddd02e558815fb6a101fcbc2fc260043100",
+      "size": 3294
+    },
+    {
+      "path": "thumbs/filter-sepia-memory.webp",
+      "sha256": "4fd68de1e26f4b0a7100e2e63ad18ee357b0abc354b7a489e027bee489f0d201",
+      "size": 2072
+    },
+    {
+      "path": "thumbs/filter-thriller-green.webp",
+      "sha256": "6864f76236f2aefbb565231868aa789a602dda5f4d07fca3b4de22c7a7224a1e",
+      "size": 3204
+    },
+    {
+      "path": "thumbs/filter-throwback-2016.webp",
+      "sha256": "2addaad5a11c8c0b16f131dcb366db779ea1479b9a0540e6f19683a9acc0ccc5",
+      "size": 2850
+    },
+    {
+      "path": "thumbs/filter-warm-400-film.webp",
+      "sha256": "c1356adb519d150755d283cfeb009bfd41dd169c54e8e97a711d3eec01fc4a5a",
+      "size": 2964
+    },
+    {
+      "path": "thumbs/filter-winter-frost.webp",
+      "sha256": "5a559e87383c46ee27685a514597d7cdb4a9e61e57fb37eafc0440100e243386",
+      "size": 2990
+    },
+    {
+      "path": "thumbs/filter-y2k-digicam.webp",
+      "sha256": "735746f0cce3d1d8f8642e38a7a679b868228d8e3e12017e1d0caf5bc332a866",
+      "size": 3678
+    },
+    {
+      "path": "thumbs/template-day-in-my-life.webp",
+      "sha256": "504412db1035ac5003430bfded5dcf61c454ed90babefd77629f193d29fdba50",
+      "size": 3610
+    },
+    {
+      "path": "thumbs/template-glow-up.webp",
+      "sha256": "548d73fee329a489a179a864132533152956f27eef0d998c8975320d07d2c052",
+      "size": 1822
+    },
+    {
+      "path": "thumbs/template-grwm.webp",
+      "sha256": "8d04faedc39aa80d0176b0e6d8db56245594625fcb84b50fee38a4a6946c0611",
+      "size": 3008
+    },
+    {
+      "path": "thumbs/template-holiday-countdown.webp",
+      "sha256": "b5c562f002714768e89651dd49f49d3d3e684babcfe1108ac5b9fa8ac33e85ed",
+      "size": 3760
+    },
+    {
+      "path": "thumbs/template-outfit-transition.webp",
+      "sha256": "67308b59677d38762e5f852b0cd19475c85ad90e502866758883ee1ec6ebc228",
+      "size": 4006
+    },
+    {
+      "path": "thumbs/template-photo-dump.webp",
+      "sha256": "66104572d4ece763c3ec3d1cc0aabdce15307688014c1b6b4eeb53ed4639c28d",
+      "size": 3106
+    },
+    {
+      "path": "thumbs/template-pov-hook.webp",
+      "sha256": "661c200f4d6679c7560e530c5bc9f2c765ea9abc33f24865d8c8ab3101113a9d",
+      "size": 4342
+    },
+    {
+      "path": "thumbs/template-product-showcase.webp",
+      "sha256": "1eed59c2b8d82649aca35de66befd15f406ed20dbccf1a8b062774b3cee8b3e2",
+      "size": 4220
+    },
+    {
+      "path": "thumbs/template-reveal-carousel.webp",
+      "sha256": "90b4db2a70115deca8cfde7747b2aa6c9589625c1db271dad376eda856a6699d",
+      "size": 3460
+    },
+    {
+      "path": "thumbs/template-story-time.webp",
+      "sha256": "ed660eca2217f112e9089bcd1816e1dbe8fd2812b689839d5b199bc8ff77195a",
+      "size": 4296
+    },
+    {
+      "path": "thumbs/template-travel-montage.webp",
+      "sha256": "2550c3de4b1158aa0020ecfe3c54bdd305a85424c7bb2dc5319a8075a79cb093",
+      "size": 3706
+    },
+    {
+      "path": "thumbs/template-workout.webp",
+      "sha256": "9a3b5da1acb4e17ecb61e0860df26b680f60af380aa0854f9bc0cba6a269b60d",
+      "size": 4150
+    },
+    {
+      "path": "thumbs/text-cta-comment.webp",
+      "sha256": "3657db834835bed2cf5bd2b86aa6cb43841259e4b0995bcedf1493495abbf297",
+      "size": 3776
+    },
+    {
+      "path": "thumbs/text-cta-save.webp",
+      "sha256": "959c23749439142d3f9972fa7637f4211d80b5b0b69e15fe9067198b16f95c85",
+      "size": 4064
+    },
+    {
+      "path": "thumbs/text-hook-nobody-talks.webp",
+      "sha256": "fe8a08c62d1753869cce092af9604c4f9770c617e39d4ef409d6dbf2e8aac52a",
+      "size": 5996
+    },
+    {
+      "path": "thumbs/text-hook-part-two.webp",
+      "sha256": "69c444d5770b12b89013b3c03867df24cba71904b72d2ecf1babc3c07e9569b3",
+      "size": 3334
+    },
+    {
+      "path": "thumbs/text-hook-pov.webp",
+      "sha256": "d56443793d78e5c83b37b342d931ff999d5621b3e8bba7b50fc09f5fa113b226",
+      "size": 4656
+    },
+    {
+      "path": "thumbs/text-hook-stop-scrolling.webp",
+      "sha256": "dfe283787b7c62d184f29751f28dbc30ddb127771fb23a5238a5b8ac7237e03e",
+      "size": 5116
+    },
+    {
+      "path": "thumbs/text-hook-storytime.webp",
+      "sha256": "17e81ad35120fe88854310d556b692da6f100039536204ef973f5d7137ce07bf",
+      "size": 4620
+    },
+    {
+      "path": "thumbs/text-hook-tell-me.webp",
+      "sha256": "066f1e3720371043dd2ecd4f5557dde74b619c9398133a2fa3140dac33c5ac08",
+      "size": 5808
+    },
+    {
+      "path": "thumbs/text-hook-your-sign.webp",
+      "sha256": "de0b2ab3072389ed68a29e187fb242faff143b110dadc32c59e753b018a7ba4e",
+      "size": 3898
+    },
+    {
+      "path": "thumbs/text-label-day.webp",
+      "sha256": "45e3064be6399893a179099c995f560f7852d3e3c240d1563a2cd4ec412932e8",
+      "size": 3242
+    },
+    {
+      "path": "thumbs/text-label-ingredient.webp",
+      "sha256": "68029e387199c058576a2be8c57bd2f86da15ca68f3188e40cb6f9ca5ec37717",
+      "size": 3432
+    },
+    {
+      "path": "thumbs/text-label-price.webp",
+      "sha256": "81615883ef34fde248f955c266e24a8794c9e70621887579ab5532c36eb42111",
+      "size": 3512
+    },
+    {
+      "path": "thumbs/text-label-tip.webp",
+      "sha256": "08cbbd9c46480466a48b73c3fe5098414c21f2ffe87174331e082f0314c3c807",
+      "size": 3310
+    },
+    {
+      "path": "thumbs/text-quote-handwritten.webp",
+      "sha256": "a159c707b57c7ef15b5e6f711b55f03ef9c6ee498821f29bbfb9dcc87d872c01",
+      "size": 4458
+    },
+    {
+      "path": "thumbs/text-reveal-sorry.webp",
+      "sha256": "084da009602ce882474b3fd4e7422fc9294456c983ee7cfefdecf90c8106b96c",
+      "size": 3050
+    },
+    {
+      "path": "thumbs/text-title-comic.webp",
+      "sha256": "db92c5bbbf4ba20c0d08bb15150f90c5aa4b7dfa921449cfc3907cc6f3e85e43",
+      "size": 4384
+    },
+    {
+      "path": "thumbs/text-title-kinetic.webp",
+      "sha256": "cb89a4894c179b14420a6f5bec2e906f6600a580ca576a7b9acae0ce9cf43828",
+      "size": 3694
+    },
+    {
+      "path": "thumbs/text-title-minimal.webp",
+      "sha256": "3ee621934f6638879c851a39f4c0240609ca93e86d91b898d046f48e4cae3a4a",
+      "size": 3334
+    },
+    {
+      "path": "thumbs/text-title-neon.webp",
+      "sha256": "e13ef582a5c8138590b11c5eaaa029c7f500eb808130f4802075ffcb7ae34915",
+      "size": 3846
+    },
+    {
+      "path": "thumbs/text-title-throwback.webp",
+      "sha256": "5106f397d4661cf884510f97b4054ee2d761bbf5810a4fc7c0bea76d14937aa4",
+      "size": 3046
+    }
+  ],
+  "captionStyles": [
+    {
+      "id": "bold-podcast",
+      "name": "Bold Podcast",
+      "trendScore": 96,
+      "tags": ["podcast", "bold", "yellow", "highlight"],
+      "style": {
+        "base": {
+          "fontFamily": "Montserrat",
+          "fontWeight": 900,
+          "fontSize": 88,
+          "strokeWidth": 9,
+          "shadowY": 5,
+          "shadowColor": "#000000B3",
+          "uppercase": true
+        },
+        "mode": "pop",
+        "activeColor": "#FFE400",
+        "activeScale": 1.22,
+        "maxWordsPerLine": 3,
+        "y": 1280,
+        "keywordColor": "#39FF14"
+      },
+      "thumb": "thumbs/caption-bold-podcast.webp"
+    },
+    {
+      "id": "podcast-green",
+      "name": "Podcast Green",
+      "trendScore": 88,
+      "tags": ["podcast", "bold", "green"],
+      "style": {
+        "base": {
+          "fontFamily": "Montserrat",
+          "fontWeight": 800,
+          "fontSize": 84,
+          "strokeWidth": 8,
+          "uppercase": true
+        },
+        "mode": "karaoke",
+        "activeColor": "#2BFF88",
+        "activeScale": 1.15,
+        "maxWordsPerLine": 3,
+        "y": 1280,
+        "keywordColor": "#FFE400"
+      },
+      "thumb": "thumbs/caption-podcast-green.webp"
+    },
+    {
+      "id": "neon-glow",
+      "name": "Neon Glow",
+      "trendScore": 85,
+      "tags": ["neon", "glow", "night"],
+      "style": {
+        "base": {
+          "fontFamily": "Poppins",
+          "fontWeight": 700,
+          "fontSize": 80,
+          "strokeWidth": 3,
+          "strokeColor": "#FF2BD6",
+          "shadowBlur": 18,
+          "shadowX": 0,
+          "shadowY": 0,
+          "shadowColor": "#FF2BD6E6"
+        },
+        "mode": "karaoke",
+        "activeColor": "#00F0FF",
+        "activeScale": 1.1,
+        "maxWordsPerLine": 3,
+        "y": 1300,
+        "keywordColor": "#FFF36B"
+      },
+      "thumb": "thumbs/caption-neon-glow.webp"
+    },
+    {
+      "id": "sunset-sweep",
+      "name": "Sunset Karaoke Sweep",
+      "trendScore": 82,
+      "tags": ["karaoke", "gradient", "colorful"],
+      "style": {
+        "base": {
+          "fontFamily": "Rubik",
+          "fontWeight": 900,
+          "fontSize": 86,
+          "color": "#FFD2A6",
+          "strokeWidth": 6,
+          "strokeColor": "#4A1240",
+          "uppercase": true
+        },
+        "mode": "karaoke",
+        "activeColor": "#FF5E8A",
+        "activeScale": 1.12,
+        "maxWordsPerLine": 3,
+        "y": 1300,
+        "keywordColor": "#FFB547"
+      },
+      "thumb": "thumbs/caption-sunset-sweep.webp"
+    },
+    {
+      "id": "red-box-pop",
+      "name": "Red Box Pop",
+      "trendScore": 87,
+      "tags": ["box", "highlight", "bold"],
+      "style": {
+        "base": {
+          "fontFamily": "Archivo Black",
+          "fontWeight": 400,
+          "fontSize": 82,
+          "strokeWidth": 0,
+          "shadowY": 4,
+          "shadowColor": "#00000099",
+          "uppercase": true
+        },
+        "mode": "word-by-word",
+        "activeColor": "#FFFFFF",
+        "activeBackgroundColor": "#FF2D55",
+        "activeScale": 1.08,
+        "maxWordsPerLine": 3,
+        "y": 1280
+      },
+      "thumb": "thumbs/caption-red-box-pop.webp"
+    },
+    {
+      "id": "minimal-lowercase",
+      "name": "Clean Minimal Lowercase",
+      "trendScore": 90,
+      "tags": ["minimal", "lowercase", "aesthetic"],
+      "style": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontWeight": 400,
+          "fontSize": 58,
+          "strokeWidth": 0,
+          "shadowBlur": 8,
+          "shadowY": 1,
+          "shadowColor": "#00000099",
+          "letterSpacing": -1
+        },
+        "mode": "line",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 6,
+        "maxLines": 2,
+        "y": 1420,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-minimal-lowercase.webp"
+    },
+    {
+      "id": "throwback-bar",
+      "name": "Throwback Caption Bar",
+      "trendScore": 89,
+      "tags": ["2016", "nostalgia", "bar"],
+      "style": {
+        "base": {
+          "fontFamily": "Roboto",
+          "fontWeight": 400,
+          "fontSize": 50,
+          "strokeWidth": 0,
+          "shadowY": 0,
+          "shadowColor": "#00000000",
+          "backgroundColor": "#00000099",
+          "backgroundPadding": 14,
+          "backgroundRadius": 0,
+          "maxWidth": 1080
+        },
+        "mode": "line",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 8,
+        "maxLines": 1,
+        "y": 1150,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-throwback-bar.webp"
+    },
+    {
+      "id": "kinetic-bounce",
+      "name": "Kinetic Bounce",
+      "trendScore": 86,
+      "tags": ["kinetic", "bouncy", "orange"],
+      "style": {
+        "base": {
+          "fontFamily": "Rubik",
+          "fontWeight": 900,
+          "fontSize": 92,
+          "strokeWidth": 8,
+          "uppercase": true
+        },
+        "mode": "bounce",
+        "activeColor": "#FF6A00",
+        "activeScale": 1.25,
+        "maxWordsPerLine": 2,
+        "y": 1250,
+        "keywordColor": "#FFE400"
+      },
+      "thumb": "thumbs/caption-kinetic-bounce.webp"
+    },
+    {
+      "id": "text-message",
+      "name": "Text Message",
+      "trendScore": 80,
+      "tags": ["typewriter", "chat", "storytime"],
+      "style": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontWeight": 600,
+          "fontSize": 58,
+          "color": "#111111",
+          "strokeWidth": 0,
+          "shadowY": 0,
+          "shadowColor": "#00000000",
+          "backgroundColor": "#FFFFFFF2",
+          "backgroundPadding": 22,
+          "backgroundRadius": 28
+        },
+        "mode": "typewriter",
+        "activeColor": "#111111",
+        "activeScale": 1,
+        "maxWordsPerLine": 5,
+        "maxLines": 2,
+        "y": 1350,
+        "keywordColor": "#0A84FF"
+      },
+      "thumb": "thumbs/caption-text-message.webp"
+    },
+    {
+      "id": "glitch-split",
+      "name": "Glitch Split",
+      "trendScore": 79,
+      "tags": ["glitch", "gaming"],
+      "style": {
+        "base": {
+          "fontFamily": "Archivo Black",
+          "fontWeight": 400,
+          "fontSize": 84,
+          "strokeWidth": 3,
+          "strokeColor": "#FF0055",
+          "shadowX": -6,
+          "shadowY": 0,
+          "shadowColor": "#00F0FFD9",
+          "uppercase": true
+        },
+        "mode": "word-by-word",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1.12,
+        "maxWordsPerLine": 2,
+        "y": 1260,
+        "keywordColor": "#00F0FF"
+      },
+      "thumb": "thumbs/caption-glitch-split.webp"
+    },
+    {
+      "id": "editorial-serif",
+      "name": "Editorial Serif",
+      "trendScore": 77,
+      "tags": ["serif", "luxury", "aesthetic"],
+      "style": {
+        "base": {
+          "fontFamily": "Playfair Display",
+          "fontWeight": 400,
+          "italic": true,
+          "fontSize": 76,
+          "strokeWidth": 0,
+          "shadowBlur": 14,
+          "shadowY": 2,
+          "shadowColor": "#00000099"
+        },
+        "mode": "pop",
+        "activeColor": "#F5D7A1",
+        "activeScale": 1.06,
+        "maxWordsPerLine": 4,
+        "y": 1350,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-editorial-serif.webp"
+    },
+    {
+      "id": "marker-highlight",
+      "name": "Marker Highlight",
+      "trendScore": 75,
+      "tags": ["handwritten", "marker"],
+      "style": {
+        "base": {
+          "fontFamily": "Permanent Marker",
+          "fontWeight": 400,
+          "fontSize": 84,
+          "strokeWidth": 6,
+          "uppercase": true
+        },
+        "mode": "karaoke",
+        "activeColor": "#FFE400",
+        "activeScale": 1.1,
+        "maxWordsPerLine": 3,
+        "y": 1300
+      },
+      "thumb": "thumbs/caption-marker-highlight.webp"
+    },
+    {
+      "id": "candy-pop",
+      "name": "Candy Pop",
+      "trendScore": 81,
+      "tags": ["cute", "pink", "pop"],
+      "style": {
+        "base": {
+          "fontFamily": "Lilita One",
+          "fontWeight": 400,
+          "fontSize": 104,
+          "strokeWidth": 12,
+          "strokeColor": "#FFFFFF",
+          "color": "#FF4FA3",
+          "shadowY": 6,
+          "shadowColor": "#8A1450B3"
+        },
+        "mode": "pop",
+        "activeColor": "#7A2CFF",
+        "activeScale": 1.2,
+        "maxWordsPerLine": 2,
+        "y": 1250,
+        "keywordColor": "#FF8A00"
+      },
+      "thumb": "thumbs/caption-candy-pop.webp"
+    },
+    {
+      "id": "gamer-yellow",
+      "name": "Gamer Impact",
+      "trendScore": 76,
+      "tags": ["gaming", "impact", "tall"],
+      "style": {
+        "base": {
+          "fontFamily": "Bebas Neue",
+          "fontWeight": 400,
+          "fontSize": 130,
+          "strokeWidth": 8,
+          "letterSpacing": 2
+        },
+        "mode": "word-by-word",
+        "activeColor": "#FFE400",
+        "activeScale": 1.15,
+        "maxWordsPerLine": 2,
+        "y": 1200,
+        "keywordColor": "#FF3B30"
+      },
+      "thumb": "thumbs/caption-gamer-yellow.webp"
+    }
+  ],
+  "textPresets": [
+    {
+      "id": "hook-pov",
+      "name": "POV Hook",
+      "trendScore": 93,
+      "tags": ["hook", "pov"],
+      "sampleText": "POV: you finally did it",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 900,
+        "fontSize": 78,
+        "strokeWidth": 8,
+        "shadowY": 5,
+        "shadowColor": "#000000B3"
+      },
+      "animationIn": "trending-2026-11/punch-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-hook-pov.webp"
+    },
+    {
+      "id": "hook-your-sign",
+      "name": "This Is Your Sign",
+      "trendScore": 90,
+      "tags": ["hook", "sign"],
+      "sampleText": "This is your sign to…",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 800,
+        "fontSize": 76,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFFFFF",
+        "backgroundPadding": 22,
+        "backgroundRadius": 24
+      },
+      "animationIn": "trending-2026-11/letter-cascade",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-hook-your-sign.webp"
+    },
+    {
+      "id": "hook-tell-me",
+      "name": "Tell Me Without Telling Me",
+      "trendScore": 86,
+      "tags": ["hook", "meme"],
+      "sampleText": "Tell me you’re a creator without telling me",
+      "style": {
+        "fontFamily": "Rubik",
+        "fontWeight": 900,
+        "fontSize": 70,
+        "strokeWidth": 7,
+        "uppercase": true,
+        "maxWidth": 940
+      },
+      "animationIn": "trending-2026-11/slam",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-hook-tell-me.webp"
+    },
+    {
+      "id": "hook-nobody-talks",
+      "name": "Nobody Talks About This",
+      "trendScore": 84,
+      "tags": ["hook"],
+      "sampleText": "Nobody talks about this",
+      "style": {
+        "fontFamily": "Archivo Black",
+        "fontWeight": 400,
+        "fontSize": 80,
+        "color": "#FFE400",
+        "strokeWidth": 8,
+        "uppercase": true
+      },
+      "animationIn": "trending-2026-11/glitch-in",
+      "animationLoop": "trending-2026-11/jitter",
+      "animationOut": "trending-2026-11/whip-out",
+      "thumb": "thumbs/text-hook-nobody-talks.webp"
+    },
+    {
+      "id": "hook-stop-scrolling",
+      "name": "Stop Scrolling",
+      "trendScore": 82,
+      "tags": ["hook", "impact"],
+      "sampleText": "STOP SCROLLING",
+      "style": {
+        "fontFamily": "Anton",
+        "fontWeight": 400,
+        "fontSize": 150,
+        "color": "#FF2D2D",
+        "strokeWidth": 10,
+        "strokeColor": "#FFFFFF",
+        "shadowY": 8
+      },
+      "animationIn": "trending-2026-11/slam",
+      "animationLoop": "trending-2026-11/heartbeat",
+      "animationOut": "trending-2026-11/zoom-blast-out",
+      "thumb": "thumbs/text-hook-stop-scrolling.webp"
+    },
+    {
+      "id": "hook-storytime",
+      "name": "Storytime",
+      "trendScore": 85,
+      "tags": ["hook", "storytime"],
+      "sampleText": "storytime: the day everything changed",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 600,
+        "fontSize": 62,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFFFFFF2",
+        "backgroundPadding": 24,
+        "backgroundRadius": 30
+      },
+      "animationIn": "essentials/type-on",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-hook-storytime.webp"
+    },
+    {
+      "id": "hook-part-two",
+      "name": "Part 2",
+      "trendScore": 78,
+      "tags": ["series", "label"],
+      "sampleText": "Part 2",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 900,
+        "fontSize": 96,
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FF2D55",
+        "backgroundPadding": 22,
+        "backgroundRadius": 18,
+        "uppercase": true
+      },
+      "animationIn": "trending-2026-11/elastic-pop",
+      "animationOut": "essentials/pop-out",
+      "thumb": "thumbs/text-hook-part-two.webp"
+    },
+    {
+      "id": "reveal-sorry",
+      "name": "Sorry Reveal",
+      "trendScore": 91,
+      "tags": ["reveal", "carousel", "meme"],
+      "sampleText": "i’m so sorry",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 400,
+        "fontSize": 64,
+        "strokeWidth": 0,
+        "shadowBlur": 10,
+        "shadowY": 2,
+        "shadowColor": "#000000CC",
+        "letterSpacing": -1
+      },
+      "animationIn": "essentials/fade-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-reveal-sorry.webp"
+    },
+    {
+      "id": "title-neon",
+      "name": "Neon Title",
+      "trendScore": 83,
+      "tags": ["title", "neon"],
+      "sampleText": "NIGHT OUT",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 700,
+        "fontSize": 120,
+        "color": "#FFFFFF",
+        "strokeWidth": 4,
+        "strokeColor": "#00E5FF",
+        "shadowBlur": 22,
+        "shadowX": 0,
+        "shadowY": 0,
+        "shadowColor": "#00E5FFE6",
+        "letterSpacing": 6
+      },
+      "animationIn": "essentials/fade-in",
+      "animationLoop": "trending-2026-11/flicker",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-neon.webp"
+    },
+    {
+      "id": "title-throwback",
+      "name": "Throwback 2016",
+      "trendScore": 88,
+      "tags": ["title", "2016", "nostalgia"],
+      "sampleText": "2016 vibes",
+      "style": {
+        "fontFamily": "Pacifico",
+        "fontWeight": 400,
+        "fontSize": 120,
+        "color": "#FFE3EE",
+        "strokeWidth": 0,
+        "shadowBlur": 18,
+        "shadowY": 0,
+        "shadowColor": "#FF7AB6CC"
+      },
+      "animationIn": "trending-2026-11/tilt-up",
+      "animationLoop": "essentials/float",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-throwback.webp"
+    },
+    {
+      "id": "title-kinetic",
+      "name": "Kinetic Title",
+      "trendScore": 87,
+      "tags": ["title", "kinetic"],
+      "sampleText": "LET’S GO",
+      "style": {
+        "fontFamily": "Rubik",
+        "fontWeight": 900,
+        "fontSize": 170,
+        "strokeWidth": 0,
+        "shadowY": 10,
+        "shadowColor": "#000000B3",
+        "uppercase": true,
+        "letterSpacing": -2
+      },
+      "animationIn": "trending-2026-11/letter-cascade",
+      "animationLoop": "trending-2026-11/wiggle",
+      "animationOut": "trending-2026-11/zoom-blast-out",
+      "thumb": "thumbs/text-title-kinetic.webp"
+    },
+    {
+      "id": "title-comic",
+      "name": "Comic Burst Title",
+      "trendScore": 72,
+      "tags": ["title", "comic"],
+      "sampleText": "BOOM!",
+      "style": {
+        "fontFamily": "Bangers",
+        "fontWeight": 400,
+        "fontSize": 190,
+        "color": "#FFE14D",
+        "strokeWidth": 12,
+        "strokeColor": "#111111",
+        "shadowX": 8,
+        "shadowY": 8,
+        "shadowColor": "#111111FF",
+        "letterSpacing": 4
+      },
+      "animationIn": "trending-2026-11/spin-pop",
+      "animationLoop": "trending-2026-11/jitter",
+      "animationOut": "trending-2026-11/fall-away",
+      "thumb": "thumbs/text-title-comic.webp"
+    },
+    {
+      "id": "title-minimal",
+      "name": "Minimal Lowercase Title",
+      "trendScore": 89,
+      "tags": ["title", "minimal", "lowercase"],
+      "sampleText": "slow mornings",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 400,
+        "fontSize": 84,
+        "strokeWidth": 0,
+        "shadowBlur": 10,
+        "shadowY": 2,
+        "shadowColor": "#00000080",
+        "letterSpacing": -2
+      },
+      "animationIn": "essentials/rise-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-minimal.webp"
+    },
+    {
+      "id": "label-day",
+      "name": "Day Counter",
+      "trendScore": 74,
+      "tags": ["label", "vlog", "series"],
+      "sampleText": "Day 1 of 30",
+      "style": {
+        "fontFamily": "Oswald",
+        "fontWeight": 600,
+        "fontSize": 70,
+        "strokeWidth": 0,
+        "uppercase": true,
+        "letterSpacing": 3,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#000000B3",
+        "backgroundPadding": 18,
+        "backgroundRadius": 12
+      },
+      "animationIn": "trending-2026-11/whip-in",
+      "animationOut": "trending-2026-11/whip-out",
+      "thumb": "thumbs/text-label-day.webp"
+    },
+    {
+      "id": "label-price",
+      "name": "Price Tag",
+      "trendScore": 73,
+      "tags": ["label", "product"],
+      "sampleText": "$29",
+      "style": {
+        "fontFamily": "Archivo Black",
+        "fontWeight": 400,
+        "fontSize": 110,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 6,
+        "shadowColor": "#00000066",
+        "backgroundColor": "#FFE400",
+        "backgroundPadding": 20,
+        "backgroundRadius": 16
+      },
+      "animationIn": "trending-2026-11/elastic-pop",
+      "animationLoop": "trending-2026-11/wiggle",
+      "animationOut": "essentials/pop-out",
+      "thumb": "thumbs/text-label-price.webp"
+    },
+    {
+      "id": "label-tip",
+      "name": "Tip Label",
+      "trendScore": 80,
+      "tags": ["label", "tutorial", "list"],
+      "sampleText": "Tip #1",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 900,
+        "fontSize": 88,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#2BFF88",
+        "backgroundPadding": 20,
+        "backgroundRadius": 20,
+        "uppercase": true
+      },
+      "animationIn": "trending-2026-11/punch-in",
+      "animationOut": "trending-2026-11/whip-out",
+      "thumb": "thumbs/text-label-tip.webp"
+    },
+    {
+      "id": "label-ingredient",
+      "name": "Recipe Card",
+      "trendScore": 70,
+      "tags": ["label", "food"],
+      "sampleText": "2 cups flour",
+      "style": {
+        "fontFamily": "Caveat",
+        "fontWeight": 700,
+        "fontSize": 88,
+        "color": "#3A2412",
+        "strokeWidth": 0,
+        "shadowY": 4,
+        "shadowColor": "#00000055",
+        "backgroundColor": "#FFF4E0",
+        "backgroundPadding": 22,
+        "backgroundRadius": 14
+      },
+      "animationIn": "trending-2026-11/tilt-up",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-label-ingredient.webp"
+    },
+    {
+      "id": "quote-handwritten",
+      "name": "Handwritten Quote",
+      "trendScore": 76,
+      "tags": ["quote", "handwritten"],
+      "sampleText": "you are doing better than you think",
+      "style": {
+        "fontFamily": "Caveat",
+        "fontWeight": 400,
+        "fontSize": 104,
+        "strokeWidth": 0,
+        "shadowBlur": 12,
+        "shadowY": 3,
+        "shadowColor": "#000000B3",
+        "lineHeight": 1.05
+      },
+      "animationIn": "essentials/type-on",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-quote-handwritten.webp"
+    },
+    {
+      "id": "cta-save",
+      "name": "Save This",
+      "trendScore": 84,
+      "tags": ["cta"],
+      "sampleText": "Save this for later",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 800,
+        "fontSize": 70,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFE400",
+        "backgroundPadding": 22,
+        "backgroundRadius": 44
+      },
+      "animationIn": "trending-2026-11/bounce-drop",
+      "animationLoop": "trending-2026-11/heartbeat",
+      "animationOut": "essentials/pop-out",
+      "thumb": "thumbs/text-cta-save.webp"
+    },
+    {
+      "id": "cta-comment",
+      "name": "Comment Below",
+      "trendScore": 79,
+      "tags": ["cta", "engagement"],
+      "sampleText": "Comment “YES” for part 2",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 800,
+        "fontSize": 64,
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#7C3AED",
+        "backgroundPadding": 22,
+        "backgroundRadius": 30
+      },
+      "animationIn": "trending-2026-11/elastic-pop",
+      "animationLoop": "trending-2026-11/sway",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-cta-comment.webp"
+    }
+  ],
+  "filters": [
+    {
+      "id": "throwback-2016",
+      "name": "Throwback 2016",
+      "trendScore": 95,
+      "tags": ["2016", "nostalgia", "faded", "pink"],
+      "lut": "luts/throwback-2016.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-throwback-2016.webp"
+    },
+    {
+      "id": "phone-cinematic",
+      "name": "Phone Cinematic",
+      "trendScore": 90,
+      "tags": ["cinematic", "subtle"],
+      "lut": "luts/phone-cinematic.cube",
+      "defaultIntensity": 0.9,
+      "thumb": "thumbs/filter-phone-cinematic.webp"
+    },
+    {
+      "id": "cozy-holiday",
+      "name": "Cozy Holiday",
+      "trendScore": 88,
+      "tags": ["warm", "holiday", "seasonal"],
+      "lut": "luts/cozy-holiday.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-cozy-holiday.webp"
+    },
+    {
+      "id": "autumn-amber",
+      "name": "Autumn Amber",
+      "trendScore": 86,
+      "tags": ["autumn", "warm", "seasonal"],
+      "lut": "luts/autumn-amber.cube",
+      "defaultIntensity": 0.9,
+      "thumb": "thumbs/filter-autumn-amber.webp"
+    },
+    {
+      "id": "y2k-digicam",
+      "name": "Y2K Digicam",
+      "trendScore": 84,
+      "tags": ["y2k", "digicam", "flash"],
+      "lut": "luts/y2k-digicam.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-y2k-digicam.webp"
+    },
+    {
+      "id": "warm-400-film",
+      "name": "Warm 400 Film",
+      "trendScore": 83,
+      "tags": ["film", "analog"],
+      "lut": "luts/warm-400-film.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-warm-400-film.webp"
+    },
+    {
+      "id": "moody-red-pop",
+      "name": "Moody Red Pop",
+      "trendScore": 78,
+      "tags": ["selective-color", "moody"],
+      "lut": "luts/moody-red-pop.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-moody-red-pop.webp"
+    },
+    {
+      "id": "night-neon",
+      "name": "Night Neon",
+      "trendScore": 80,
+      "tags": ["night", "neon"],
+      "lut": "luts/night-neon.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-night-neon.webp"
+    },
+    {
+      "id": "cyberpunk",
+      "name": "Cyberpunk",
+      "trendScore": 72,
+      "tags": ["neon", "magenta", "teal"],
+      "lut": "luts/cyberpunk.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-cyberpunk.webp"
+    },
+    {
+      "id": "pastel-dream",
+      "name": "Pastel Dream",
+      "trendScore": 76,
+      "tags": ["pastel", "soft"],
+      "lut": "luts/pastel-dream.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-pastel-dream.webp"
+    },
+    {
+      "id": "bleach-bypass",
+      "name": "Bleach Bypass",
+      "trendScore": 70,
+      "tags": ["gritty", "desaturated"],
+      "lut": "luts/bleach-bypass.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-bleach-bypass.webp"
+    },
+    {
+      "id": "thriller-green",
+      "name": "Thriller Green",
+      "trendScore": 66,
+      "tags": ["moody", "green"],
+      "lut": "luts/thriller-green.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-thriller-green.webp"
+    },
+    {
+      "id": "winter-frost",
+      "name": "Winter Frost",
+      "trendScore": 74,
+      "tags": ["cool", "winter", "seasonal"],
+      "lut": "luts/winter-frost.cube",
+      "defaultIntensity": 0.9,
+      "thumb": "thumbs/filter-winter-frost.webp"
+    },
+    {
+      "id": "sepia-memory",
+      "name": "Sepia Memory",
+      "trendScore": 64,
+      "tags": ["sepia", "vintage"],
+      "lut": "luts/sepia-memory.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-sepia-memory.webp"
+    },
+    {
+      "id": "cross-process",
+      "name": "Cross Process",
+      "trendScore": 62,
+      "tags": ["analog", "experimental"],
+      "lut": "luts/cross-process.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-cross-process.webp"
+    },
+    {
+      "id": "lofi-faded",
+      "name": "Lo-fi Faded",
+      "trendScore": 79,
+      "tags": ["lofi", "faded"],
+      "lut": "luts/lofi-faded.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-lofi-faded.webp"
+    }
+  ],
+  "animations": [
+    {
+      "id": "punch-in",
+      "name": "Punch In",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.2, "value": 1, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 2.2 },
+          { "t": 0.6, "value": 0.92, "easing": "easeOut" },
+          { "t": 1, "value": 1, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 92,
+      "tags": ["impact", "hook"]
+    },
+    {
+      "id": "elastic-pop",
+      "name": "Elastic Pop",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.2, "value": 1, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 1, "easing": "easeOutElastic" }
+        ]
+      },
+      "trendScore": 84,
+      "tags": ["pop", "bouncy"]
+    },
+    {
+      "id": "whip-in",
+      "name": "Whip In",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.25, "value": 1, "easing": "linear" }
+        ],
+        "x": [
+          { "t": 0, "value": -640 },
+          { "t": 0.7, "value": 24, "easing": "easeOut" },
+          { "t": 1, "value": 0, "easing": "easeInOut" }
+        ],
+        "rotation": [
+          { "t": 0, "value": -8 },
+          { "t": 1, "value": 0, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 86,
+      "tags": ["whip", "fast"]
+    },
+    {
+      "id": "spin-pop",
+      "name": "Spin Pop",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.3, "value": 1, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 1, "easing": "easeOutBack" }
+        ],
+        "rotation": [
+          { "t": 0, "value": -180 },
+          { "t": 1, "value": 0, "easing": "easeOutBack" }
+        ]
+      },
+      "trendScore": 70,
+      "tags": ["spin"]
+    },
+    {
+      "id": "glitch-in",
+      "name": "Glitch In",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.1, "value": 1, "easing": "hold" },
+          { "t": 0.2, "value": 0.3, "easing": "hold" },
+          { "t": 0.3, "value": 1, "easing": "hold" }
+        ],
+        "x": [
+          { "t": 0, "value": -30 },
+          { "t": 0.15, "value": 26, "easing": "hold" },
+          { "t": 0.3, "value": -16, "easing": "hold" },
+          { "t": 0.45, "value": 10, "easing": "hold" },
+          { "t": 0.6, "value": -5, "easing": "hold" },
+          { "t": 0.75, "value": 0, "easing": "hold" }
+        ]
+      },
+      "trendScore": 82,
+      "tags": ["glitch"]
+    },
+    {
+      "id": "bounce-drop",
+      "name": "Bounce Drop",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.15, "value": 1, "easing": "linear" }
+        ],
+        "y": [
+          { "t": 0, "value": -420 },
+          { "t": 0.5, "value": 0, "easing": "easeIn" },
+          { "t": 0.7, "value": -46, "easing": "easeOut" },
+          { "t": 0.85, "value": 0, "easing": "easeIn" },
+          { "t": 0.93, "value": -10, "easing": "easeOut" },
+          { "t": 1, "value": 0, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 78,
+      "tags": ["bouncy"]
+    },
+    {
+      "id": "tilt-up",
+      "name": "Tilt Up",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.4, "value": 1, "easing": "easeOut" }
+        ],
+        "y": [
+          { "t": 0, "value": 50 },
+          { "t": 1, "value": 0, "easing": "easeOutBack" }
+        ],
+        "rotation": [
+          { "t": 0, "value": 10 },
+          { "t": 1, "value": 0, "easing": "easeOutBack" }
+        ]
+      },
+      "trendScore": 68,
+      "tags": ["tilt"]
+    },
+    {
+      "id": "letter-cascade",
+      "name": "Letter Cascade",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.5, "value": 1, "easing": "easeOut" }
+        ],
+        "y": [
+          { "t": 0, "value": 36 },
+          { "t": 1, "value": 0, "easing": "easeOutBack" }
+        ]
+      },
+      "perCharacter": true,
+      "trendScore": 88,
+      "tags": ["kinetic", "typewriter"]
+    },
+    {
+      "id": "slam",
+      "name": "Slam",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.1, "value": 1, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 3 },
+          { "t": 0.45, "value": 1, "easing": "easeIn" },
+          { "t": 0.6, "value": 1.08, "easing": "easeOut" },
+          { "t": 1, "value": 1, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 80,
+      "tags": ["impact"]
+    },
+    {
+      "id": "zoom-blast-out",
+      "name": "Zoom Blast",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 1, "value": 0, "easing": "easeIn" }
+        ],
+        "scale": [
+          { "t": 0, "value": 1 },
+          { "t": 1, "value": 1.8, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 74,
+      "tags": ["zoom"]
+    },
+    {
+      "id": "whip-out",
+      "name": "Whip Out",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 0.7, "value": 1, "easing": "hold" },
+          { "t": 1, "value": 0, "easing": "linear" }
+        ],
+        "x": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 640, "easing": "easeIn" }
+        ],
+        "rotation": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 8, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 80,
+      "tags": ["whip", "fast"]
+    },
+    {
+      "id": "fall-away",
+      "name": "Fall Away",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 0.6, "value": 1, "easing": "hold" },
+          { "t": 1, "value": 0, "easing": "linear" }
+        ],
+        "y": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 520, "easing": "easeIn" }
+        ],
+        "rotation": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 18, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 66,
+      "tags": ["playful"]
+    },
+    {
+      "id": "jitter",
+      "name": "Jitter",
+      "kind": "loop",
+      "tracks": {
+        "x": [
+          { "t": 0, "value": 0 },
+          { "t": 0.2, "value": -8, "easing": "linear" },
+          { "t": 0.4, "value": 8, "easing": "linear" },
+          { "t": 0.6, "value": -6, "easing": "linear" },
+          { "t": 0.8, "value": 6, "easing": "linear" },
+          { "t": 1, "value": 0, "easing": "linear" }
+        ]
+      },
+      "trendScore": 70,
+      "tags": ["shake", "energy"]
+    },
+    {
+      "id": "heartbeat",
+      "name": "Heartbeat",
+      "kind": "loop",
+      "tracks": {
+        "scale": [
+          { "t": 0, "value": 1 },
+          { "t": 0.15, "value": 1.12, "easing": "easeOut" },
+          { "t": 0.3, "value": 1, "easing": "easeIn" },
+          { "t": 0.45, "value": 1.08, "easing": "easeOut" },
+          { "t": 0.6, "value": 1, "easing": "easeIn" },
+          { "t": 1, "value": 1, "easing": "hold" }
+        ]
+      },
+      "trendScore": 76,
+      "tags": ["pulse"]
+    },
+    {
+      "id": "wiggle",
+      "name": "Wiggle",
+      "kind": "loop",
+      "tracks": {
+        "rotation": [
+          { "t": 0, "value": 0 },
+          { "t": 0.25, "value": -5, "easing": "easeInOut" },
+          { "t": 0.5, "value": 5, "easing": "easeInOut" },
+          { "t": 0.75, "value": -3, "easing": "easeInOut" },
+          { "t": 1, "value": 0, "easing": "easeInOut" }
+        ]
+      },
+      "trendScore": 72,
+      "tags": ["playful"]
+    },
+    {
+      "id": "flicker",
+      "name": "Neon Flicker",
+      "kind": "loop",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 0.1, "value": 0.35, "easing": "hold" },
+          { "t": 0.16, "value": 1, "easing": "hold" },
+          { "t": 0.55, "value": 0.6, "easing": "hold" },
+          { "t": 0.6, "value": 1, "easing": "hold" },
+          { "t": 1, "value": 1, "easing": "hold" }
+        ]
+      },
+      "trendScore": 74,
+      "tags": ["neon"]
+    },
+    {
+      "id": "sway",
+      "name": "Sway",
+      "kind": "loop",
+      "tracks": {
+        "rotation": [
+          { "t": 0, "value": -3 },
+          { "t": 0.5, "value": 3, "easing": "easeInOut" },
+          { "t": 1, "value": -3, "easing": "easeInOut" }
+        ]
+      },
+      "trendScore": 60,
+      "tags": ["subtle"]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "whip-pan",
+      "name": "Whip Pan",
+      "type": "whip",
+      "duration": 250000,
+      "trendScore": 95,
+      "tags": ["whip", "fast", "beat"]
+    },
+    {
+      "id": "flash-cut",
+      "name": "Flash Cut",
+      "type": "flash",
+      "duration": 150000,
+      "trendScore": 93,
+      "tags": ["flash", "beat"]
+    },
+    {
+      "id": "glitch-hit",
+      "name": "Glitch Hit",
+      "type": "glitch",
+      "duration": 200000,
+      "trendScore": 88,
+      "tags": ["glitch", "beat"]
+    },
+    {
+      "id": "spin-zoom",
+      "name": "Spin Zoom",
+      "type": "spin",
+      "duration": 350000,
+      "trendScore": 84,
+      "tags": ["spin", "energy"]
+    },
+    {
+      "id": "punch-zoom",
+      "name": "Punch Zoom",
+      "type": "zoomin",
+      "duration": 250000,
+      "trendScore": 90,
+      "tags": ["zoom", "beat"]
+    },
+    {
+      "id": "swipe-left",
+      "name": "Smooth Swipe Left",
+      "type": "smoothleft",
+      "duration": 300000,
+      "trendScore": 86,
+      "tags": ["swipe", "smooth"]
+    },
+    {
+      "id": "swipe-right",
+      "name": "Smooth Swipe Right",
+      "type": "smoothright",
+      "duration": 300000,
+      "trendScore": 82,
+      "tags": ["swipe", "smooth"]
+    },
+    {
+      "id": "scroll-up",
+      "name": "Feed Scroll Up",
+      "type": "smoothup",
+      "duration": 300000,
+      "trendScore": 87,
+      "tags": ["swipe", "feed"]
+    },
+    {
+      "id": "scroll-down",
+      "name": "Feed Scroll Down",
+      "type": "smoothdown",
+      "duration": 300000,
+      "trendScore": 78,
+      "tags": ["swipe", "feed"]
+    },
+    {
+      "id": "pixel-dissolve",
+      "name": "Pixel Dissolve",
+      "type": "pixelize",
+      "duration": 400000,
+      "trendScore": 72,
+      "tags": ["retro", "digital"]
+    },
+    {
+      "id": "clock-wipe",
+      "name": "Clock Wipe",
+      "type": "radial",
+      "duration": 450000,
+      "trendScore": 60,
+      "tags": ["shape"]
+    },
+    {
+      "id": "motion-blur",
+      "name": "Motion Blur",
+      "type": "hblur",
+      "duration": 300000,
+      "trendScore": 80,
+      "tags": ["blur", "smooth"]
+    },
+    {
+      "id": "squeeze-h",
+      "name": "Squeeze",
+      "type": "squeezeh",
+      "duration": 300000,
+      "trendScore": 68,
+      "tags": ["playful"]
+    },
+    {
+      "id": "squeeze-v",
+      "name": "Squeeze Vertical",
+      "type": "squeezev",
+      "duration": 300000,
+      "trendScore": 66,
+      "tags": ["playful"]
+    },
+    {
+      "id": "whip-pan-slow",
+      "name": "Whip Pan (Smooth)",
+      "type": "whip",
+      "duration": 400000,
+      "trendScore": 76,
+      "tags": ["whip"]
+    },
+    {
+      "id": "flash-double",
+      "name": "Flash Beat (Long)",
+      "type": "flash",
+      "duration": 300000,
+      "trendScore": 74,
+      "tags": ["flash"]
+    }
+  ],
+  "effects": [
+    {
+      "id": "earthquake",
+      "name": "Earthquake",
+      "effect": "shake",
+      "params": { "amplitude": 28, "frequency": 12, "rotation": 2 },
+      "trendScore": 82,
+      "tags": ["shake", "impact"]
+    },
+    {
+      "id": "beat-punch",
+      "name": "Beat Punch",
+      "effect": "beatZoom",
+      "params": { "scale": 1.15, "decay": 180000 },
+      "trendScore": 92,
+      "tags": ["beat", "zoom"]
+    },
+    {
+      "id": "beat-bump",
+      "name": "Beat Bump (Soft)",
+      "effect": "beatZoom",
+      "params": { "scale": 1.06, "decay": 250000 },
+      "trendScore": 85,
+      "tags": ["beat", "zoom", "subtle"]
+    },
+    {
+      "id": "rgb-glitch",
+      "name": "RGB Glitch",
+      "effect": "rgbSplit",
+      "params": { "offset": 14, "angle": 0, "jitter": 1 },
+      "trendScore": 86,
+      "tags": ["glitch"]
+    },
+    {
+      "id": "chromatic-drift",
+      "name": "Chromatic Drift",
+      "effect": "rgbSplit",
+      "params": { "offset": 5, "angle": 45, "jitter": 0 },
+      "trendScore": 74,
+      "tags": ["glitch", "subtle"]
+    },
+    {
+      "id": "vhs-2000s",
+      "name": "VHS 2000s",
+      "effect": "vhs",
+      "params": { "noise": 0.35, "chroma": 4, "scanlines": 0.4 },
+      "trendScore": 84,
+      "tags": ["retro", "nostalgia"]
+    },
+    {
+      "id": "strobe-beat",
+      "name": "Strobe",
+      "effect": "strobe",
+      "params": { "frequency": 8, "dim": 0.75 },
+      "trendScore": 70,
+      "tags": ["party", "beat"]
+    },
+    {
+      "id": "film-grain-16mm",
+      "name": "16mm Grain",
+      "effect": "filmGrain",
+      "params": { "amount": 0.6, "size": 2 },
+      "trendScore": 80,
+      "tags": ["film", "analog"]
+    },
+    {
+      "id": "dreamy-glow",
+      "name": "Dreamy Glow",
+      "effect": "glow",
+      "params": { "radius": 32, "strength": 0.6, "threshold": 0.55 },
+      "trendScore": 78,
+      "tags": ["glow", "aesthetic"]
+    },
+    {
+      "id": "flash-beat",
+      "name": "Flash On Beat",
+      "effect": "flash",
+      "params": { "duration": 90000, "brightness": 0.8 },
+      "trendScore": 88,
+      "tags": ["flash", "beat"]
+    },
+    {
+      "id": "zoom-pulse-hard",
+      "name": "Zoom Pulse Hard",
+      "effect": "zoomPulse",
+      "params": { "scale": 1.14, "period": 500000 },
+      "trendScore": 76,
+      "tags": ["zoom", "energy"]
+    }
+  ],
+  "stickers": [
+    {
+      "id": "follow-pill",
+      "name": "Follow Button",
+      "trendScore": 86,
+      "tags": ["cta", "button"],
+      "file": "stickers/follow-pill.png",
+      "width": 640,
+      "height": 224
+    },
+    {
+      "id": "subscribe-pill",
+      "name": "Subscribe Button",
+      "trendScore": 82,
+      "tags": ["cta", "button"],
+      "file": "stickers/subscribe-pill.png",
+      "width": 768,
+      "height": 224
+    },
+    {
+      "id": "like-pill",
+      "name": "Like Button",
+      "trendScore": 78,
+      "tags": ["cta", "button"],
+      "file": "stickers/like-pill.png",
+      "width": 512,
+      "height": 224
+    },
+    {
+      "id": "new-burst",
+      "name": "New Burst",
+      "trendScore": 70,
+      "tags": ["badge", "product"],
+      "file": "stickers/new-burst.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "wow-burst",
+      "name": "Wow Burst",
+      "trendScore": 76,
+      "tags": ["comic", "reaction"],
+      "file": "stickers/wow-burst.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "face-smile",
+      "name": "Smiley",
+      "trendScore": 68,
+      "tags": ["emoji", "reaction"],
+      "file": "stickers/face-smile.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "face-heart-eyes",
+      "name": "Heart Eyes",
+      "trendScore": 80,
+      "tags": ["emoji", "reaction"],
+      "file": "stickers/face-heart-eyes.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "face-laugh-tears",
+      "name": "Laughing Tears",
+      "trendScore": 84,
+      "tags": ["emoji", "reaction"],
+      "file": "stickers/face-laugh-tears.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "trendScore": 88,
+      "tags": ["emoji", "hype"],
+      "file": "stickers/fire.png",
+      "width": 448,
+      "height": 512
+    },
+    {
+      "id": "hundred",
+      "name": "100",
+      "trendScore": 74,
+      "tags": ["emoji", "hype"],
+      "file": "stickers/hundred.png",
+      "width": 512,
+      "height": 384
+    },
+    {
+      "id": "y2k-star",
+      "name": "Y2K Chrome Star",
+      "trendScore": 85,
+      "tags": ["y2k", "aesthetic"],
+      "file": "stickers/y2k-star.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "notification-badge",
+      "name": "Notification Badge",
+      "trendScore": 72,
+      "tags": ["ui", "badge"],
+      "file": "stickers/notification-badge.png",
+      "width": 384,
+      "height": 384
+    },
+    {
+      "id": "swipe-up",
+      "name": "Swipe Up Chevrons",
+      "trendScore": 66,
+      "tags": ["cta", "ui"],
+      "file": "stickers/swipe-up.png",
+      "width": 384,
+      "height": 512
+    },
+    {
+      "id": "typing-bubble",
+      "name": "Typing Bubble",
+      "trendScore": 81,
+      "tags": ["chat", "storytime"],
+      "file": "stickers/typing-bubble.png",
+      "width": 512,
+      "height": 320
+    }
+  ],
+  "templates": [
+    {
+      "id": "photo-dump",
+      "name": "Photo Dump",
+      "trendScore": 94,
+      "tags": ["photo-dump", "carousel", "beat-sync"],
+      "description": "Twelve photos cut on every other beat with a 2016 throwback grade.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "text": { "text": "photo dump", "preset": "trending-2026-11/title-minimal" }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "flash", "duration": 120000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "flash", "duration": 120000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        },
+        {
+          "duration": 937500,
+          "kind": "image",
+          "filter": "trending-2026-11/throwback-2016",
+          "transitionIn": { "type": "whip", "duration": 200000 }
+        }
+      ],
+      "musicHint": { "title": "Any upbeat track at ~128 BPM", "bpm": 128 },
+      "thumb": "thumbs/template-photo-dump.webp"
+    },
+    {
+      "id": "reveal-carousel",
+      "name": "Reveal Carousel",
+      "trendScore": 93,
+      "tags": ["reveal", "carousel", "meme"],
+      "description": "Four set-up photos build the story; the last one is the reveal.",
+      "fps": 30,
+      "slots": [
+        { "duration": 1800000, "kind": "image" },
+        {
+          "duration": 1800000,
+          "kind": "image",
+          "transitionIn": { "type": "smoothup", "duration": 300000 }
+        },
+        {
+          "duration": 1800000,
+          "kind": "image",
+          "transitionIn": { "type": "smoothup", "duration": 300000 }
+        },
+        {
+          "duration": 1800000,
+          "kind": "image",
+          "transitionIn": { "type": "smoothup", "duration": 300000 }
+        },
+        {
+          "duration": 3600000,
+          "transitionIn": { "type": "smoothup", "duration": 300000 },
+          "text": { "text": "i’m so sorry", "preset": "trending-2026-11/reveal-sorry" }
+        }
+      ],
+      "musicHint": { "title": "Deadpan comedic beat, ~100 BPM", "bpm": 100 },
+      "thumb": "thumbs/template-reveal-carousel.webp"
+    },
+    {
+      "id": "day-in-my-life",
+      "name": "Day In My Life",
+      "trendScore": 90,
+      "tags": ["vlog", "lifestyle"],
+      "description": "Morning-to-night montage with time labels and soft cuts.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2400000,
+          "filter": "trending-2026-11/phone-cinematic",
+          "text": { "text": "a day in my life", "preset": "trending-2026-11/title-minimal" }
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "fadeblack", "duration": 500000 },
+          "filter": "trending-2026-11/phone-cinematic",
+          "text": { "text": "Follow for more", "preset": "essentials/cta-follow" }
+        }
+      ],
+      "musicHint": { "title": "Chill lo-fi, ~100 BPM", "bpm": 100 },
+      "captionStyle": "trending-2026-11/minimal-lowercase",
+      "thumb": "thumbs/template-day-in-my-life.webp"
+    },
+    {
+      "id": "grwm",
+      "name": "Get Ready With Me",
+      "trendScore": 88,
+      "tags": ["grwm", "beauty", "talking"],
+      "description": "Talking-head GRWM: long takes, quick punch-ins, captions on.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2181818,
+          "filter": "trending-2026-11/pastel-dream",
+          "text": { "text": "get ready with me", "preset": "trending-2026-11/title-minimal" }
+        },
+        {
+          "duration": 8727273,
+          "transitionIn": { "type": "zoomin", "duration": 250000 },
+          "filter": "trending-2026-11/pastel-dream"
+        },
+        {
+          "duration": 8727273,
+          "transitionIn": { "type": "zoomin", "duration": 250000 },
+          "filter": "trending-2026-11/pastel-dream"
+        },
+        {
+          "duration": 8727273,
+          "transitionIn": { "type": "zoomin", "duration": 250000 },
+          "filter": "trending-2026-11/pastel-dream",
+          "effects": ["trending-2026-11/dreamy-glow"]
+        }
+      ],
+      "musicHint": { "title": "Soft R&B, ~110 BPM", "bpm": 110 },
+      "captionStyle": "trending-2026-11/editorial-serif",
+      "thumb": "thumbs/template-grwm.webp"
+    },
+    {
+      "id": "pov-hook",
+      "name": "POV Hook",
+      "trendScore": 92,
+      "tags": ["pov", "hook", "storytelling"],
+      "description": "A 3-second POV hook over the first shot, then the payoff.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 3000000,
+          "effects": ["trending-2026-11/beat-bump"],
+          "text": { "text": "POV: you finally did it", "preset": "trending-2026-11/hook-pov" }
+        },
+        { "duration": 4000000, "transitionIn": { "type": "whip", "duration": 250000 } },
+        {
+          "duration": 4000000,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "effects": ["trending-2026-11/beat-punch"]
+        }
+      ],
+      "musicHint": { "title": "Trending-style build, ~120 BPM", "bpm": 120 },
+      "captionStyle": "trending-2026-11/bold-podcast",
+      "thumb": "thumbs/template-pov-hook.webp"
+    },
+    {
+      "id": "travel-montage",
+      "name": "Travel Montage",
+      "trendScore": 89,
+      "tags": ["travel", "montage", "beat-sync"],
+      "description": "Whip-pan travel montage cut to the beat with a golden grade.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 1875000,
+          "filter": "essentials/golden-hour",
+          "text": { "text": "Lisbon, Portugal", "preset": "essentials/lower-third-location" }
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1.5
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "spin", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1.5
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "spin", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1.5
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1.5
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "spin", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1
+        },
+        {
+          "duration": 937500,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "essentials/golden-hour",
+          "speed": 1.5
+        },
+        {
+          "duration": 3750000,
+          "transitionIn": { "type": "fadewhite", "duration": 400000 },
+          "filter": "essentials/golden-hour",
+          "effects": ["trending-2026-11/film-grain-16mm"]
+        }
+      ],
+      "musicHint": { "title": "Energetic house, ~128 BPM", "bpm": 128 },
+      "thumb": "thumbs/template-travel-montage.webp"
+    },
+    {
+      "id": "product-showcase",
+      "name": "Product Showcase",
+      "trendScore": 82,
+      "tags": ["product", "ecommerce"],
+      "description": "Hero shot, three feature close-ups, price and CTA.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2000000,
+          "effects": ["essentials/blur-in"],
+          "text": { "text": "NEW DROP", "preset": "trending-2026-11/title-kinetic" }
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "zoomin", "duration": 250000 },
+          "effects": ["trending-2026-11/beat-bump"]
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "effects": ["trending-2026-11/beat-bump"]
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "smoothleft", "duration": 300000 },
+          "effects": ["trending-2026-11/beat-bump"]
+        },
+        {
+          "duration": 4000000,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "text": { "text": "$29", "preset": "trending-2026-11/label-price" }
+        }
+      ],
+      "musicHint": { "title": "Clean modern beat, ~120 BPM", "bpm": 120 },
+      "thumb": "thumbs/template-product-showcase.webp"
+    },
+    {
+      "id": "workout",
+      "name": "Workout Hype",
+      "trendScore": 84,
+      "tags": ["fitness", "gym", "beat-sync"],
+      "description": "High-energy gym montage: shake and punch-zooms on every hit.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 1714286,
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/earthquake"],
+          "text": { "text": "STOP SCROLLING", "preset": "trending-2026-11/hook-stop-scrolling" }
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "glitch", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "zoomin", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "glitch", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "zoomin", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "glitch", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "zoomin", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "glitch", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "zoomin", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "glitch", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 857143,
+          "transitionIn": { "type": "zoomin", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/beat-punch"]
+        },
+        {
+          "duration": 3428571,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "filter": "trending-2026-11/bleach-bypass",
+          "effects": ["trending-2026-11/strobe-beat"],
+          "speed": 0.5
+        }
+      ],
+      "musicHint": { "title": "Hard-hitting phonk/trap, ~140 BPM", "bpm": 140 },
+      "thumb": "thumbs/template-workout.webp"
+    },
+    {
+      "id": "outfit-transition",
+      "name": "Outfit Transition",
+      "trendScore": 91,
+      "tags": ["fashion", "transition", "beat-sync"],
+      "description": "One outfit per beat drop — glitch and spin transitions sell the swap.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 1846154,
+          "text": { "text": "outfits this week", "preset": "trending-2026-11/title-minimal" }
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "glitch", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": ["trending-2026-11/flash-beat"]
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "spin", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": []
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": ["trending-2026-11/flash-beat"]
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "flash", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": []
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "glitch", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": ["trending-2026-11/flash-beat"]
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "spin", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": []
+        },
+        {
+          "duration": 1846154,
+          "transitionIn": { "type": "whip", "duration": 200000 },
+          "filter": "trending-2026-11/y2k-digicam",
+          "effects": ["trending-2026-11/flash-beat"]
+        }
+      ],
+      "musicHint": { "title": "Fashion runway beat, ~130 BPM", "bpm": 130 },
+      "thumb": "thumbs/template-outfit-transition.webp"
+    },
+    {
+      "id": "story-time",
+      "name": "Story Time",
+      "trendScore": 87,
+      "tags": ["storytime", "talking"],
+      "description": "Talking-head story: text-message hook, long takes, bold captions.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 4000000,
+          "text": {
+            "text": "storytime: the day everything changed",
+            "preset": "trending-2026-11/hook-storytime"
+          }
+        },
+        { "duration": 16000000, "transitionIn": { "type": "zoomin", "duration": 250000 } },
+        {
+          "duration": 16000000,
+          "transitionIn": { "type": "zoomin", "duration": 250000 },
+          "effects": ["trending-2026-11/beat-bump"]
+        },
+        {
+          "duration": 5333333,
+          "transitionIn": { "type": "fade", "duration": 400000 },
+          "text": { "text": "Part 2", "preset": "trending-2026-11/hook-part-two" }
+        }
+      ],
+      "musicHint": { "title": "Low, suspenseful bed, ~90 BPM", "bpm": 90 },
+      "captionStyle": "trending-2026-11/text-message",
+      "thumb": "thumbs/template-story-time.webp"
+    },
+    {
+      "id": "glow-up",
+      "name": "Glow Up",
+      "trendScore": 86,
+      "tags": ["transformation", "glow-up"],
+      "description": "Muted \"then\" clips, a beat-drop flash, then full-colour \"now\".",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2000000,
+          "filter": "essentials/bw-classic",
+          "text": { "text": "2016 vibes", "preset": "trending-2026-11/title-throwback" }
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "fade", "duration": 400000 },
+          "filter": "essentials/bw-classic"
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "fade", "duration": 400000 },
+          "filter": "essentials/bw-classic"
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "filter": "trending-2026-11/phone-cinematic",
+          "effects": ["trending-2026-11/beat-punch", "trending-2026-11/dreamy-glow"]
+        },
+        {
+          "duration": 2000000,
+          "transitionIn": { "type": "whip", "duration": 250000 },
+          "filter": "trending-2026-11/phone-cinematic"
+        },
+        {
+          "duration": 4000000,
+          "transitionIn": { "type": "spin", "duration": 350000 },
+          "filter": "trending-2026-11/phone-cinematic",
+          "effects": ["trending-2026-11/flash-beat"]
+        }
+      ],
+      "musicHint": { "title": "Slow build into a big drop, ~120 BPM", "bpm": 120 },
+      "thumb": "thumbs/template-glow-up.webp"
+    },
+    {
+      "id": "holiday-countdown",
+      "name": "Holiday Countdown",
+      "trendScore": 85,
+      "tags": ["holiday", "seasonal", "countdown"],
+      "description": "Cosy seasonal montage counting down the days, warm grade and grain.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2500000,
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"],
+          "text": { "text": "Day 1 of 30", "preset": "trending-2026-11/label-day" }
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 2500000,
+          "transitionIn": { "type": "dissolve", "duration": 500000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["essentials/film-grain-light"]
+        },
+        {
+          "duration": 5000000,
+          "transitionIn": { "type": "fadewhite", "duration": 600000 },
+          "filter": "trending-2026-11/cozy-holiday",
+          "effects": ["trending-2026-11/dreamy-glow"],
+          "text": { "text": "Save this for later", "preset": "trending-2026-11/cta-save" }
+        }
+      ],
+      "musicHint": { "title": "Cosy seasonal acoustic, ~96 BPM", "bpm": 96 },
+      "thumb": "thumbs/template-holiday-countdown.webp"
+    }
+  ]
+}

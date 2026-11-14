@@ -1,0 +1,3 @@
+# Pack files are content-addressed (sha256 in pack.json/index.json): never let git rewrite
+# line endings, or every LUT/JSON hash breaks on checkouts with core.autocrlf.
+* -text

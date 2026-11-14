@@ -1,0 +1,1796 @@
+{
+  "id": "essentials",
+  "version": "1.0.0",
+  "name": "Essentials",
+  "description": "Timeless basics: clean captions, titles, labels, classic looks, every transition and the annotation stickers every creator reaches for.",
+  "author": "ReelForge community",
+  "license": "CC0-1.0",
+  "curatedAt": "2026-11-06",
+  "files": [
+    {
+      "path": "luts/bright-airy.cube",
+      "sha256": "5f1acb56da018a850d599e92b8244fe69032becc6a2d3df937795a78d63ef548",
+      "size": 741965
+    },
+    {
+      "path": "luts/bw-classic.cube",
+      "sha256": "8fadc4bbd5db53bdf73d86a5485fa3fc7fbdce270fd44b7aa7621b27ad92f45a",
+      "size": 742809
+    },
+    {
+      "path": "luts/bw-contrast.cube",
+      "sha256": "283a118fd1e900fa61cccd867eb66bfe89c81b2d74e4e020a9b7497852705f32",
+      "size": 740103
+    },
+    {
+      "path": "luts/cool-moody.cube",
+      "sha256": "bdceafc77b988dcaebbc60e707bde0103235eead07d0d712f8c4990f9ed1814a",
+      "size": 737559
+    },
+    {
+      "path": "luts/golden-hour.cube",
+      "sha256": "23586e8e8712333b03e3ad6962c1f4faf6afa6c798955662497c0f0c68e2a910",
+      "size": 722139
+    },
+    {
+      "path": "luts/matte.cube",
+      "sha256": "93ca780faf0ef92b1752ba1ed3e3d36c10840e0bdcd4d23b3e4d75826d6ddcd3",
+      "size": 742917
+    },
+    {
+      "path": "luts/natural-pop.cube",
+      "sha256": "29191453a7395dbc15d591785a00208d68f26ee154983c4b11a6225545fff12d",
+      "size": 715385
+    },
+    {
+      "path": "luts/teal-orange.cube",
+      "sha256": "449878049bb3725a43a99c206843c7c7f6655365cc7d5090df3d9e61de4b7b37",
+      "size": 710362
+    },
+    {
+      "path": "luts/vintage-fade.cube",
+      "sha256": "af12a0ddc33ac9b755a7c46ba7f0fbdc724cc9051ac11b459d539b1f24787fe9",
+      "size": 742125
+    },
+    {
+      "path": "luts/warm-film.cube",
+      "sha256": "867342587662e7a642e5505b9d13834f9544aeb00e1cefcf081e5ef2fc809406",
+      "size": 742609
+    },
+    {
+      "path": "stickers/arrow-bold.png",
+      "sha256": "83a50b3eb9644fc35bf4ac5402fa348ebf1713771c33e72843cd23e6b9cc5c71",
+      "size": 14646
+    },
+    {
+      "path": "stickers/arrow-curved-white.png",
+      "sha256": "fb6475ace672573b2eb991042724fb7a6ddfb6c9625c38bd52cf290d43c6ab30",
+      "size": 20844
+    },
+    {
+      "path": "stickers/arrow-hand-drawn.png",
+      "sha256": "e6ffa3b791aed81dc98695da27e3c6fa739b46e2a9bb161d409e9ebf17744c5e",
+      "size": 17814
+    },
+    {
+      "path": "stickers/check.png",
+      "sha256": "6f94e14a8e15553f515584666559aee8d8bc8cf78534adf92dc09e4aabe9a95e",
+      "size": 29563
+    },
+    {
+      "path": "stickers/circle-scribble.png",
+      "sha256": "42ba94284ff05f54d6297d1cb7c731527137ab5bddd77cbabae088ff65332aed",
+      "size": 23515
+    },
+    {
+      "path": "stickers/cross.png",
+      "sha256": "3ddf6a0a2a817f12847066b9d31b622419f8631ffb2058c41f35fefc602dfe30",
+      "size": 28822
+    },
+    {
+      "path": "stickers/heart.png",
+      "sha256": "b55c3566ed5df0423d61a2410cbd3071d2528df7e818635977ff2d6e64ed9552",
+      "size": 45640
+    },
+    {
+      "path": "stickers/highlight-swipe.png",
+      "sha256": "1c8ff0a3c89ab0a841440f248c12de095b29f94a1d7074df5a36f38ecd346b26",
+      "size": 1986
+    },
+    {
+      "path": "stickers/location-pin.png",
+      "sha256": "ecffd57623388bb0a333190c96302e94eb6f567154b6a70db8ae4a05a4d870c3",
+      "size": 25619
+    },
+    {
+      "path": "stickers/sparkle.png",
+      "sha256": "57e5bc5ff51ecab7f67e5dfec44713d5037e37680703cb6c96e5b03dd8770d8b",
+      "size": 20527
+    },
+    {
+      "path": "stickers/sparkles-cluster.png",
+      "sha256": "363c447ee7dc65b62c7e6906e4db52c79bb7e47815f8fb47b09f04594ee0cf56",
+      "size": 29854
+    },
+    {
+      "path": "stickers/speech-bubble.png",
+      "sha256": "322cc1fb943b017285975e706a214707d855b7ffb87360149cf1d885943ec1ce",
+      "size": 15465
+    },
+    {
+      "path": "stickers/star.png",
+      "sha256": "6b262f0ff23ca60d4b140a82fda489313eccf30af7dc0980468709b419d519e5",
+      "size": 40300
+    },
+    {
+      "path": "stickers/thought-bubble.png",
+      "sha256": "540df2709af2381de8bd7518da5fa6f52a10c81b602c667226e5b1184c821d12",
+      "size": 27874
+    },
+    {
+      "path": "stickers/underline-double.png",
+      "sha256": "5014d600162874a10266c4322ecc716dacf7433b8753958d49fc3e27a8cf1f53",
+      "size": 7778
+    },
+    {
+      "path": "stickers/underline-scribble.png",
+      "sha256": "e38203f84db4428ce68aa092ead58bed4a97202c75174df68f19eca83834a66f",
+      "size": 9937
+    },
+    {
+      "path": "thumbs/caption-bold-word.webp",
+      "sha256": "eedda921c3411ec0eb00ebd5308329040a1aabf13d19ba10153a8b7c8c09fae6",
+      "size": 5068
+    },
+    {
+      "path": "thumbs/caption-boxed-word.webp",
+      "sha256": "c3d3fd36d1636fe23825956b35c0fd4aeaf73448e877b71c944e167fac4c9cf9",
+      "size": 4102
+    },
+    {
+      "path": "thumbs/caption-bubbly.webp",
+      "sha256": "7028363b9cfb629f969ce692b11b656a11fe8aea23239e49c8c31e7fdd7ba2c1",
+      "size": 5192
+    },
+    {
+      "path": "thumbs/caption-clean-white.webp",
+      "sha256": "fb8a2981c1765afe1d5193821ca4fc7ebfbc4fde3660c6ba8bccd1a41d6b39a1",
+      "size": 3774
+    },
+    {
+      "path": "thumbs/caption-comic-pop.webp",
+      "sha256": "7ec677c18be2448f2bd919a88f1f776a8eb093daf2e6dcc112d92389e132c776",
+      "size": 4382
+    },
+    {
+      "path": "thumbs/caption-handwritten.webp",
+      "sha256": "c0da3756fc79079d6fc70e0b8c4ccc3b865b199c24e5d9eba211710ec343cb20",
+      "size": 4560
+    },
+    {
+      "path": "thumbs/caption-lower-band.webp",
+      "sha256": "839f5fa3389082eebd89bcbae446f5ea31c9fd793f920c1cd95d58f0e7225bb3",
+      "size": 3772
+    },
+    {
+      "path": "thumbs/caption-serif-story.webp",
+      "sha256": "0015e9a46924525938aea9f6921b53acb6c9598f346c25e788dae0aab12d1772",
+      "size": 4512
+    },
+    {
+      "path": "thumbs/caption-single-word-impact.webp",
+      "sha256": "03a6e5a821e53185f5da05c131c7ff7b726069c157a9e40ea232aef9bdb9a72d",
+      "size": 4256
+    },
+    {
+      "path": "thumbs/caption-subtitles-classic.webp",
+      "sha256": "d267c68bf5fa08649e16a1bc3c8ca2ddf1cc919bd2bd8da7d5c0b8d9206048df",
+      "size": 4822
+    },
+    {
+      "path": "thumbs/caption-typewriter-box.webp",
+      "sha256": "e6cf802ff34a5eaef692b0883342f00429ef289a8c4ee8fd52582a846d40d091",
+      "size": 3424
+    },
+    {
+      "path": "thumbs/caption-yellow-karaoke.webp",
+      "sha256": "2fda3b07ac63450284e51fb4ad99e7c98fb3d639dda666b1e0213b6067ee9ecb",
+      "size": 5164
+    },
+    {
+      "path": "thumbs/filter-bright-airy.webp",
+      "sha256": "24ba131e52ceda4e8f457782858ce9f91b5cf0f9c4437862dc9c5c0dc5d1a939",
+      "size": 3072
+    },
+    {
+      "path": "thumbs/filter-bw-classic.webp",
+      "sha256": "1744c0273036dea175ab184e500d995e6cf643ef9e0c51f33e54d8f92f66f2e1",
+      "size": 1638
+    },
+    {
+      "path": "thumbs/filter-bw-contrast.webp",
+      "sha256": "b124d0e65310018b03907ef970d9b8f51889989d34f4f373e0513c1327952146",
+      "size": 2044
+    },
+    {
+      "path": "thumbs/filter-cool-moody.webp",
+      "sha256": "1d949ff8601ed406777249382012ea30a19196e304ae7e08f282527081faef39",
+      "size": 3132
+    },
+    {
+      "path": "thumbs/filter-golden-hour.webp",
+      "sha256": "470c68f34be71b7c45457a64e406a9ad47dc9d8dd5b524975cd2dd1e8fac2170",
+      "size": 3412
+    },
+    {
+      "path": "thumbs/filter-matte.webp",
+      "sha256": "090eed407d2e88cd2769d592c47456582cf44fa21c9e15ac3a6d8ffc45f29500",
+      "size": 2920
+    },
+    {
+      "path": "thumbs/filter-natural-pop.webp",
+      "sha256": "d1e3dbcc7651e0c3e0fe5a01c9130e13506f04b51fd8641bc71cb1b6b5e07584",
+      "size": 3498
+    },
+    {
+      "path": "thumbs/filter-teal-orange.webp",
+      "sha256": "19d1959ec27913f42a7acec3605b022359999a790d418f9083d646c951d60a4a",
+      "size": 3630
+    },
+    {
+      "path": "thumbs/filter-vintage-fade.webp",
+      "sha256": "246fa81de618ed898cc850b2adb66649c4c6171c97169a221955796834443c2a",
+      "size": 2918
+    },
+    {
+      "path": "thumbs/filter-warm-film.webp",
+      "sha256": "8dda4c4db139db86054218d5cc4ce8f13008f06fe4d61d76fb200abbc226e17f",
+      "size": 3298
+    },
+    {
+      "path": "thumbs/template-before-after.webp",
+      "sha256": "98215ad2889c309fff371775e30e6ac7821276af457d4c30592c9172936497d7",
+      "size": 3598
+    },
+    {
+      "path": "thumbs/template-countdown-list.webp",
+      "sha256": "753ec8a74fb7cca0d0a19f756a132ec2aa283fa1c9453d7edc27cca626d1feec",
+      "size": 4120
+    },
+    {
+      "path": "thumbs/template-quote-reel.webp",
+      "sha256": "15da51e0443fc8625158ce815d74da0d8df3466372303d9cdb73fade21c06a1f",
+      "size": 3334
+    },
+    {
+      "path": "thumbs/template-recipe.webp",
+      "sha256": "e9c45b0ca0be72cb58246ab38e1d98f828a7daf866d16fc5ca49893971a78ae6",
+      "size": 3872
+    },
+    {
+      "path": "thumbs/template-three-tips.webp",
+      "sha256": "4e1fd1d79f7113228f4519f0249c3c7b0bf015a5505939f656e9c38dd77e0a3d",
+      "size": 4232
+    },
+    {
+      "path": "thumbs/template-vlog-intro.webp",
+      "sha256": "64231b4993f960ea6f33fa5c302f0dbfd7962403615f323f27d17b907b7f8be1",
+      "size": 3750
+    },
+    {
+      "path": "thumbs/text-countdown-number.webp",
+      "sha256": "c16755e09ffdae1e176def127dce89c746fdc0f5ab2c097795a47f67402b3f79",
+      "size": 3504
+    },
+    {
+      "path": "thumbs/text-cta-follow.webp",
+      "sha256": "099a8a05e74f668c35610a87f7550b5d32b6e1f316dc3188e9881d789bf2eaaf",
+      "size": 3306
+    },
+    {
+      "path": "thumbs/text-cta-link-bio.webp",
+      "sha256": "145c7db6e1ccf43fab9cf0c91a2a7945d35925581124ef612b2314f1920b03f4",
+      "size": 3306
+    },
+    {
+      "path": "thumbs/text-hook-wait.webp",
+      "sha256": "f695dee3041a1cad98e8a500f2abd38629dc5ac03756b139865c957cd9261de9",
+      "size": 3524
+    },
+    {
+      "path": "thumbs/text-hook-watch-end.webp",
+      "sha256": "262d33cd6b1ed884409b049f5df3dc36bed180fa4bc6a6c036d1f0939e4beea8",
+      "size": 3912
+    },
+    {
+      "path": "thumbs/text-label-after.webp",
+      "sha256": "5d5805734e33371818918e12c720d1f3d5ec287b0bb9cdb2e23794769ed6308a",
+      "size": 3288
+    },
+    {
+      "path": "thumbs/text-label-before.webp",
+      "sha256": "05e9998947658d12097d41da9d76f383464de7dd7186cd8f5cddb64f7670aa17",
+      "size": 3186
+    },
+    {
+      "path": "thumbs/text-label-step.webp",
+      "sha256": "6cad2be25eab546686391b03d5de73b4a914a2269c24ade278c258acc796ccc7",
+      "size": 3132
+    },
+    {
+      "path": "thumbs/text-lower-third-location.webp",
+      "sha256": "a4d2864d4a0172f15c534b1a59d29699a1847c0441ed06187f890520393ea12b",
+      "size": 3226
+    },
+    {
+      "path": "thumbs/text-lower-third-name.webp",
+      "sha256": "7bf79c81143571651a6b4773899f1fc152b6d1b16d2f5f286c8c292741d4fc4b",
+      "size": 3288
+    },
+    {
+      "path": "thumbs/text-quote-serif.webp",
+      "sha256": "ac26f7768d35f26c1e5cb31eb0cfb5ebbc7bea00fbebad1d0a5c0a96ae831030",
+      "size": 3774
+    },
+    {
+      "path": "thumbs/text-title-bold.webp",
+      "sha256": "effcf3b64dc52d37d359f7b26bcbd3dc3bc76ee5c9eb49f179f087cb14fd0e3f",
+      "size": 3728
+    },
+    {
+      "path": "thumbs/text-title-handwritten.webp",
+      "sha256": "a2294e4a08431625b424285cf781183c927f14bd8380e1cf86e2f0b3e55c0979",
+      "size": 3856
+    },
+    {
+      "path": "thumbs/text-title-outline.webp",
+      "sha256": "be9ee6e16e34c6590964a3be557102b47978ff8472e44e1d5d88837803633881",
+      "size": 3274
+    },
+    {
+      "path": "thumbs/text-title-script.webp",
+      "sha256": "eb30ad66524a5a3006fbdda28e955cd9d8bbdfa5ed742029cbd6d8ea95551a7f",
+      "size": 3462
+    },
+    {
+      "path": "thumbs/text-title-serif.webp",
+      "sha256": "0868656e19f77cc42b69ce69363a961734dd7e9757b2d639d6f59ba1db5eabe6",
+      "size": 3580
+    }
+  ],
+  "captionStyles": [
+    {
+      "id": "subtitles-classic",
+      "name": "Subtitles Classic",
+      "trendScore": 45,
+      "tags": ["subtitles", "readable"],
+      "style": {
+        "base": {
+          "fontFamily": "Roboto",
+          "fontWeight": 700,
+          "fontSize": 56,
+          "strokeWidth": 3,
+          "shadowY": 2,
+          "maxWidth": 960,
+          "lineHeight": 1.15
+        },
+        "mode": "line",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 7,
+        "maxLines": 2,
+        "y": 1580,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-subtitles-classic.webp"
+    },
+    {
+      "id": "bold-word",
+      "name": "Bold Word-by-Word",
+      "trendScore": 78,
+      "tags": ["bold", "word-by-word", "popular"],
+      "style": {
+        "base": {
+          "fontFamily": "Montserrat",
+          "fontWeight": 900,
+          "fontSize": 92,
+          "strokeWidth": 9,
+          "uppercase": true
+        },
+        "mode": "word-by-word",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1.08,
+        "maxWordsPerLine": 3,
+        "y": 1250
+      },
+      "thumb": "thumbs/caption-bold-word.webp"
+    },
+    {
+      "id": "yellow-karaoke",
+      "name": "Yellow Karaoke",
+      "trendScore": 70,
+      "tags": ["karaoke", "bold"],
+      "style": {
+        "base": {
+          "fontFamily": "Montserrat",
+          "fontWeight": 800,
+          "fontSize": 82,
+          "strokeWidth": 7,
+          "uppercase": true
+        },
+        "mode": "karaoke",
+        "activeColor": "#FFE400",
+        "activeScale": 1.12,
+        "maxWordsPerLine": 3,
+        "y": 1300
+      },
+      "thumb": "thumbs/caption-yellow-karaoke.webp"
+    },
+    {
+      "id": "boxed-word",
+      "name": "Boxed Highlight",
+      "trendScore": 74,
+      "tags": ["box", "highlight"],
+      "style": {
+        "base": {
+          "fontFamily": "Poppins",
+          "fontWeight": 800,
+          "fontSize": 80,
+          "strokeWidth": 0,
+          "shadowY": 3,
+          "shadowColor": "#00000080",
+          "uppercase": true
+        },
+        "mode": "pop",
+        "activeColor": "#FFFFFF",
+        "activeBackgroundColor": "#7C3AED",
+        "activeScale": 1.06,
+        "maxWordsPerLine": 3,
+        "y": 1280
+      },
+      "thumb": "thumbs/caption-boxed-word.webp"
+    },
+    {
+      "id": "typewriter-box",
+      "name": "Typewriter Box",
+      "trendScore": 58,
+      "tags": ["typewriter", "box"],
+      "style": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontWeight": 600,
+          "fontSize": 60,
+          "strokeWidth": 0,
+          "shadowY": 0,
+          "shadowColor": "#00000000",
+          "backgroundColor": "#000000B3",
+          "backgroundPadding": 18,
+          "backgroundRadius": 10
+        },
+        "mode": "typewriter",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 5,
+        "maxLines": 2,
+        "y": 1400,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-typewriter-box.webp"
+    },
+    {
+      "id": "lower-band",
+      "name": "Lower Band",
+      "trendScore": 50,
+      "tags": ["broadcast", "box"],
+      "style": {
+        "base": {
+          "fontFamily": "Oswald",
+          "fontWeight": 600,
+          "fontSize": 64,
+          "strokeWidth": 0,
+          "uppercase": true,
+          "letterSpacing": 2,
+          "backgroundColor": "#111111CC",
+          "backgroundPadding": 20,
+          "backgroundRadius": 0
+        },
+        "mode": "line",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 6,
+        "maxLines": 1,
+        "y": 1560,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-lower-band.webp"
+    },
+    {
+      "id": "handwritten",
+      "name": "Handwritten Notes",
+      "trendScore": 56,
+      "tags": ["handwritten", "soft"],
+      "style": {
+        "base": {
+          "fontFamily": "Caveat",
+          "fontWeight": 700,
+          "fontSize": 96,
+          "strokeWidth": 4,
+          "strokeColor": "#1A1A1A"
+        },
+        "mode": "karaoke",
+        "activeColor": "#FFD166",
+        "activeScale": 1.1,
+        "maxWordsPerLine": 4,
+        "y": 1320
+      },
+      "thumb": "thumbs/caption-handwritten.webp"
+    },
+    {
+      "id": "serif-story",
+      "name": "Serif Story",
+      "trendScore": 55,
+      "tags": ["serif", "elegant"],
+      "style": {
+        "base": {
+          "fontFamily": "Playfair Display",
+          "fontWeight": 700,
+          "italic": true,
+          "fontSize": 70,
+          "strokeWidth": 0,
+          "shadowBlur": 10,
+          "shadowY": 3,
+          "shadowColor": "#000000B3"
+        },
+        "mode": "line",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 5,
+        "maxLines": 2,
+        "y": 1350,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-serif-story.webp"
+    },
+    {
+      "id": "comic-pop",
+      "name": "Comic Bounce",
+      "trendScore": 62,
+      "tags": ["comic", "fun"],
+      "style": {
+        "base": {
+          "fontFamily": "Bangers",
+          "fontWeight": 400,
+          "fontSize": 104,
+          "color": "#FFE14D",
+          "strokeWidth": 10,
+          "strokeColor": "#111111",
+          "letterSpacing": 3,
+          "uppercase": true,
+          "shadowX": 6,
+          "shadowY": 6,
+          "shadowColor": "#111111FF"
+        },
+        "mode": "bounce",
+        "activeColor": "#FF4F4F",
+        "activeScale": 1.2,
+        "maxWordsPerLine": 2,
+        "y": 1250
+      },
+      "thumb": "thumbs/caption-comic-pop.webp"
+    },
+    {
+      "id": "single-word-impact",
+      "name": "Single Word Impact",
+      "trendScore": 66,
+      "tags": ["one-word", "impact"],
+      "style": {
+        "base": {
+          "fontFamily": "Anton",
+          "fontWeight": 400,
+          "fontSize": 140,
+          "strokeWidth": 8,
+          "uppercase": true,
+          "letterSpacing": 1
+        },
+        "mode": "pop",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1.15,
+        "maxWordsPerLine": 1,
+        "y": 1100
+      },
+      "thumb": "thumbs/caption-single-word-impact.webp"
+    },
+    {
+      "id": "bubbly",
+      "name": "Bubbly",
+      "trendScore": 60,
+      "tags": ["cute", "rounded"],
+      "style": {
+        "base": {
+          "fontFamily": "Lilita One",
+          "fontWeight": 400,
+          "fontSize": 96,
+          "strokeWidth": 10,
+          "strokeColor": "#3B0A5A"
+        },
+        "mode": "bounce",
+        "activeColor": "#FFB3E6",
+        "activeScale": 1.15,
+        "maxWordsPerLine": 3,
+        "y": 1300
+      },
+      "thumb": "thumbs/caption-bubbly.webp"
+    },
+    {
+      "id": "clean-white",
+      "name": "Clean White",
+      "trendScore": 52,
+      "tags": ["minimal"],
+      "style": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontWeight": 800,
+          "fontSize": 70,
+          "strokeWidth": 0,
+          "shadowBlur": 12,
+          "shadowY": 2,
+          "shadowColor": "#000000CC"
+        },
+        "mode": "word-by-word",
+        "activeColor": "#FFFFFF",
+        "activeScale": 1,
+        "maxWordsPerLine": 4,
+        "y": 1350,
+        "emphasizeKeywords": false
+      },
+      "thumb": "thumbs/caption-clean-white.webp"
+    }
+  ],
+  "textPresets": [
+    {
+      "id": "title-bold",
+      "name": "Bold Title",
+      "trendScore": 62,
+      "tags": ["title"],
+      "sampleText": "Big Bold Title",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 900,
+        "fontSize": 120,
+        "strokeWidth": 0,
+        "shadowBlur": 16,
+        "shadowY": 6,
+        "shadowColor": "#00000099",
+        "uppercase": true
+      },
+      "animationIn": "essentials/pop-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-bold.webp"
+    },
+    {
+      "id": "title-outline",
+      "name": "Outline Title",
+      "trendScore": 55,
+      "tags": ["title", "outline"],
+      "sampleText": "Outline",
+      "style": {
+        "fontFamily": "Anton",
+        "fontWeight": 400,
+        "fontSize": 150,
+        "color": "#FFFFFF00",
+        "strokeColor": "#FFFFFF",
+        "strokeWidth": 5,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "uppercase": true,
+        "letterSpacing": 4
+      },
+      "animationIn": "essentials/zoom-settle",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-outline.webp"
+    },
+    {
+      "id": "title-serif",
+      "name": "Serif Title",
+      "trendScore": 54,
+      "tags": ["title", "serif", "elegant"],
+      "sampleText": "Chapter One",
+      "style": {
+        "fontFamily": "Playfair Display",
+        "fontWeight": 700,
+        "fontSize": 110,
+        "strokeWidth": 0,
+        "shadowBlur": 12,
+        "shadowY": 4
+      },
+      "animationIn": "essentials/rise-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-serif.webp"
+    },
+    {
+      "id": "title-handwritten",
+      "name": "Handwritten Title",
+      "trendScore": 50,
+      "tags": ["title", "handwritten"],
+      "sampleText": "little moments",
+      "style": {
+        "fontFamily": "Caveat",
+        "fontWeight": 700,
+        "fontSize": 130,
+        "strokeWidth": 0,
+        "shadowBlur": 8,
+        "shadowY": 3
+      },
+      "animationIn": "essentials/type-on",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-title-handwritten.webp"
+    },
+    {
+      "id": "title-script",
+      "name": "Script Title",
+      "trendScore": 48,
+      "tags": ["title", "script"],
+      "sampleText": "Summer Diaries",
+      "style": {
+        "fontFamily": "Pacifico",
+        "fontWeight": 400,
+        "fontSize": 110,
+        "strokeWidth": 0,
+        "shadowBlur": 10,
+        "shadowY": 4,
+        "shadowColor": "#000000AA"
+      },
+      "animationIn": "essentials/rise-in",
+      "animationOut": "essentials/sink-out",
+      "thumb": "thumbs/text-title-script.webp"
+    },
+    {
+      "id": "hook-wait",
+      "name": "Wait For It",
+      "trendScore": 70,
+      "tags": ["hook"],
+      "sampleText": "Wait for it…",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 800,
+        "fontSize": 84,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFFFFF",
+        "backgroundPadding": 22,
+        "backgroundRadius": 18
+      },
+      "animationIn": "essentials/pop-in",
+      "animationLoop": "essentials/breathe",
+      "animationOut": "essentials/pop-out",
+      "thumb": "thumbs/text-hook-wait.webp"
+    },
+    {
+      "id": "hook-watch-end",
+      "name": "Watch Till The End",
+      "trendScore": 64,
+      "tags": ["hook"],
+      "sampleText": "Watch till the end",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 800,
+        "fontSize": 76,
+        "strokeWidth": 7,
+        "uppercase": true
+      },
+      "animationIn": "essentials/drop-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-hook-watch-end.webp"
+    },
+    {
+      "id": "label-step",
+      "name": "Step Label",
+      "trendScore": 52,
+      "tags": ["label", "tutorial"],
+      "sampleText": "Step 1",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 700,
+        "fontSize": 64,
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#2563EB",
+        "backgroundPadding": 18,
+        "backgroundRadius": 40
+      },
+      "animationIn": "essentials/slide-in-left",
+      "animationOut": "essentials/slide-out-left",
+      "thumb": "thumbs/text-label-step.webp"
+    },
+    {
+      "id": "label-before",
+      "name": "Before Label",
+      "trendScore": 58,
+      "tags": ["label", "comparison"],
+      "sampleText": "BEFORE",
+      "style": {
+        "fontFamily": "Oswald",
+        "fontWeight": 700,
+        "fontSize": 80,
+        "strokeWidth": 0,
+        "letterSpacing": 6,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#000000B3",
+        "backgroundPadding": 16,
+        "backgroundRadius": 6
+      },
+      "animationIn": "essentials/fade-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-label-before.webp"
+    },
+    {
+      "id": "label-after",
+      "name": "After Label",
+      "trendScore": 58,
+      "tags": ["label", "comparison"],
+      "sampleText": "AFTER",
+      "style": {
+        "fontFamily": "Oswald",
+        "fontWeight": 700,
+        "fontSize": 80,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "letterSpacing": 6,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFE400",
+        "backgroundPadding": 16,
+        "backgroundRadius": 6
+      },
+      "animationIn": "essentials/pop-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-label-after.webp"
+    },
+    {
+      "id": "lower-third-name",
+      "name": "Name Lower Third",
+      "trendScore": 50,
+      "tags": ["lower-third"],
+      "sampleText": "Alex Rivera",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 800,
+        "fontSize": 60,
+        "strokeWidth": 0,
+        "align": "left",
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#111111D9",
+        "backgroundPadding": 20,
+        "backgroundRadius": 8,
+        "maxWidth": 900
+      },
+      "animationIn": "essentials/slide-in-left",
+      "animationOut": "essentials/slide-out-left",
+      "thumb": "thumbs/text-lower-third-name.webp"
+    },
+    {
+      "id": "lower-third-location",
+      "name": "Location Tag",
+      "trendScore": 52,
+      "tags": ["lower-third", "travel"],
+      "sampleText": "Lisbon, Portugal",
+      "style": {
+        "fontFamily": "Montserrat",
+        "fontWeight": 600,
+        "fontSize": 54,
+        "strokeWidth": 0,
+        "letterSpacing": 2,
+        "uppercase": true,
+        "shadowBlur": 10,
+        "shadowY": 2,
+        "shadowColor": "#000000B3"
+      },
+      "animationIn": "essentials/rise-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-lower-third-location.webp"
+    },
+    {
+      "id": "quote-serif",
+      "name": "Serif Quote",
+      "trendScore": 56,
+      "tags": ["quote"],
+      "sampleText": "“Small steps, every day.”",
+      "style": {
+        "fontFamily": "Playfair Display",
+        "fontWeight": 400,
+        "italic": true,
+        "fontSize": 82,
+        "strokeWidth": 0,
+        "shadowBlur": 14,
+        "shadowY": 3,
+        "lineHeight": 1.25
+      },
+      "animationIn": "essentials/fade-in",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-quote-serif.webp"
+    },
+    {
+      "id": "cta-follow",
+      "name": "Follow For More",
+      "trendScore": 60,
+      "tags": ["cta"],
+      "sampleText": "Follow for more",
+      "style": {
+        "fontFamily": "Poppins",
+        "fontWeight": 800,
+        "fontSize": 72,
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FF3D6E",
+        "backgroundPadding": 22,
+        "backgroundRadius": 44
+      },
+      "animationIn": "essentials/pop-in",
+      "animationLoop": "essentials/breathe",
+      "animationOut": "essentials/pop-out",
+      "thumb": "thumbs/text-cta-follow.webp"
+    },
+    {
+      "id": "cta-link-bio",
+      "name": "Link In Bio",
+      "trendScore": 55,
+      "tags": ["cta"],
+      "sampleText": "Link in bio",
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 800,
+        "fontSize": 66,
+        "color": "#111111",
+        "strokeWidth": 0,
+        "shadowY": 0,
+        "shadowColor": "#00000000",
+        "backgroundColor": "#FFFFFF",
+        "backgroundPadding": 20,
+        "backgroundRadius": 40
+      },
+      "animationIn": "essentials/rise-in",
+      "animationLoop": "essentials/float",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-cta-link-bio.webp"
+    },
+    {
+      "id": "countdown-number",
+      "name": "Countdown Number",
+      "trendScore": 57,
+      "tags": ["list", "number"],
+      "sampleText": "#3",
+      "style": {
+        "fontFamily": "Anton",
+        "fontWeight": 400,
+        "fontSize": 220,
+        "strokeWidth": 10,
+        "shadowY": 8
+      },
+      "animationIn": "builtin/zoomIn",
+      "animationOut": "essentials/fade-out",
+      "thumb": "thumbs/text-countdown-number.webp"
+    }
+  ],
+  "filters": [
+    {
+      "id": "natural-pop",
+      "name": "Natural Pop",
+      "trendScore": 60,
+      "tags": ["clean", "vibrant"],
+      "lut": "luts/natural-pop.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-natural-pop.webp"
+    },
+    {
+      "id": "warm-film",
+      "name": "Warm Film",
+      "trendScore": 64,
+      "tags": ["film", "warm"],
+      "lut": "luts/warm-film.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-warm-film.webp"
+    },
+    {
+      "id": "cool-moody",
+      "name": "Cool Moody",
+      "trendScore": 58,
+      "tags": ["moody", "cool"],
+      "lut": "luts/cool-moody.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-cool-moody.webp"
+    },
+    {
+      "id": "bw-classic",
+      "name": "B&W Classic",
+      "trendScore": 50,
+      "tags": ["black-and-white"],
+      "lut": "luts/bw-classic.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-bw-classic.webp"
+    },
+    {
+      "id": "bw-contrast",
+      "name": "B&W High Contrast",
+      "trendScore": 56,
+      "tags": ["black-and-white", "dramatic"],
+      "lut": "luts/bw-contrast.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-bw-contrast.webp"
+    },
+    {
+      "id": "vintage-fade",
+      "name": "Vintage Fade",
+      "trendScore": 57,
+      "tags": ["vintage", "faded"],
+      "lut": "luts/vintage-fade.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-vintage-fade.webp"
+    },
+    {
+      "id": "matte",
+      "name": "Matte",
+      "trendScore": 55,
+      "tags": ["matte", "faded"],
+      "lut": "luts/matte.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-matte.webp"
+    },
+    {
+      "id": "bright-airy",
+      "name": "Bright & Airy",
+      "trendScore": 59,
+      "tags": ["bright", "lifestyle"],
+      "lut": "luts/bright-airy.cube",
+      "defaultIntensity": 1,
+      "thumb": "thumbs/filter-bright-airy.webp"
+    },
+    {
+      "id": "golden-hour",
+      "name": "Golden Hour",
+      "trendScore": 66,
+      "tags": ["warm", "sunset"],
+      "lut": "luts/golden-hour.cube",
+      "defaultIntensity": 0.85,
+      "thumb": "thumbs/filter-golden-hour.webp"
+    },
+    {
+      "id": "teal-orange",
+      "name": "Teal & Orange",
+      "trendScore": 65,
+      "tags": ["cinematic"],
+      "lut": "luts/teal-orange.cube",
+      "defaultIntensity": 0.8,
+      "thumb": "thumbs/filter-teal-orange.webp"
+    }
+  ],
+  "animations": [
+    {
+      "id": "fade-in",
+      "name": "Fade In",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 1, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 55,
+      "tags": ["basic"]
+    },
+    {
+      "id": "rise-in",
+      "name": "Rise",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.6, "value": 1, "easing": "easeOut" }
+        ],
+        "y": [
+          { "t": 0, "value": 60 },
+          { "t": 1, "value": 0, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 60,
+      "tags": ["basic", "slide"]
+    },
+    {
+      "id": "drop-in",
+      "name": "Drop",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.3, "value": 1, "easing": "linear" }
+        ],
+        "y": [
+          { "t": 0, "value": -90 },
+          { "t": 1, "value": 0, "easing": "easeOutBack" }
+        ]
+      },
+      "trendScore": 52,
+      "tags": ["slide"]
+    },
+    {
+      "id": "pop-in",
+      "name": "Pop",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.35, "value": 1, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 0.4 },
+          { "t": 1, "value": 1, "easing": "easeOutBack" }
+        ]
+      },
+      "trendScore": 72,
+      "tags": ["pop"]
+    },
+    {
+      "id": "zoom-settle",
+      "name": "Zoom Settle",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.5, "value": 1, "easing": "easeOut" }
+        ],
+        "scale": [
+          { "t": 0, "value": 1.35 },
+          { "t": 1, "value": 1, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 58,
+      "tags": ["zoom"]
+    },
+    {
+      "id": "slide-in-left",
+      "name": "Slide From Left",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.4, "value": 1, "easing": "linear" }
+        ],
+        "x": [
+          { "t": 0, "value": -320 },
+          { "t": 1, "value": 0, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 50,
+      "tags": ["slide"]
+    },
+    {
+      "id": "slide-in-right",
+      "name": "Slide From Right",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 0.4, "value": 1, "easing": "linear" }
+        ],
+        "x": [
+          { "t": 0, "value": 320 },
+          { "t": 1, "value": 0, "easing": "easeOut" }
+        ]
+      },
+      "trendScore": 50,
+      "tags": ["slide"]
+    },
+    {
+      "id": "type-on",
+      "name": "Type On",
+      "kind": "in",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 1, "easing": "linear" }
+        ]
+      },
+      "perCharacter": true,
+      "trendScore": 64,
+      "tags": ["typewriter"]
+    },
+    {
+      "id": "fade-out",
+      "name": "Fade Out",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 1, "value": 0, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 55,
+      "tags": ["basic"]
+    },
+    {
+      "id": "sink-out",
+      "name": "Sink",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 1, "value": 0, "easing": "easeIn" }
+        ],
+        "y": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": 60, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 50,
+      "tags": ["slide"]
+    },
+    {
+      "id": "pop-out",
+      "name": "Pop Out",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 0.6, "value": 1, "easing": "hold" },
+          { "t": 1, "value": 0, "easing": "linear" }
+        ],
+        "scale": [
+          { "t": 0, "value": 1 },
+          { "t": 0.3, "value": 1.15, "easing": "easeOut" },
+          { "t": 1, "value": 0.3, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 60,
+      "tags": ["pop"]
+    },
+    {
+      "id": "slide-out-left",
+      "name": "Slide Out Left",
+      "kind": "out",
+      "tracks": {
+        "opacity": [
+          { "t": 0, "value": 1 },
+          { "t": 0.6, "value": 1, "easing": "hold" },
+          { "t": 1, "value": 0, "easing": "linear" }
+        ],
+        "x": [
+          { "t": 0, "value": 0 },
+          { "t": 1, "value": -320, "easing": "easeIn" }
+        ]
+      },
+      "trendScore": 45,
+      "tags": ["slide"]
+    },
+    {
+      "id": "breathe",
+      "name": "Breathe",
+      "kind": "loop",
+      "tracks": {
+        "scale": [
+          { "t": 0, "value": 1 },
+          { "t": 0.5, "value": 1.06, "easing": "easeInOut" },
+          { "t": 1, "value": 1, "easing": "easeInOut" }
+        ]
+      },
+      "trendScore": 55,
+      "tags": ["subtle"]
+    },
+    {
+      "id": "float",
+      "name": "Float",
+      "kind": "loop",
+      "tracks": {
+        "y": [
+          { "t": 0, "value": 0 },
+          { "t": 0.5, "value": -12, "easing": "easeInOut" },
+          { "t": 1, "value": 0, "easing": "easeInOut" }
+        ]
+      },
+      "trendScore": 52,
+      "tags": ["subtle"]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "cross-fade",
+      "name": "Cross Fade",
+      "type": "fade",
+      "duration": 500000,
+      "trendScore": 55,
+      "tags": ["basic"]
+    },
+    {
+      "id": "dip-to-black",
+      "name": "Dip to Black",
+      "type": "fadeblack",
+      "duration": 600000,
+      "trendScore": 50,
+      "tags": ["basic"]
+    },
+    {
+      "id": "dip-to-white",
+      "name": "Dip to White",
+      "type": "fadewhite",
+      "duration": 500000,
+      "trendScore": 50,
+      "tags": ["basic"]
+    },
+    {
+      "id": "dissolve",
+      "name": "Film Dissolve",
+      "type": "dissolve",
+      "duration": 600000,
+      "trendScore": 45,
+      "tags": ["basic", "film"]
+    },
+    {
+      "id": "wipe-left",
+      "name": "Wipe Left",
+      "type": "wipeleft",
+      "duration": 400000,
+      "trendScore": 40,
+      "tags": ["wipe"]
+    },
+    {
+      "id": "wipe-right",
+      "name": "Wipe Right",
+      "type": "wiperight",
+      "duration": 400000,
+      "trendScore": 40,
+      "tags": ["wipe"]
+    },
+    {
+      "id": "wipe-up",
+      "name": "Wipe Up",
+      "type": "wipeup",
+      "duration": 400000,
+      "trendScore": 40,
+      "tags": ["wipe"]
+    },
+    {
+      "id": "wipe-down",
+      "name": "Wipe Down",
+      "type": "wipedown",
+      "duration": 400000,
+      "trendScore": 40,
+      "tags": ["wipe"]
+    },
+    {
+      "id": "push-left",
+      "name": "Push Left",
+      "type": "slideleft",
+      "duration": 350000,
+      "trendScore": 52,
+      "tags": ["slide"]
+    },
+    {
+      "id": "push-right",
+      "name": "Push Right",
+      "type": "slideright",
+      "duration": 350000,
+      "trendScore": 52,
+      "tags": ["slide"]
+    },
+    {
+      "id": "push-up",
+      "name": "Push Up",
+      "type": "slideup",
+      "duration": 350000,
+      "trendScore": 50,
+      "tags": ["slide"]
+    },
+    {
+      "id": "push-down",
+      "name": "Push Down",
+      "type": "slidedown",
+      "duration": 350000,
+      "trendScore": 48,
+      "tags": ["slide"]
+    },
+    {
+      "id": "iris-open",
+      "name": "Iris Open",
+      "type": "circleopen",
+      "duration": 500000,
+      "trendScore": 45,
+      "tags": ["shape"]
+    },
+    {
+      "id": "iris-close",
+      "name": "Iris Close",
+      "type": "circleclose",
+      "duration": 500000,
+      "trendScore": 45,
+      "tags": ["shape"]
+    }
+  ],
+  "effects": [
+    {
+      "id": "shake-subtle",
+      "name": "Handheld Shake",
+      "effect": "shake",
+      "params": { "amplitude": 6, "frequency": 3, "rotation": 0.4 },
+      "trendScore": 55,
+      "tags": ["shake", "subtle"]
+    },
+    {
+      "id": "zoom-pulse",
+      "name": "Zoom Pulse",
+      "effect": "zoomPulse",
+      "params": { "scale": 1.06, "period": 1000000 },
+      "trendScore": 52,
+      "tags": ["zoom"]
+    },
+    {
+      "id": "flash-white",
+      "name": "White Flash",
+      "effect": "flash",
+      "params": { "duration": 150000, "brightness": 1 },
+      "trendScore": 55,
+      "tags": ["flash"]
+    },
+    {
+      "id": "blur-in",
+      "name": "Blur In",
+      "effect": "blurIn",
+      "params": { "radius": 24, "duration": 400000 },
+      "trendScore": 50,
+      "tags": ["blur", "intro"]
+    },
+    {
+      "id": "film-grain-light",
+      "name": "Light Grain",
+      "effect": "filmGrain",
+      "params": { "amount": 0.25, "size": 1 },
+      "trendScore": 56,
+      "tags": ["film", "texture"]
+    },
+    {
+      "id": "glow-soft",
+      "name": "Soft Glow",
+      "effect": "glow",
+      "params": { "radius": 18, "strength": 0.35, "threshold": 0.7 },
+      "trendScore": 54,
+      "tags": ["glow", "dreamy"]
+    }
+  ],
+  "stickers": [
+    {
+      "id": "arrow-hand-drawn",
+      "name": "Hand-drawn Arrow",
+      "trendScore": 70,
+      "tags": ["arrow", "annotation"],
+      "file": "stickers/arrow-hand-drawn.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "arrow-bold",
+      "name": "Bold Arrow",
+      "trendScore": 58,
+      "tags": ["arrow"],
+      "file": "stickers/arrow-bold.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "arrow-curved-white",
+      "name": "Curved White Arrow",
+      "trendScore": 64,
+      "tags": ["arrow", "annotation"],
+      "file": "stickers/arrow-curved-white.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "circle-scribble",
+      "name": "Circle Scribble",
+      "trendScore": 72,
+      "tags": ["circle", "annotation"],
+      "file": "stickers/circle-scribble.png",
+      "width": 512,
+      "height": 384
+    },
+    {
+      "id": "underline-scribble",
+      "name": "Underline Scribble",
+      "trendScore": 62,
+      "tags": ["underline", "annotation"],
+      "file": "stickers/underline-scribble.png",
+      "width": 512,
+      "height": 160
+    },
+    {
+      "id": "underline-double",
+      "name": "Double Underline",
+      "trendScore": 55,
+      "tags": ["underline", "annotation"],
+      "file": "stickers/underline-double.png",
+      "width": 512,
+      "height": 160
+    },
+    {
+      "id": "highlight-swipe",
+      "name": "Highlighter Swipe",
+      "trendScore": 60,
+      "tags": ["highlight", "annotation"],
+      "file": "stickers/highlight-swipe.png",
+      "width": 512,
+      "height": 160
+    },
+    {
+      "id": "heart",
+      "name": "Heart",
+      "trendScore": 60,
+      "tags": ["emoji", "love"],
+      "file": "stickers/heart.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "star",
+      "name": "Star",
+      "trendScore": 52,
+      "tags": ["shape"],
+      "file": "stickers/star.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "sparkle",
+      "name": "Sparkle",
+      "trendScore": 66,
+      "tags": ["sparkle", "aesthetic"],
+      "file": "stickers/sparkle.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "sparkles-cluster",
+      "name": "Sparkles",
+      "trendScore": 68,
+      "tags": ["sparkle", "aesthetic"],
+      "file": "stickers/sparkles-cluster.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "check",
+      "name": "Check",
+      "trendScore": 56,
+      "tags": ["icon", "list"],
+      "file": "stickers/check.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "cross",
+      "name": "Cross",
+      "trendScore": 52,
+      "tags": ["icon", "list"],
+      "file": "stickers/cross.png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "speech-bubble",
+      "name": "Speech Bubble",
+      "trendScore": 58,
+      "tags": ["bubble", "comic"],
+      "file": "stickers/speech-bubble.png",
+      "width": 512,
+      "height": 448
+    },
+    {
+      "id": "thought-bubble",
+      "name": "Thought Bubble",
+      "trendScore": 54,
+      "tags": ["bubble", "comic"],
+      "file": "stickers/thought-bubble.png",
+      "width": 512,
+      "height": 448
+    },
+    {
+      "id": "location-pin",
+      "name": "Location Pin",
+      "trendScore": 57,
+      "tags": ["travel", "icon"],
+      "file": "stickers/location-pin.png",
+      "width": 384,
+      "height": 512
+    }
+  ],
+  "templates": [
+    {
+      "id": "before-after",
+      "name": "Before / After",
+      "trendScore": 70,
+      "tags": ["comparison", "transformation"],
+      "description": "Two-shot reveal: hold the \"before\", flash-cut to the \"after\" on the drop.",
+      "fps": 30,
+      "slots": [
+        { "duration": 4000000, "text": { "text": "BEFORE", "preset": "essentials/label-before" } },
+        {
+          "duration": 4000000,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "effects": ["essentials/flash-white"],
+          "text": { "text": "AFTER", "preset": "essentials/label-after" }
+        }
+      ],
+      "musicHint": { "title": "Build-up with a hard drop, ~120 BPM", "bpm": 120 },
+      "thumb": "thumbs/template-before-after.webp"
+    },
+    {
+      "id": "three-tips",
+      "name": "3 Quick Tips",
+      "trendScore": 68,
+      "tags": ["tutorial", "list", "educational"],
+      "description": "Hook, three numbered tips, and a follow call-to-action.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2400000,
+          "text": { "text": "3 tips nobody tells you", "preset": "essentials/hook-watch-end" }
+        },
+        {
+          "duration": 4800000,
+          "transitionIn": { "type": "slideleft", "duration": 350000 },
+          "text": { "text": "Tip 1", "preset": "essentials/label-step" }
+        },
+        {
+          "duration": 4800000,
+          "transitionIn": { "type": "slideleft", "duration": 350000 },
+          "text": { "text": "Tip 2", "preset": "essentials/label-step" }
+        },
+        {
+          "duration": 4800000,
+          "transitionIn": { "type": "slideleft", "duration": 350000 },
+          "text": { "text": "Tip 3", "preset": "essentials/label-step" }
+        },
+        {
+          "duration": 2400000,
+          "transitionIn": { "type": "fade", "duration": 400000 },
+          "text": { "text": "Follow for more", "preset": "essentials/cta-follow" }
+        }
+      ],
+      "musicHint": { "title": "Light lo-fi or upbeat background, ~100 BPM", "bpm": 100 },
+      "captionStyle": "essentials/bold-word",
+      "thumb": "thumbs/template-three-tips.webp"
+    },
+    {
+      "id": "quote-reel",
+      "name": "Quote Reel",
+      "trendScore": 55,
+      "tags": ["quote", "motivation"],
+      "description": "One slow, graded shot with a centred serif quote.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 5142857,
+          "filter": "essentials/matte",
+          "effects": ["essentials/film-grain-light"],
+          "text": { "text": "“Small steps, every day.”", "preset": "essentials/quote-serif" }
+        },
+        {
+          "duration": 5142857,
+          "transitionIn": { "type": "dissolve", "duration": 800000 },
+          "filter": "essentials/matte",
+          "effects": ["essentials/film-grain-light"]
+        }
+      ],
+      "musicHint": { "title": "Ambient piano, ~70 BPM", "bpm": 70 },
+      "thumb": "thumbs/template-quote-reel.webp"
+    },
+    {
+      "id": "vlog-intro",
+      "name": "Vlog Intro",
+      "trendScore": 60,
+      "tags": ["vlog", "intro"],
+      "description": "Fast montage that lands on a title card.",
+      "fps": 30,
+      "slots": [
+        { "duration": 1000000, "effects": ["essentials/blur-in"] },
+        { "duration": 1000000, "transitionIn": { "type": "slideleft", "duration": 250000 } },
+        { "duration": 1000000, "transitionIn": { "type": "slideleft", "duration": 250000 } },
+        { "duration": 1000000, "transitionIn": { "type": "slideleft", "duration": 250000 } },
+        {
+          "duration": 4000000,
+          "transitionIn": { "type": "fadewhite", "duration": 400000 },
+          "filter": "essentials/bright-airy",
+          "text": { "text": "Big Bold Title", "preset": "essentials/title-bold" }
+        }
+      ],
+      "musicHint": { "title": "Upbeat indie pop, ~120 BPM", "bpm": 120 },
+      "thumb": "thumbs/template-vlog-intro.webp"
+    },
+    {
+      "id": "countdown-list",
+      "name": "Top 5 Countdown",
+      "trendScore": 66,
+      "tags": ["list", "countdown"],
+      "description": "Five ranked shots counting down to number one.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2181818,
+          "text": { "text": "Top 5 you need to try", "preset": "essentials/hook-watch-end" }
+        },
+        {
+          "duration": 3272727,
+          "transitionIn": { "type": "wipeup", "duration": 300000 },
+          "text": { "text": "#5", "preset": "essentials/countdown-number" }
+        },
+        {
+          "duration": 3272727,
+          "transitionIn": { "type": "wipeup", "duration": 300000 },
+          "text": { "text": "#4", "preset": "essentials/countdown-number" }
+        },
+        {
+          "duration": 3272727,
+          "transitionIn": { "type": "wipeup", "duration": 300000 },
+          "text": { "text": "#3", "preset": "essentials/countdown-number" }
+        },
+        {
+          "duration": 3272727,
+          "transitionIn": { "type": "wipeup", "duration": 300000 },
+          "text": { "text": "#2", "preset": "essentials/countdown-number" }
+        },
+        {
+          "duration": 4363636,
+          "transitionIn": { "type": "flash", "duration": 150000 },
+          "effects": ["essentials/zoom-pulse", "essentials/flash-white"],
+          "text": { "text": "#1", "preset": "essentials/countdown-number" }
+        }
+      ],
+      "musicHint": { "title": "Steady build, ~110 BPM", "bpm": 110 },
+      "thumb": "thumbs/template-countdown-list.webp"
+    },
+    {
+      "id": "recipe",
+      "name": "Quick Recipe",
+      "trendScore": 64,
+      "tags": ["food", "tutorial"],
+      "description": "Ingredients, steps and the money shot — warm and appetising.",
+      "fps": 30,
+      "slots": [
+        {
+          "duration": 2285714,
+          "filter": "essentials/warm-film",
+          "text": { "text": "15-minute pasta", "preset": "essentials/title-handwritten" }
+        },
+        {
+          "duration": 2285714,
+          "transitionIn": { "type": "slideup", "duration": 300000 },
+          "filter": "essentials/warm-film",
+          "text": { "text": "Step 1", "preset": "essentials/label-step" }
+        },
+        {
+          "duration": 2285714,
+          "transitionIn": { "type": "slideup", "duration": 300000 },
+          "filter": "essentials/warm-film",
+          "speed": 2
+        },
+        {
+          "duration": 2285714,
+          "transitionIn": { "type": "slideup", "duration": 300000 },
+          "filter": "essentials/warm-film",
+          "speed": 2
+        },
+        {
+          "duration": 4571429,
+          "transitionIn": { "type": "zoomin", "duration": 300000 },
+          "filter": "essentials/warm-film",
+          "effects": ["essentials/glow-soft"],
+          "text": { "text": "Full recipe in bio", "preset": "essentials/cta-link-bio" }
+        }
+      ],
+      "musicHint": { "title": "Cheerful acoustic, ~105 BPM", "bpm": 105 },
+      "thumb": "thumbs/template-recipe.webp"
+    }
+  ]
+}
