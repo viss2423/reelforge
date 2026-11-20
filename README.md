@@ -179,6 +179,25 @@ Android pass drives the phone's own Chrome through `adb reverse` + DevTools in a
 own (set `ADB` if adb is not on `PATH`; the phone must be unlocked) and leaves no tabs,
 site data or port mappings behind.
 
+### Testing on a real Android phone
+
+1. Install adb once: `winget install Google.PlatformTools`.
+2. On the phone: Settings → About phone → tap _Build number_ 7 times, then Developer options
+   → turn on **USB debugging**.
+3. Plug the phone in over USB, choose **File transfer** in the USB notification, and accept
+   the _Allow USB debugging_ prompt. `adb devices` must list it as `device`.
+4. Unlock the phone and keep the screen on (Chrome only renders on an awake screen), then:
+
+   ```powershell
+   pnpm --filter @reelforge/web test:e2e:android
+   ```
+
+   It starts the test server, maps its ports with `adb reverse`, opens one Chrome tab of its
+   own and prints the device numbers (first frame, seek p50/p95, playback fps, frame time,
+   JS heap, errors). With no unlocked device attached it skips, printing why, and exits 0.
+   The phone does not need the local CA for this run; the service worker then reports the
+   untrusted certificate, which the test accepts as the only installability gap.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). Trend-pack content is CC0 unless noted; bundled fonts are OFL-1.1.
