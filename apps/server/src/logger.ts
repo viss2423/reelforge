@@ -1,8 +1,11 @@
 /**
  * Structured logging with pino. JSON in production (one line per event, cheap to write);
- * `pino-pretty` only when attached to an interactive terminal in dev. When the server runs
- * headless (Windows autostart task) logs also go to `<data>/logs/server.log`, rotated once
- * at startup so a long-running host never fills the disk.
+ * `pino-pretty` only when attached to an interactive terminal in dev.
+ *
+ * stdout is the log. Process supervisors capture it — the Windows autostart launcher
+ * redirects it to `<data>\logs\server.log` and rotates that file — so the server does not
+ * open the same file itself (on Windows that collides with the redirect: EBUSY at startup).
+ * Set LOG_FILE to additionally write to a file of your choice, rotated once at startup.
  */
 import { mkdirSync, renameSync, statSync } from 'node:fs'
 import path from 'node:path'
@@ -23,7 +26,7 @@ const rotate = (file: string): void => {
 
 /** Creates the root logger for the server process. */
 export const createLogger = (
-  config: Pick<Config, 'logLevel' | 'prettyLogs' | 'dataDir'>,
+  config: Pick<Config, 'logLevel' | 'prettyLogs'> & { logFile?: string | undefined },
 ): AppLogger => {
   const level = config.logLevel
   if (config.prettyLogs) {
@@ -32,17 +35,16 @@ export const createLogger = (
       transport: { target: 'pino-pretty', options: { colorize: true, translateTime: 'HH:MM:ss' } },
     })
   }
-  const streams: pino.StreamEntry[] = [{ level: level as pino.Level, stream: pino.destination(1) }]
-  if (!process.stdout.isTTY) {
-    const dir = path.join(config.dataDir, 'logs')
-    mkdirSync(dir, { recursive: true })
-    const file = path.join(dir, 'server.log')
-    rotate(file)
-    streams.push({
+  if (!config.logFile) return pino({ level }, pino.destination(1))
+  mkdirSync(path.dirname(config.logFile), { recursive: true })
+  rotate(config.logFile)
+  const streams: pino.StreamEntry[] = [
+    { level: level as pino.Level, stream: pino.destination(1) },
+    {
       level: level as pino.Level,
-      stream: pino.destination({ dest: file, sync: false, mkdir: true }),
-    })
-  }
+      stream: pino.destination({ dest: config.logFile, sync: false, mkdir: true }),
+    },
+  ]
   return pino({ level }, pino.multistream(streams))
 }
 

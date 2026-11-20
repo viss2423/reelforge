@@ -31,6 +31,12 @@ export interface Config {
   logLevel: string
   /** Pretty, human-readable logs (dev). Production logs are JSON. */
   prettyLogs: boolean
+  /**
+   * Optional extra log file (env LOG_FILE). Off by default: stdout is the log, and the
+   * Windows autostart launcher redirects it to `<data>\logs\server.log` (which also captures
+   * crash stack traces). Never point this at a file the launcher already redirects into.
+   */
+  logFile?: string | undefined
   maxUploadBytes: number
   /** Concurrent GPU encodes (AMF/NVENC have limited sessions; 1 keeps exports fast). */
   gpuEncodeConcurrency: number
@@ -126,6 +132,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     packsSyncIntervalMs: parseDuration(env.PACKS_SYNC_INTERVAL || '6h'),
     logLevel: env.LOG_LEVEL || 'info',
     prettyLogs: bool(env.LOG_PRETTY, !production && process.stdout.isTTY === true),
+    logFile: env.LOG_FILE ? path.resolve(env.LOG_FILE) : undefined,
     maxUploadBytes: parseSize(env.MAX_UPLOAD_SIZE || '20GB'),
     gpuEncodeConcurrency: Math.max(1, Number(env.GPU_ENCODE_CONCURRENCY) || 1),
     jobRetentionMs: parseDuration(env.JOB_RETENTION || '7d'),
