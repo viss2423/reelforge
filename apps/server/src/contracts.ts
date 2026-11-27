@@ -108,6 +108,11 @@ export interface JobDefinition<P = unknown> {
   resource: ResourceClass
   /** Lower = sooner. Interactive work (proxy, preview) < export < background AI. */
   defaultPriority: number
+  /**
+   * Long background work (the daily trend run) that yields its slot: when a more urgent job
+   * of the same resource class is waiting, it is aborted, requeued and run again later.
+   */
+  preemptible?: boolean
   handler: JobHandler<P>
 }
 

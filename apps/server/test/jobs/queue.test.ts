@@ -163,6 +163,51 @@ describe('JobQueue', () => {
     expect(statuses).toEqual(['queued', 'running', 'cancelled'])
   })
 
+  it('a preemptible background job yields its slot to more urgent work, then resumes', async () => {
+    const c = controllable()
+    const { queue, store } = await setup([
+      { ...def('trends', 'ai', c.handler, 200), preemptible: true },
+      def('matte', 'ai', c.handler, 50),
+    ])
+    queue.start()
+    const bg = queue.enqueue('trends', { name: 'trends' })
+    await waitFor(() => c.gates.has(bg.id))
+    const user = queue.enqueue('matte', { name: 'matte' })
+    // The user's job starts at once; the background run is paused, not cancelled.
+    await waitFor(() => c.gates.has(user.id))
+    expect(store.getJob(bg.id)).toMatchObject({ status: 'queued' })
+    c.release(user.id)
+    await waitFor(() => c.started.length === 3)
+    expect(c.started).toEqual(['trends', 'matte', 'trends'])
+    c.release(bg.id)
+    await queue.idle()
+    expect(store.getJob(bg.id)?.status).toBe('done')
+    expect(store.getJob(user.id)?.status).toBe('done')
+  })
+
+  it('never preempts jobs that are not preemptible, or for equal/lower priority work', async () => {
+    const c = controllable()
+    const { queue } = await setup([
+      def('export', 'gpu-encode', c.handler, 50),
+      { ...def('trends', 'ai', c.handler, 200), preemptible: true },
+      def('matte', 'ai', c.handler, 250),
+    ])
+    queue.start()
+    const exp = queue.enqueue('export', { name: 'export' })
+    const bg = queue.enqueue('trends', { name: 'trends' })
+    await waitFor(() => c.gates.has(exp.id) && c.gates.has(bg.id))
+    // Urgent, but the running export is not preemptible; the waiting AI job is less urgent.
+    queue.enqueue('export', { name: 'export-urgent' }, { priority: 1 })
+    queue.enqueue('matte', { name: 'matte-later' })
+    await delay(20)
+    expect(c.started.toSorted()).toEqual(['export', 'trends'])
+    c.release(exp.id)
+    c.release(bg.id)
+    await waitFor(() => c.started.length === 4)
+    for (const id of c.gates.keys()) c.release(id)
+    await queue.idle()
+  })
+
   it('cancelWhere cancels every matching active job', async () => {
     const c = controllable()
     const { queue, store } = await setup([def('proxy', 'gpu-encode', c.handler)])

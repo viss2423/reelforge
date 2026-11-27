@@ -5,6 +5,9 @@
  *   most `concurrency[class]` jobs of a class at once, so an export never starves proxy
  *   generation and GPU encoders are never oversubscribed (AMF has few sessions).
  * - Within a class: lowest `priority` first, FIFO (insertion sequence) among equals.
+ * - Preemption: a running `preemptible` job yields its slot to a more urgent queued job of
+ *   its class (aborted and requeued without counting the attempt), so a long background
+ *   run never makes the user wait for background removal or Auto Edit.
  * - Cancellation through `AbortController`; handlers must honour `ctx.signal`.
  * - Progress is throttled (emit when ≥ `progressIntervalMs` passed or progress moved ≥ 1 %,
  *   with a trailing flush so the latest value is never lost) and persisted on every emit.
@@ -75,6 +78,8 @@ interface Running {
   entry: Entry
   ac: AbortController
   shutdown: boolean
+  /** Aborted to free the slot for a more urgent job: requeue, don't cancel. */
+  preempted: boolean
   /** Set when `stop()` gave up waiting; late settlement must not touch the store. */
   abandoned: boolean
   lastEmit: number
@@ -316,7 +321,40 @@ export class JobQueue {
     for (const c of CLASSES) {
       const list = this.#pending.get(c)!
       while (list.length > 0 && this.#active.get(c)! < this.#limits[c]) this.#run(list.shift()!)
+      if (list.length > 0) this.#preemptFor(list[0]!)
     }
+  }
+
+  /** Asks the least urgent preemptible job of the class to yield to `waiting`, if any. */
+  #preemptFor(waiting: Entry): void {
+    let victim: Running | undefined
+    for (const r of this.#running.values()) {
+      const e = r.entry
+      if (e.def.resource !== waiting.def.resource || !e.def.preemptible) continue
+      if (r.preempted || r.shutdown || e.priority <= waiting.priority) continue
+      if (!victim || e.priority > victim.entry.priority) victim = r
+    }
+    if (!victim) return
+    victim.preempted = true
+    this.#deps.log.info(
+      { job: victim.entry.job.id, kind: victim.entry.job.kind, for: waiting.job.kind },
+      'pausing background job for more urgent work',
+    )
+    victim.ac.abort(new Error('paused for more urgent work'))
+  }
+
+  /** Puts a preempted job back in the queue (same priority and sequence: it resumes first). */
+  #requeuePreempted(r: Running): void {
+    const { job } = r.entry
+    job.status = 'queued'
+    job.progress = 0
+    job.message = 'Paused while the AI is busy with your edit'
+    delete job.startedAt
+    delete job.eta
+    r.entry.attempts--
+    this.#deps.store.setJobAttempts(job.id, r.entry.attempts)
+    this.#persistAndEmit(job)
+    this.#insert(r.entry)
   }
 
   /** Emits a snapshot: the live job object keeps mutating after the event was dispatched. */
@@ -358,6 +396,7 @@ export class JobQueue {
       entry,
       ac: new AbortController(),
       shutdown: false,
+      preempted: false,
       abandoned: false,
       lastEmit: this.#clock(),
       lastProgress: 0,
@@ -418,6 +457,8 @@ export class JobQueue {
         if (r.abandoned) return
         if (r.shutdown) {
           this.#requeueForShutdown(r)
+        } else if (r.preempted) {
+          this.#requeuePreempted(r)
         } else if (r.ac.signal.aborted) {
           this.#finish(job, 'cancelled')
         } else {

@@ -698,6 +698,8 @@ export const trendsJob = (service: () => TrendsService | undefined): JobDefiniti
   kind: 'trends',
   resource: 'ai',
   defaultPriority: 200,
+  // ~10 min of local-LLM work: yield to the user's AI jobs, finish when it is quiet.
+  preemptible: true,
   handler: async (ctx) => {
     const s = service()
     if (!s) throw new Error('trend engine is not running')
