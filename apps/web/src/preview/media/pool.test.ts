@@ -121,6 +121,22 @@ describe('SourcePool', () => {
     expect(pool.failedCount).toBe(1)
   })
 
+  it('retryFailed tries failed clips again (assets arrived after the project)', () => {
+    const { pool, factory } = setup()
+    let ready = false
+    factory.mockImplementation(() => (ready ? new FakeSource() : null))
+    const a = video()
+    pool.update([a], 1, 0) // no URL yet: fails
+    pool.update([a], 1, 16)
+    expect(pool.get(a)).toBeUndefined()
+    expect(factory).toHaveBeenCalledTimes(1)
+    ready = true
+    pool.retryFailed()
+    pool.update([a], 1, 32)
+    expect(pool.get(a)).toBeDefined()
+    expect(pool.failedCount).toBe(0)
+  })
+
   it('ignores duplicate clips in the wanted list', () => {
     const { pool, factory } = setup()
     const a = video()

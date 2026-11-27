@@ -308,8 +308,11 @@ class Engine implements PreviewEngine {
         this.#pool.closeAll()
         this.#sourceUrls.clear()
       }
+      // clips that failed for lack of an asset (the project loaded first) get a fresh try
+      this.#pool.retryFailed()
       // a new or rebuilt matte (version in the URL): reopen the mask decoders
       this.#mattes.closeAll()
+      this.#mattes.retryFailed()
       const urls = new Set<string>()
       for (const id of Object.keys(assets)) {
         const u = this.#assetUrl(id)

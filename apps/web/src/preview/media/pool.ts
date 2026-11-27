@@ -108,7 +108,10 @@ export class SourcePool {
   readonly #wants: PoolWant[] = []
   readonly #wantObjs: PoolWant[] = []
   readonly #clips = new Map<string, VisualClip>()
-  /** Keys whose sources (and fallbacks) failed: never retried until the clip changes. */
+  /**
+   * Keys whose sources (and fallbacks) failed: not retried every frame, only when the clip
+   * changes or `retryFailed()` says the inputs did (e.g. the asset list arrived).
+   */
   readonly #failed = new Set<string>()
 
   constructor(factory: SourceFactory, cap: number) {
@@ -186,6 +189,15 @@ export class SourcePool {
   /** Errors of sources that could not be opened at all (for the stats overlay). */
   get failedCount(): number {
     return this.#failed.size
+  }
+
+  /**
+   * Forget past failures so the next update tries those clips again. Call when what a source
+   * is opened from changed: a clip whose asset wasn't loaded yet has no URL and fails, and
+   * would otherwise stay blank after the assets arrive.
+   */
+  retryFailed(): void {
+    this.#failed.clear()
   }
 
   closeAll(): void {
