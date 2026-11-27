@@ -123,6 +123,7 @@ test.describe('beat sync options', () => {
     await page.goto(`/p/${PROJECT_ID}`)
     await expect(page.getByTestId('timeline')).toBeVisible()
     await page.getByRole('toolbar', { name: 'Tools' }).locator('[data-tool="ai"]').click()
+    await page.getByRole('button', { name: 'Beat sync', exact: true }).click()
 
     await expect(page.getByRole('radiogroup', { name: 'Cut on' })).toBeVisible()
     for (const label of ['Beat', '2 beats', 'Bar', '2 bars']) {

@@ -4,14 +4,13 @@ import {
   CircleCheck,
   Image as ImageIcon,
   Music,
+  Plus,
   RotateCcw,
-  Upload,
   X,
 } from 'lucide-react'
 import { useMemo, useState, type DragEvent } from 'react'
 import { api } from '@/api/index.ts'
 import { useAssets } from '@/api/queries.ts'
-import { EmptyState } from '@/components/EmptyState.tsx'
 import { FileButton } from '@/components/FileButton.tsx'
 import { IconButton } from '@/components/IconButton.tsx'
 import { ProgressRing } from '@/components/ProgressRing.tsx'
@@ -70,13 +69,12 @@ export function MediaLibrary({ onAdded, className }: { onAdded?: () => void; cla
 
   return (
     <section aria-label="Media" className={cn('flex min-h-0 flex-col', className)}>
-      <div className="flex items-center gap-2 px-3 pt-3">
+      <div className="px-3 pt-3">
         <SegmentedControl<Filter>
           size="sm"
           label="Media type"
           value={filter}
           onChange={setFilter}
-          className="flex-1"
           options={[
             { value: 'all', label: 'All' },
             { value: 'video', label: 'Video' },
@@ -84,14 +82,6 @@ export function MediaLibrary({ onAdded, className }: { onAdded?: () => void; cla
             { value: 'audio', label: 'Audio' },
           ]}
         />
-        <FileButton
-          label="Upload media"
-          testId="library-upload"
-          onFiles={(files) => enqueueUploads(files, projectId ? { projectId } : {})}
-          className="size-10 shrink-0 rounded-xl bg-accent text-accent-fg"
-        >
-          <Upload size={18} />
-        </FileButton>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
@@ -108,18 +98,34 @@ export function MediaLibrary({ onAdded, className }: { onAdded?: () => void; cla
               <Skeleton key={i} className="aspect-square" />
             ))}
           </div>
-        ) : shown.length === 0 && active.length === 0 ? (
-          <EmptyState
-            icon={<Upload size={24} />}
-            title="No media yet"
-            description="Upload videos, photos or music from this device."
-          />
         ) : (
-          <ul className="grid grid-cols-3 gap-2" data-testid="media-grid">
-            {shown.map((a) => (
-              <AssetTile key={a.id} asset={a} used={usedSet.has(a.id)} onAdd={add} />
-            ))}
-          </ul>
+          <>
+            <ul className="grid grid-cols-3 gap-2" data-testid="media-grid">
+              <li>
+                <FileButton
+                  label="Upload media"
+                  testId="library-upload"
+                  onFiles={(files) => enqueueUploads(files, projectId ? { projectId } : {})}
+                  className="aspect-square w-full flex-col gap-1.5 rounded-xl bg-accent/10 text-sm font-semibold text-accent ring-1 ring-accent/40 ring-inset transition-transform duration-150 hover:bg-accent/15 active:scale-95"
+                >
+                  <span className="panels-cta grid size-10 place-items-center rounded-full bg-accent text-accent-fg">
+                    <Plus size={22} />
+                  </span>
+                  Upload
+                </FileButton>
+              </li>
+              {shown.map((a) => (
+                <AssetTile key={a.id} asset={a} used={usedSet.has(a.id)} onAdd={add} />
+              ))}
+            </ul>
+            {shown.length === 0 && active.length === 0 && (
+              <p className="mt-4 text-center text-sm text-muted">
+                {filter === 'all'
+                  ? 'Your videos, photos and music show up here.'
+                  : 'Nothing of this type yet.'}
+              </p>
+            )}
+          </>
         )}
       </div>
     </section>

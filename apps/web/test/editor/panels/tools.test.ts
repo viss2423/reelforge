@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { closePanel, watchPanelSelection } from '@/editor/panels/index.tsx'
 import { CLIP_PANEL, isClipPanel, isRootPanel, ROOT_PANEL } from '@/editor/panels/panelIds.ts'
 import { clipPanelApplies, panelDef, PANELS } from '@/editor/panels/registry.tsx'
-import { activateTool, ROOT_TOOLS, toolsFor, type ToolDef } from '@/editor/panels/tools.tsx'
+import {
+  activateTool,
+  dockFor,
+  ROOT_TOOLS,
+  toolsFor,
+  type ToolDef,
+} from '@/editor/panels/tools.tsx'
 import { MEDIA_PANEL } from '@/editor/layout.ts'
 import type { EditorStoreApi } from '@/state/editorStore.ts'
 import { clipIn, richStore } from './helpers.ts'
@@ -140,6 +146,49 @@ describe('toolsFor', () => {
     expect(panelDef('nope')).toBeUndefined()
     expect(panelDef(null)).toBeUndefined()
     expect(panelDef(MEDIA_PANEL)).toBeUndefined()
+  })
+})
+
+/** The dock with nothing selected, or with clip `clipId` selected. */
+const dockOf = (clipId?: string) => {
+  if (!clipId) return dockFor(toolsFor(undefined, undefined), undefined)
+  const loc = s()
+    .project!.tracks.flatMap((t) => t.clips.map((c, index) => ({ c, t, index })))
+    .find((x) => x.c.id === clipId)!
+  return dockFor(toolsFor(loc.c, loc.t.kind, loc.index), loc.c)
+}
+
+describe('dockFor', () => {
+  it('root: Magic first, then Audio, Text, Captions, Effects; the rest behind More', () => {
+    const d = dockOf()
+    expect(ids(d.primary)).toEqual(['ai', 'audio', 'text', 'captions', 'effects'])
+    expect(d.primary[0]!.label).toBe('Magic')
+    expect(d.more.flatMap((g) => ids(g.tools))).toEqual([
+      'edit',
+      'stickers',
+      'filters',
+      'templates',
+      'canvas',
+    ])
+  })
+
+  it('clip: the five most used, Delete last; every other tool grouped under More', () => {
+    const v2 = dockOf('v2')
+    expect(ids(v2.primary)).toEqual(['split', 'speed', 'volume', 'adjust', 'delete'])
+    expect(v2.more.map((g) => g.title)).toEqual(['Edit', 'Look', 'Sound'])
+    const txt = dockOf('txt')
+    expect(ids(txt.primary)).toEqual(['split', 'text', 'animations', 'transform', 'delete'])
+    expect(txt.more.map((g) => g.title)).toEqual(['Edit', 'Layer'])
+    // Nothing is lost or duplicated.
+    for (const id of ['v2', 'txt', 'stk', 'mus', 'ov1']) {
+      const loc = s()
+        .project!.tracks.flatMap((t) => t.clips.map((c, index) => ({ c, t, index })))
+        .find((x) => x.c.id === id)!
+      const all = ids(toolsFor(loc.c, loc.t.kind, loc.index))
+      const d = dockOf(id)
+      const shown = [...ids(d.primary), ...d.more.flatMap((g) => ids(g.tools))]
+      expect(shown.toSorted()).toEqual(all.toSorted())
+    }
   })
 })
 

@@ -65,36 +65,33 @@ export function StickersPanel() {
           </Gallery>
         )}
       </Section>
-      <Section
-        title="Your images"
-        action={
+      <Section title="Your images">
+        <Gallery label="Your images">
           <FileButton
             onFiles={(f) => void upload(f)}
             accept="image/*"
             multiple={false}
             disabled={busy}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold hover:bg-surface-2"
+            label="Upload an image"
+            className="aspect-square w-full flex-col gap-1 self-start rounded-xl bg-accent/10 text-xs font-semibold text-accent ring-1 ring-accent/40 ring-inset hover:bg-accent/15"
           >
-            {busy ? <Spinner /> : <ImagePlus size={14} />} Upload
+            {busy ? <Spinner /> : <ImagePlus size={22} />}
+            Upload
           </FileButton>
-        }
-      >
-        {images.length > 0 ? (
-          <Gallery label="Your images">
-            {images.map((a) => (
-              <Tile key={a.id} label={a.name} onClick={() => insert({ assetId: a.id }, a.name)}>
-                <img
-                  src={api.posterUrl(a.id)}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="size-4/5 object-contain"
-                />
-              </Tile>
-            ))}
-          </Gallery>
-        ) : (
-          <Hint>PNG logos and cut-outs work great as stickers.</Hint>
+          {images.map((a) => (
+            <Tile key={a.id} label={a.name} onClick={() => insert({ assetId: a.id }, a.name)}>
+              <img
+                src={api.posterUrl(a.id)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="size-4/5 object-contain"
+              />
+            </Tile>
+          ))}
+        </Gallery>
+        {images.length === 0 && (
+          <p className="text-xs text-muted">PNG logos and cut-outs work great as stickers.</p>
         )}
       </Section>
     </PanelBody>

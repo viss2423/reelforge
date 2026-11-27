@@ -4,25 +4,42 @@
  * cached); the preview and the export then apply the chosen background live.
  */
 import type { Asset, BackgroundMode, MediaClip } from '@reelforge/core'
-import { AlertTriangle, RefreshCw, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Ban,
+  Check,
+  Droplet,
+  Image as ImageIcon,
+  Palette,
+  RefreshCw,
+  UserRoundX,
+  X,
+} from 'lucide-react'
 import { api } from '@/api/index.ts'
 import { Button } from '@/components/Button.tsx'
-import { ColorPicker } from '@/components/ColorPicker.tsx'
 import { ProgressRing } from '@/components/ProgressRing.tsx'
-import { SegmentedControl } from '@/components/SegmentedControl.tsx'
 import { Slider } from '@/components/Slider.tsx'
 import { useAssetsMap, useEditor } from '@/state/selectors.ts'
 import { edit, gesture } from '../model/commands.ts'
 import { DEFAULT_BACKGROUND, setBackground } from '../model/edits.ts'
 import { matteJobs, useMatteJob, type MatteModel } from '../model/matteJobs.ts'
-import { Gallery, Hint, Section, Tile } from '../ui.tsx'
+import {
+  Advanced,
+  ChoiceTiles,
+  Gallery,
+  Hint,
+  Section,
+  SwatchPicker,
+  Tile,
+  type ChoiceOption,
+} from '../ui.tsx'
 
-const MODES: readonly { value: BackgroundMode; label: string }[] = [
-  { value: 'keep', label: 'Off' },
-  { value: 'remove', label: 'Remove' },
-  { value: 'blur', label: 'Blur' },
-  { value: 'color', label: 'Colour' },
-  { value: 'image', label: 'Image' },
+const MODES: readonly ChoiceOption<BackgroundMode>[] = [
+  { value: 'keep', label: 'Off', icon: <Ban size={22} /> },
+  { value: 'blur', label: 'Blur', icon: <Droplet size={22} /> },
+  { value: 'color', label: 'Colour', icon: <Palette size={22} /> },
+  { value: 'image', label: 'Image', icon: <ImageIcon size={22} /> },
+  { value: 'remove', label: 'Remove', icon: <UserRoundX size={22} /> },
 ]
 
 /** Matte state of an asset for the UI. */
@@ -46,9 +63,17 @@ function MatteStatus({ clip, asset }: { clip: MediaClip; asset: Asset | undefine
     matteJobs.start(clip.assetId, m, { ...(projectId ? { projectId } : {}), force })
   if (state === 'running') {
     return (
-      <div className="flex items-center gap-3" role="status">
-        <ProgressRing value={job?.progress} label="Separating subject" showLabel />
-        <p className="flex-1 text-sm">Separating the subject on your computer…</p>
+      <div
+        className="flex items-center gap-3 rounded-2xl bg-surface-2 py-2 pr-2 pl-3"
+        role="status"
+      >
+        <ProgressRing
+          value={job?.progress}
+          label="Separating subject"
+          showLabel
+          className="text-accent"
+        />
+        <p className="flex-1 text-sm">Finding the subject…</p>
         <Button
           size="sm"
           variant="secondary"
@@ -62,7 +87,7 @@ function MatteStatus({ clip, asset }: { clip: MediaClip; asset: Asset | undefine
   }
   if (state === 'failed') {
     return (
-      <div className="flex flex-col gap-2" role="alert">
+      <div className="flex flex-col gap-2 rounded-2xl bg-danger/10 p-3" role="alert">
         <p className="flex items-start gap-2 text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           {job?.error ?? 'Subject separation failed.'}
@@ -73,16 +98,15 @@ function MatteStatus({ clip, asset }: { clip: MediaClip; asset: Asset | undefine
       </div>
     )
   }
-  return (
-    <div className="flex flex-col gap-2">
-      {state === 'none' ? (
-        <Button size="sm" onClick={() => start(model)}>
-          Separate subject
-        </Button>
-      ) : (
-        <Hint>Subject separated.</Hint>
-      )}
-    </div>
+  return state === 'none' ? (
+    <Button block onClick={() => start(model)}>
+      Separate subject
+    </Button>
+  ) : (
+    <p className="flex items-center gap-1.5 text-sm text-muted">
+      <Check size={16} className="text-success" />
+      Subject separated.
+    </p>
   )
 }
 
@@ -129,7 +153,13 @@ export function BackgroundSection({ clip }: { clip: MediaClip }) {
   }
   return (
     <Section title="Background">
-      <SegmentedControl label="Background" options={MODES} value={bg.mode} onChange={setMode} />
+      <ChoiceTiles
+        label="Background"
+        options={MODES}
+        value={bg.mode}
+        onChange={setMode}
+        size="sm"
+      />
       {bg.mode !== 'keep' && (
         <>
           <MatteStatus clip={clip} asset={asset} />
@@ -147,7 +177,7 @@ export function BackgroundSection({ clip }: { clip: MediaClip }) {
             />
           )}
           {bg.mode === 'color' && (
-            <ColorPicker
+            <SwatchPicker
               label="Background colour"
               value={bg.color}
               {...gesture<string>('Background colour', (d, color) =>
@@ -156,17 +186,19 @@ export function BackgroundSection({ clip }: { clip: MediaClip }) {
             />
           )}
           {bg.mode === 'image' && <ImagePicker clip={clip} value={bg.assetId} />}
-          <Slider
-            label="Edge softness"
-            value={bg.feather}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={DEFAULT_BACKGROUND.feather}
-            {...gesture<number>('Edge softness', (d, feather) =>
-              setBackground(d, clip.id, { feather }),
-            )}
-          />
+          <Advanced id="background">
+            <Slider
+              label="Edge softness"
+              value={bg.feather}
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={DEFAULT_BACKGROUND.feather}
+              {...gesture<number>('Edge softness', (d, feather) =>
+                setBackground(d, clip.id, { feather }),
+              )}
+            />
+          </Advanced>
         </>
       )}
     </Section>

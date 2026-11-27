@@ -5,7 +5,6 @@
 import type { TextClip, TextPreset, TextStyle } from '@reelforge/core'
 import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react'
 import { useEffect } from 'react'
-import { ColorPicker } from '@/components/ColorPicker.tsx'
 import { SegmentedControl } from '@/components/SegmentedControl.tsx'
 import { Slider } from '@/components/Slider.tsx'
 import type { Packs } from '@/api/schemas.ts'
@@ -20,7 +19,16 @@ import {
   setTextStyle,
 } from '../model/edits.ts'
 import { FALLBACK_FAMILIES, registerPackFonts, textPreviewStyle } from '../textPreview.ts'
-import { Gallery, PackThumb, SecondsSlider, Section, Tile, Toggle } from '../ui.tsx'
+import {
+  Advanced,
+  Gallery,
+  PackThumb,
+  SecondsSlider,
+  Section,
+  SwatchPicker,
+  Tile,
+  Toggle,
+} from '../ui.tsx'
 
 /** Tile scale: canvas px → tile px for a ~96 px wide tile. */
 const TILE_SCALE = 0.22
@@ -149,15 +157,6 @@ export function TextStyleEditor({ clip }: { clip: TextClip }) {
           unit=" px"
           {...styleGesture('Text size', 'fontSize')}
         />
-        <Slider
-          label="Weight"
-          value={s.fontWeight}
-          min={100}
-          max={900}
-          step={100}
-          defaultValue={800}
-          {...styleGesture('Font weight', 'fontWeight')}
-        />
         <SegmentedControl
           label="Align"
           options={ALIGNS}
@@ -169,14 +168,25 @@ export function TextStyleEditor({ clip }: { clip: TextClip }) {
           checked={s.uppercase}
           onChange={(uppercase) => style('All caps', { uppercase })}
         />
-        <Toggle
-          label="Italic"
-          checked={s.italic}
-          onChange={(italic) => style('Italic', { italic })}
-        />
+        <Advanced id="text-font">
+          <Slider
+            label="Weight"
+            value={s.fontWeight}
+            min={100}
+            max={900}
+            step={100}
+            defaultValue={800}
+            {...styleGesture('Font weight', 'fontWeight')}
+          />
+          <Toggle
+            label="Italic"
+            checked={s.italic}
+            onChange={(italic) => style('Italic', { italic })}
+          />
+        </Advanced>
       </Section>
       <Section title="Colour">
-        <ColorPicker
+        <SwatchPicker
           label="Text colour"
           value={s.color}
           {...gesture<string>('Text colour', (d, color) => setTextStyle(d, id, { color }))}
@@ -193,7 +203,7 @@ export function TextStyleEditor({ clip }: { clip: TextClip }) {
           {...styleGesture('Outline width', 'strokeWidth')}
         />
         {s.strokeWidth > 0 && (
-          <ColorPicker
+          <SwatchPicker
             label="Outline colour"
             value={s.strokeColor}
             {...gesture<string>('Outline colour', (d, strokeColor) =>
@@ -230,7 +240,7 @@ export function TextStyleEditor({ clip }: { clip: TextClip }) {
           defaultValue={4}
           {...styleGesture('Shadow offset', 'shadowY')}
         />
-        <ColorPicker
+        <SwatchPicker
           label="Shadow colour"
           alpha
           value={s.shadowColor}
@@ -249,7 +259,7 @@ export function TextStyleEditor({ clip }: { clip: TextClip }) {
         />
         {s.backgroundColor !== undefined && (
           <>
-            <ColorPicker
+            <SwatchPicker
               label="Box colour"
               alpha
               value={s.backgroundColor}
@@ -339,7 +349,7 @@ export function TextContent({ clip }: { clip: TextClip }) {
       />
       <Toggle
         label="Behind subject"
-        description="People in the main video appear in front of the text (uses Background → subject separation)."
+        description="People in the video appear in front of it"
         checked={!!clip.behindSubject}
         onChange={(on) => edit('Text behind subject', (d) => setBehindSubject(d, clip.id, on))}
       />

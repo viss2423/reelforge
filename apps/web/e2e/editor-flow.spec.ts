@@ -67,7 +67,7 @@ test('add it to the timeline and autosave', async ({ pairedPage: page }, info) =
   await expect(clips).toHaveCount(1)
   await expect(page.getByTestId('sync')).toHaveAttribute('data-status', 'saved')
 
-  // Undo/redo round-trip through the toolbar.
+  // Undo/redo round-trip through the transport buttons.
   await page.getByRole('button', { name: /^Undo/ }).click()
   await expect(clips).toHaveCount(0)
   await page.getByRole('button', { name: /^Redo/ }).click()

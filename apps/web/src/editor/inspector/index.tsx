@@ -112,9 +112,14 @@ function ProjectProperties() {
         </span>
       </Hint>
       <div className="grid grid-cols-2 gap-2">
-        <Button icon={<Wand2 size={16} />} onClick={() => open(ROOT_PANEL.ai)}>
-          AI tools
-        </Button>
+        <button
+          type="button"
+          onClick={() => open(ROOT_PANEL.ai)}
+          className="panels-magic flex h-11 items-center justify-center gap-2 rounded-xl text-[15px] font-semibold ring-1 ring-white/10"
+        >
+          <Wand2 size={16} className="text-violet" />
+          Magic
+        </button>
         <Button icon={<Captions size={16} />} onClick={() => open(ROOT_PANEL.captions)}>
           Captions
         </Button>

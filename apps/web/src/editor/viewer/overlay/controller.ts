@@ -22,6 +22,7 @@ import { toast } from '@/components/Toast.tsx'
 import { haptic } from '@/lib/haptics.ts'
 import type { EditorStore, EditorStoreApi } from '@/state/editorStore.ts'
 import { setAnimatable, valueAt } from '../../panels/model/keyframes.ts'
+import { CLIP_PANEL } from '../../panels/panelIds.ts'
 import { perfEnd, perfStart } from '../../timeline/perf.ts'
 import { setPreviewOverride } from '../previewOverride.ts'
 import {
@@ -48,6 +49,8 @@ import {
 
 /** Space (CSS px) the rotate handle needs above a frame. */
 const ROT_HANDLE_ROOM = 40
+/** With the Transform tool open the frame always shows. */
+const TRANSFORM_PANEL: string = CLIP_PANEL.transform
 
 export interface OverlayElements {
   /** Input surface covering the preview box. */
@@ -166,6 +169,12 @@ export class OverlayController {
   /** CSS px per canvas px. */
   k = 0
   cropMode = false
+  /**
+   * The selection frame shows only once the video itself was touched (or the Transform
+   * tool is open): selecting a clip on the timeline leaves the stage clean. Any selection
+   * change that doesn't come from the canvas disarms it again.
+   */
+  armed = false
   readonly #cb: OverlayCallbacks
   readonly #pointers = new Map<number, PointerInfo>()
   #press: Press | null = null
@@ -291,7 +300,10 @@ export class OverlayController {
       if (g?.kind === 'crop') return
       if (g) this.#cancelGesture()
       this.#press = null
-      if (placed) this.#startTransform('pinch', placed)
+      if (placed) {
+        this.armed = true
+        this.#startTransform('pinch', placed)
+      }
       return
     }
     if (this.#pointers.size > 2 || this.#gesture) return
@@ -315,6 +327,9 @@ export class OverlayController {
       const s = this.store.getState()
       if (!(s.selection.clipIds.length === 1 && s.selection.clipIds[0] === hit.placed.clip.id))
         s.select([hit.placed.clip.id], { trackId: hit.placed.track.id })
+      // After the select: its store notification disarms (it can't tell who selected).
+      this.armed = true
+      this.requestFrame()
     }
     this.#press = {
       id: e.pointerId,
@@ -621,12 +636,23 @@ export class OverlayController {
 
   #onStore(s: EditorStore, prev: EditorStore): void {
     if (
+      s.selection !== prev.selection &&
+      s.selection.clipIds.join('\n') !== prev.selection.clipIds.join('\n')
+    )
+      this.armed = false
+    if (
       s.project !== prev.project ||
       s.selection !== prev.selection ||
       s.playhead !== prev.playhead ||
-      s.assets !== prev.assets
+      s.assets !== prev.assets ||
+      s.activePanel !== prev.activePanel
     )
       this.requestFrame()
+  }
+
+  /** Whether the selection frame may show: the video was touched or Transform is open. */
+  get framed(): boolean {
+    return this.armed || this.store.getState().activePanel === TRANSFORM_PANEL
   }
 
   requestFrame(): void {
@@ -659,7 +685,9 @@ export class OverlayController {
       if (g?.kind === 'crop') this.#update()
       shown = this.selectedNow()
     }
-    this.#paintFrame(g?.kind === 'crop' || this.cropMode ? undefined : shown)
+    this.#paintFrame(
+      g?.kind === 'crop' || this.cropMode || (!g && !this.framed) ? undefined : shown,
+    )
     this.#paintGuides(g && g.kind !== 'crop' ? g.guides : [])
     this.#paintCrop(this.cropMode ? shown : undefined, g?.kind === 'crop' ? g : undefined)
     this.#paintBadge(g, shown)

@@ -133,7 +133,7 @@ export const ROOT_TOOLS: readonly ToolDef[] = [
   { id: 'effects', label: 'Effects', icon: Sparkles, panel: ROOT_PANEL.effects },
   { id: 'filters', label: 'Filters', icon: Palette, panel: ROOT_PANEL.filters },
   { id: 'templates', label: 'Templates', icon: LayoutTemplate, panel: ROOT_PANEL.templates },
-  { id: 'ai', label: 'AI', icon: Wand2, panel: ROOT_PANEL.ai },
+  { id: 'ai', label: 'Magic', icon: Wand2, panel: ROOT_PANEL.ai },
   { id: 'canvas', label: 'Canvas', icon: Frame, panel: ROOT_PANEL.canvas },
 ]
 
@@ -215,6 +215,75 @@ export const toolsFor = (
     )
   }
   return tools
+}
+
+/* ------------------------------------------------------------------ dock */
+
+/** A titled group of tools in the dock's "More" grid. */
+export interface ToolGroup {
+  title: string
+  tools: ToolDef[]
+}
+
+/** What the dock shows: a few primary tools, the rest behind "More". */
+export interface Dock {
+  primary: ToolDef[]
+  more: ToolGroup[]
+}
+
+/** Root dock, in order (Magic first). Everything else goes behind "More". */
+const ROOT_DOCK: readonly string[] = ['ai', 'audio', 'text', 'captions', 'effects']
+
+/** Clip dock: the first four of these that apply, then Delete. */
+const CLIP_DOCK_PRIORITY: readonly string[] = [
+  'split',
+  'text',
+  'speed',
+  'volume',
+  'animations',
+  'adjust',
+  'filter',
+  'fade',
+  'transform',
+]
+const CLIP_DOCK_SIZE = 4
+
+/** "More" grid groups for clip tools (a tool lands in the first group listing it). */
+const CLIP_GROUPS: ReadonlyArray<{ title: string; ids: readonly string[] }> = [
+  { title: 'Edit', ids: ['duplicate', 'replace', 'reverse', 'keyframe', 'transition'] },
+  {
+    title: 'Look',
+    ids: ['adjust', 'filter', 'effects', 'animations', 'transform', 'background', 'chroma'],
+  },
+  { title: 'Sound', ids: ['speed', 'volume', 'fade'] },
+  { title: 'Layer', ids: ['forward', 'backward'] },
+]
+
+/**
+ * Splits a tool list (from `toolsFor`) into the dock's primary tools and the grouped
+ * "More" grid. Pure, so the mapping is unit-tested alongside `toolsFor`.
+ */
+export const dockFor = (tools: readonly ToolDef[], clip: Clip | undefined): Dock => {
+  const byId = new Map(tools.map((t) => [t.id, t]))
+  if (!clip) {
+    const primary = ROOT_DOCK.flatMap((id) => byId.get(id) ?? [])
+    const rest = tools.filter((t) => !primary.includes(t))
+    return { primary, more: rest.length ? [{ title: 'More tools', tools: rest }] : [] }
+  }
+  const primary = CLIP_DOCK_PRIORITY.flatMap((id) => byId.get(id) ?? []).slice(0, CLIP_DOCK_SIZE)
+  const del = byId.get('delete')
+  if (del) primary.push(del)
+  const rest = tools.filter((t) => !primary.includes(t))
+  const placed = new Set<string>()
+  const more: ToolGroup[] = []
+  for (const g of CLIP_GROUPS) {
+    const groupTools = rest.filter((t) => g.ids.includes(t.id) && !placed.has(t.id))
+    for (const t of groupTools) placed.add(t.id)
+    if (groupTools.length) more.push({ title: g.title, tools: groupTools })
+  }
+  const other = rest.filter((t) => !placed.has(t.id))
+  if (other.length) more.push({ title: 'More', tools: other })
+  return { primary, more }
 }
 
 /** Runs a tool: opens its panel (or closes it when already open) or runs its command. */

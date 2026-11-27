@@ -3,10 +3,9 @@
  * options, the transcript editor and filler-word removal.
  */
 import type { CaptionStyle, Captions } from '@reelforge/core'
-import { Captions as CaptionsIcon, Eraser } from 'lucide-react'
+import { Captions as CaptionsIcon, Eraser, Languages } from 'lucide-react'
 import { useRef, useState, type PointerEvent } from 'react'
 import { Button } from '@/components/Button.tsx'
-import { ColorPicker } from '@/components/ColorPicker.tsx'
 import { SegmentedControl } from '@/components/SegmentedControl.tsx'
 import { Slider } from '@/components/Slider.tsx'
 import { Tabs } from '@/components/Tabs.tsx'
@@ -20,7 +19,17 @@ import { clamp } from '../model/draft.ts'
 import { applyCaptionStyle, setCaptionStyle, setCaptionsProps } from '../model/transcript.ts'
 import { usePackFonts } from '../sections/TextSection.tsx'
 import { textPreviewStyle } from '../textPreview.ts'
-import { Chips, Gallery, PackThumb, PanelBody, Section, Tile, Toggle } from '../ui.tsx'
+import {
+  Advanced,
+  Chips,
+  Gallery,
+  PackThumb,
+  PanelBody,
+  Section,
+  SwatchPicker,
+  Tile,
+  Toggle,
+} from '../ui.tsx'
 import { TranscriptEditor } from './TranscriptEditor.tsx'
 
 /** Languages offered for transcription (whisper supports ~100; these cover most creators). */
@@ -68,10 +77,11 @@ export function LanguageSelect({
   onChange: (v: string) => void
 }) {
   return (
-    <label className="flex items-center justify-between gap-3 text-[15px]">
-      Language
+    <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
+      <Languages size={16} aria-hidden />
+      <span className="sr-only">Language</span>
       <select
-        className="h-10 rounded-lg border border-line bg-surface-2 px-2 text-sm"
+        className="h-9 rounded-lg bg-surface-2 px-2 text-sm font-semibold text-fg"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -187,23 +197,6 @@ function CaptionOptions({ captions }: { captions: Captions }) {
           value={st.mode}
           onChange={(mode) => set('Caption animation', { mode })}
         />
-        <Slider
-          label="Words per line"
-          value={st.maxWordsPerLine}
-          min={1}
-          max={12}
-          step={1}
-          defaultValue={3}
-          {...gesture<number>('Words per line', (d, v) =>
-            setCaptionStyle(d, { maxWordsPerLine: v }),
-          )}
-        />
-        <SegmentedControl
-          label="Lines"
-          options={LINES}
-          value={st.maxLines}
-          onChange={(maxLines) => set('Caption lines', { maxLines })}
-        />
         <div className="flex items-center gap-4">
           <PositionPad y={st.y} handlers={yHandlers} />
           <Slider
@@ -237,12 +230,31 @@ function CaptionOptions({ captions }: { captions: Captions }) {
         />
       </Section>
       <Section title="Highlight">
-        <ColorPicker
+        <SwatchPicker
           label="Spoken word colour"
           value={st.activeColor}
           {...gesture<string>('Highlight colour', (d, activeColor) =>
             setCaptionStyle(d, { activeColor }),
           )}
+        />
+      </Section>
+      <Advanced id="captions">
+        <Slider
+          label="Words per line"
+          value={st.maxWordsPerLine}
+          min={1}
+          max={12}
+          step={1}
+          defaultValue={3}
+          {...gesture<number>('Words per line', (d, v) =>
+            setCaptionStyle(d, { maxWordsPerLine: v }),
+          )}
+        />
+        <SegmentedControl
+          label="Lines"
+          options={LINES}
+          value={st.maxLines}
+          onChange={(maxLines) => set('Caption lines', { maxLines })}
         />
         <Toggle
           label="Emphasise keywords"
@@ -251,7 +263,7 @@ function CaptionOptions({ captions }: { captions: Captions }) {
           onChange={(emphasizeKeywords) => set('Keyword emphasis', { emphasizeKeywords })}
         />
         {st.emphasizeKeywords && (
-          <ColorPicker
+          <SwatchPicker
             label="Keyword colour"
             value={st.keywordColor}
             {...gesture<string>('Keyword colour', (d, keywordColor) =>
@@ -259,7 +271,7 @@ function CaptionOptions({ captions }: { captions: Captions }) {
             )}
           />
         )}
-      </Section>
+      </Advanced>
     </>
   )
 }
@@ -287,27 +299,41 @@ export function CaptionsPanel() {
 
   return (
     <PanelBody>
-      <Section title="Auto captions">
-        <LanguageSelect
-          value={language}
-          onChange={(v) => {
-            setLanguage(v)
-            if (captions) edit('Caption language', (d) => setCaptionsProps(d, { language: v }))
-          }}
-        />
+      <section aria-label="Auto captions" className="flex flex-col gap-1">
         <TaskCard id="captions">
-          <Button variant="primary" block icon={<CaptionsIcon size={18} />} onClick={generate}>
+          <Button
+            variant="primary"
+            size="lg"
+            block
+            className="panels-cta"
+            icon={<CaptionsIcon size={18} />}
+            onClick={generate}
+          >
             {hasWords ? 'Regenerate captions' : 'Generate captions'}
           </Button>
         </TaskCard>
-        <TaskCard id="fillers">
-          {hasWords && (
-            <Button block icon={<Eraser size={18} />} onClick={() => startFillers(language)}>
-              Remove filler words
-            </Button>
-          )}
-        </TaskCard>
-      </Section>
+        <div className="flex flex-wrap items-center justify-between gap-x-2">
+          <LanguageSelect
+            value={language}
+            onChange={(v) => {
+              setLanguage(v)
+              if (captions) edit('Caption language', (d) => setCaptionsProps(d, { language: v }))
+            }}
+          />
+          <TaskCard id="fillers">
+            {hasWords && (
+              <Button
+                size="sm"
+                variant="ghost"
+                icon={<Eraser size={16} />}
+                onClick={() => startFillers(language)}
+              >
+                Remove filler words
+              </Button>
+            )}
+          </TaskCard>
+        </div>
+      </section>
       <Tabs
         label="Caption settings"
         items={[

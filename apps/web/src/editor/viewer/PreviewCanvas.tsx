@@ -1,4 +1,4 @@
-import { MonitorOff } from 'lucide-react'
+import { MonitorOff, Plus, Wand2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '@/api/index.ts'
 import { useQueryClient } from '@tanstack/react-query'
@@ -9,6 +9,9 @@ import { cn } from '@/lib/cn.ts'
 import { packFonts } from '@/lib/packs.ts'
 import { createPreviewEngine, type PreviewEngine } from '@/preview/index.ts'
 import { editorStore } from '@/state/editorStore.ts'
+import { useEditor } from '@/state/selectors.ts'
+import { MEDIA_PANEL } from '../layout.ts'
+import { ROOT_PANEL } from '../panels/panelIds.ts'
 import { bindPreviewEngine, startFallbackClock } from './bindEngine.ts'
 import { backingSize, fitAspect } from './fit.ts'
 import { TransformOverlay } from './overlay/TransformOverlay.tsx'
@@ -32,6 +35,7 @@ export function PreviewCanvas({ className }: { className?: string }) {
   // Fonts come from packs; wait for that request to settle (success or not) so text renders
   // with the right faces from the first frame.
   const packsSettled = !packs.isPending
+  const empty = useEditor((s) => s.project?.tracks.every((t) => t.clips.length === 0) ?? false)
 
   useEffect(() => {
     const box = boxRef.current
@@ -113,7 +117,54 @@ export function PreviewCanvas({ className }: { className?: string }) {
           )}
         </div>
         <TransformOverlay width={css.width} height={css.height} />
+        {empty && css.width > 0 && <EmptyStage />}
       </div>
+    </div>
+  )
+}
+
+/** An empty project's stage: one big glass "Add clips", and Magic → Auto edit as the aside. */
+function EmptyStage() {
+  const s = editorStore.getState
+  return (
+    <div
+      className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 overflow-hidden rounded-lg p-4 text-center"
+      data-testid="empty-stage"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_35%,color-mix(in_srgb,var(--rf-violet)_22%,transparent),transparent_70%)]"
+      />
+      <button
+        type="button"
+        onClick={() => s().setActivePanel(MEDIA_PANEL)}
+        data-testid="add-media"
+        className="shell-glass relative flex flex-col items-center gap-3 rounded-3xl px-7 py-6 transition-transform duration-200 ease-[var(--ease-spring)] hover:bg-black/55 active:scale-[0.97]"
+      >
+        <span className="shell-gradient grid size-14 place-items-center rounded-full text-white shadow-pop">
+          <Plus size={28} strokeWidth={2.5} aria-hidden />
+        </span>
+        <span className="text-[17px] font-semibold">Add clips</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          s().setActivePanel(ROOT_PANEL.ai)
+          s().setActiveTool('ai')
+        }}
+        aria-label="Or try Magic: Auto edit"
+        className="group relative flex flex-col items-center gap-1.5 text-[13px] whitespace-nowrap text-white/75 transition-colors hover:text-white"
+      >
+        <span>or try</span>
+        <span className="shell-magic inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 font-semibold text-white shadow-pop transition-transform duration-150 ease-[var(--ease-spring)] group-active:scale-95">
+          <Wand2 size={14} aria-hidden />
+          Magic
+          <span aria-hidden className="opacity-80">
+            →
+          </span>
+          Auto edit
+        </span>
+      </button>
     </div>
   )
 }

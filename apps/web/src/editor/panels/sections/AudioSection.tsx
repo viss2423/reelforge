@@ -1,11 +1,11 @@
 /** Clip audio: volume, mute, fades, voice clean-up, ducking and role. */
 import type { AudioClip, MediaClip } from '@reelforge/core'
+import type { ReactNode } from 'react'
 import { SegmentedControl } from '@/components/SegmentedControl.tsx'
-import { Slider } from '@/components/Slider.tsx'
 import { edit, gesture } from '../model/commands.ts'
 import { isAudioClip } from '../model/draft.ts'
 import { setAudio, setAudioClipProps } from '../model/edits.ts'
-import { SecondsSlider, Section, Toggle } from '../ui.tsx'
+import { Advanced, HeroSlider, SecondsSlider, Section, Toggle } from '../ui.tsx'
 
 /** Longest fade offered: half the clip, at most 10 s. */
 export const maxFade = (duration: number): number => Math.min(10_000_000, Math.floor(duration / 2))
@@ -20,8 +20,9 @@ export function VolumeControls({ clip }: { clip: MediaClip | AudioClip }) {
   const a = clip.audio
   return (
     <Section title="Volume">
-      <Slider
+      <HeroSlider
         label="Volume"
+        display={a.muted ? 'Muted' : `${Math.round(a.volume * 100)}%`}
         value={a.volume * 100}
         min={0}
         max={400}
@@ -64,10 +65,18 @@ export function FadeControls({ clip }: { clip: MediaClip | AudioClip }) {
   )
 }
 
-export function VoiceControls({ clip }: { clip: MediaClip | AudioClip }) {
+export function VoiceControls({
+  clip,
+  folded = false,
+}: {
+  clip: MediaClip | AudioClip
+  /** Behind an "Advanced" disclosure (the phone Volume sheet). */
+  folded?: boolean
+}) {
   const audio = isAudioClip(clip) ? clip : undefined
+  const Wrap = folded ? FoldedVoice : Section
   return (
-    <Section title="Voice & mix">
+    <Wrap title="Voice & mix">
       <Toggle
         label="Enhance voice"
         description="Studio EQ and compression"
@@ -100,7 +109,15 @@ export function VoiceControls({ clip }: { clip: MediaClip | AudioClip }) {
           />
         </>
       )}
-    </Section>
+    </Wrap>
+  )
+}
+
+function FoldedVoice({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Advanced label={title} id="voice-mix">
+      {children}
+    </Advanced>
   )
 }
 
@@ -116,7 +133,7 @@ export function AudioSection({
     <>
       {parts !== 'fade' && <VolumeControls clip={clip} />}
       {parts !== 'volume' && <FadeControls clip={clip} />}
-      {parts !== 'fade' && <VoiceControls clip={clip} />}
+      {parts !== 'fade' && <VoiceControls clip={clip} folded={parts === 'volume'} />}
     </>
   )
 }

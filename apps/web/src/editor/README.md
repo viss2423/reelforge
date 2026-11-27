@@ -40,8 +40,9 @@ Sizes live in `layout.ts`. Slot containers are `data-slot="timeline|tools|inspec
   transactions, and drops of library assets (`ASSET_DRAG_MIME` from
   `media/MediaLibrary.tsx`, value = asset id → `addAssetToTimeline(editorStore, asset, {
 trackId, at })`). Its container on phones is 30 dvh tall.
-- **`ToolPanels({ variant })`**: `'mobile'` renders the bottom tool bar (≥ 44 px targets)
-  and its own panels as non-modal bottom `Sheet`s keyed by `activePanel`; the shell already
+- **`ToolPanels({ variant })`**: `'mobile'` renders the bottom tool dock (≥ 44 px targets:
+  Magic, Audio, Text, Captions, Effects — or the clip's five most used tools — plus **More**,
+  a grouped grid of the rest; `dockFor` in `panels/tools.tsx`) and its own panels as non-modal bottom `Sheet`s keyed by `activePanel`; the shell already
   renders the media sheet for `activePanel === MEDIA_PANEL`, so a "Media" tool just calls
   `setActivePanel(MEDIA_PANEL)`. `'desktop'` renders a compact strip above the timeline;
   desktop panels appear in the inspector column.
@@ -98,7 +99,10 @@ timeline's view.
 | corner handle · rotate handle         | scale about the centre (100 % snap) · rotate (90° snap, Shift = 15°)      |
 | two fingers                           | move + pinch-scale + twist together                                       |
 | double-tap text                       | inline editor (Ctrl/⌘+Enter or click away commits, Esc cancels)           |
-| Crop (toolbar) · Safe zones (toolbar) | drag the crop window over the whole source · Reels/TikTok/Shorts UI zones |
+| Crop (stage ⋯) · Safe zones (stage ⋯) | drag the crop window over the whole source · Reels/TikTok/Shorts UI zones |
+
+The selection frame shows only after the video itself was touched (or while the Transform
+tool is open); selecting a clip on the timeline leaves the stage clean.
 
 A gesture previews through `viewer/previewOverride.ts` (the engine gets a patched project;
 the store and React are untouched — no re-render per pointer move) and commits ONE dispatch
@@ -111,8 +115,8 @@ additive geometry API, so the frame matches the drawn pixels.
 
 - **Slip**: Alt+drag a video/audio clip (touch: keep holding after the lift haptic until a
   second haptic, then drag). A ghost filmstrip shows the whole available source.
-- **Roll**: Alt+drag a main-track cut, or turn on the Roll toggle (timeline tool bar).
-- **Ripple trim**: Ripple toggle — trimming a free-track clip shifts the later clips on its
+- **Roll**: Alt+drag a main-track cut, or turn on Roll edit (timeline ⋯ options).
+- **Ripple trim**: Ripple trim (timeline ⋯ options) — trimming a free-track clip shifts the later clips on its
   track (the main track always ripples).
 - **Box select**: mouse drag on empty lanes (Shift adds); two-finger drag on touch (a pinch
   is recognised when the finger distance changes first).

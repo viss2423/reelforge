@@ -58,7 +58,7 @@ export function ShareTargetScreen() {
   }
 
   return (
-    <AppFrame title="Import shared media">
+    <AppFrame title="Add to ReelForge">
       {load.state === 'loading' ? (
         <div className="grid h-60 place-items-center">
           <Spinner size={28} />
@@ -83,7 +83,7 @@ export function ShareTargetScreen() {
             {load.batch.files.map((f, i) => (
               <li
                 key={`${f.name}-${i}`}
-                className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5"
+                className="flex min-h-12 items-center gap-3 rounded-2xl bg-surface px-4 py-2.5"
               >
                 <FileVideo size={20} className="shrink-0 text-violet" />
                 <span className="min-w-0 flex-1 truncate">{f.name}</span>
@@ -92,7 +92,7 @@ export function ShareTargetScreen() {
             ))}
           </ul>
           <Button
-            className="mt-5"
+            className="bg-magic mt-5 rounded-full"
             variant="primary"
             size="lg"
             block
@@ -114,7 +114,7 @@ export function ShareTargetScreen() {
                       <button
                         type="button"
                         onClick={() => void importInto(p.id)}
-                        className="flex min-h-14 w-full items-center gap-3 rounded-xl bg-surface px-3 py-2 text-left hover:bg-surface-2"
+                        className="flex min-h-14 w-full items-center gap-3 rounded-2xl bg-surface px-4 py-2 text-left transition-colors hover:bg-surface-2"
                       >
                         <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
                         <span className="text-xs text-muted">{formatRelative(p.updatedAt)}</span>

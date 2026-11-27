@@ -121,14 +121,21 @@ const mainClipsOf = (p: Project | undefined): Clip[] =>
 test.use({ serviceWorkers: 'block' })
 
 test.describe('timeline', () => {
-  test('renders clips, ruler, playhead and track headers', async ({ page }) => {
+  test('renders clips, ruler, playhead and the timeline chrome', async ({ page }) => {
     await mockApi(page, makeProject(3))
     await openEditor(page)
     await expect(page.locator('[data-testid="timeline-clip"]')).toHaveCount(3)
     await expect(page.getByTestId('timeline-ruler')).toBeVisible()
     await expect(page.getByTestId('timeline-playhead')).toBeAttached()
     await expect(page.getByRole('group', { name: 'Main track' })).toBeVisible()
-    await expect(page.getByTestId('track-headers')).toBeVisible()
+    await expect(page.getByTestId('timeline-options')).toBeVisible()
+    if (isTouch(page)) {
+      // Phones: no header column; the main track ends in a pinned + (add media).
+      await expect(page.getByTestId('track-headers')).toHaveCount(0)
+      await expect(page.getByTestId('add-media')).toBeVisible()
+    } else {
+      await expect(page.getByTestId('track-headers')).toBeVisible()
+    }
   })
 
   test('tap selects a clip and its end handle trims it', async ({ page }) => {

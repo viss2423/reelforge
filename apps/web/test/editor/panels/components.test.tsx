@@ -86,10 +86,28 @@ describe('tool bar and sheets (phone)', () => {
   it('opens a root panel sheet from the tool bar and closes it again', async () => {
     wrap(<ToolPanels variant="mobile" />)
     const bar = screen.getByRole('toolbar', { name: 'Tools' })
-    fireEvent.click(within(bar).getByRole('button', { name: /Canvas/ }))
+    fireEvent.click(within(bar).getByRole('button', { name: /Audio/ }))
+    expect(s().activePanel).toBe(ROOT_PANEL.audio)
+    expect(await screen.findByRole('dialog', { name: 'Audio' })).toBeTruthy()
+    fireEvent.click(within(bar).getByRole('button', { name: /Audio/ }))
+    expect(s().activePanel).toBeNull()
+  })
+
+  it('docks Magic first and keeps the rest behind More', async () => {
+    wrap(<ToolPanels variant="mobile" />)
+    const bar = screen.getByRole('toolbar', { name: 'Tools' })
+    const docked = [...bar.querySelectorAll('[data-tool]')].map((b) => b.getAttribute('data-tool'))
+    expect(docked).toEqual(['ai', 'audio', 'text', 'captions', 'effects'])
+    expect(within(bar).getByRole('button', { name: /Magic/ })).toBeTruthy()
+    expect(within(bar).queryByRole('button', { name: /Canvas/ })).toBeNull()
+    // More → the grid; a tool picked there opens its panel and shows pressed in the dock.
+    fireEvent.click(screen.getByTestId('dock-more'))
+    const grid = await screen.findByTestId('dock-more-sheet')
+    fireEvent.click(within(grid).getByRole('button', { name: /Canvas/ }))
     expect(s().activePanel).toBe(ROOT_PANEL.canvas)
-    expect(await screen.findByRole('dialog', { name: 'Canvas' })).toBeTruthy()
-    fireEvent.click(within(bar).getByRole('button', { name: /Canvas/ }))
+    const promoted = within(bar).getByRole('button', { name: /Canvas/ })
+    expect(promoted.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(promoted)
     expect(s().activePanel).toBeNull()
   })
 
@@ -97,7 +115,7 @@ describe('tool bar and sheets (phone)', () => {
     wrap(<ToolPanels variant="mobile" />)
     act(() => s().select(['v2']))
     const bar = screen.getByRole('toolbar', { name: 'Tools' })
-    expect(within(bar).queryByRole('button', { name: /Templates/ })).toBeNull()
+    expect(within(bar).queryByRole('button', { name: /Captions/ })).toBeNull()
     fireEvent.click(within(bar).getByRole('button', { name: /Speed/ }))
     expect(s().activePanel).toBe(CLIP_PANEL.speed)
     fireEvent.click(await screen.findByRole('button', { name: 'Bullet' }))
@@ -107,7 +125,7 @@ describe('tool bar and sheets (phone)', () => {
     fireEvent.click(within(bar).getByRole('button', { name: 'Done' }))
     expect(s().selection.clipIds).toEqual([])
     expect(s().activePanel).toBeNull()
-    expect(within(bar).getByRole('button', { name: /Templates/ })).toBeTruthy()
+    expect(within(bar).getByRole('button', { name: /Captions/ })).toBeTruthy()
   })
 
   it('renders every panel definition without crashing', () => {
@@ -130,6 +148,7 @@ describe('AI panel', () => {
 
   it('remove silences: preview what it saves, apply as one undo step', async () => {
     openAi()
+    fireEvent.click(screen.getByRole('button', { name: 'Silences' }))
     fireEvent.click(screen.getByRole('button', { name: 'Find silences' }))
     const card = await screen.findByTestId('task-silence')
     await waitFor(() => expect(within(card).getByText('2 silences · saves 1.0 s')).toBeTruthy())
@@ -149,6 +168,7 @@ describe('AI panel', () => {
     jobResult = () =>
       fail ? { status: 'failed', error: 'whisper missing' } : { status: 'running', progress: 0.4 }
     openAi()
+    fireEvent.click(screen.getByRole('button', { name: 'Captions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Generate captions' }))
     const alert = await screen.findByRole('alert')
     expect(within(alert).getByText('Auto captions failed')).toBeTruthy()
@@ -162,8 +182,23 @@ describe('AI panel', () => {
     await waitFor(() => expect(cancelJob).toHaveBeenCalled())
   })
 
+  it('"Ask Magic" opens the tool for a short request, and back returns to the grid', () => {
+    openAi()
+    const ask = screen.getByRole('textbox', { name: 'Ask Magic' })
+    fireEvent.change(ask, { target: { value: 'cut the pauses' } })
+    fireEvent.submit(ask)
+    expect(screen.getByRole('region', { name: 'Silences' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Find silences' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Magic' }))
+    expect(screen.getByRole('region', { name: 'Magic tools' })).toBeTruthy()
+  })
+
   it('voice toggles apply to every voice clip in one step', () => {
     openAi()
+    // Clean audio sits behind "More tools".
+    expect(screen.queryByRole('button', { name: 'Clean audio' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'More tools' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clean audio' }))
     fireEvent.click(screen.getByRole('switch', { name: /Reduce noise/ }))
     expect(clip<MediaClip>('v1').audio.denoise).toBe(true)
     expect(clip<MediaClip>('ov1').audio.denoise).toBe(true)
@@ -212,9 +247,9 @@ describe('desktop inspector', () => {
   it('shows project settings with nothing selected', () => {
     wrap(<Inspector />)
     expect(screen.getByRole('heading', { name: 'Project' })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'AI tools' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Magic' }))
     expect(s().activePanel).toBe(ROOT_PANEL.ai)
-    expect(screen.getByRole('heading', { name: 'AI tools' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Magic' })).toBeTruthy()
   })
 
   it('lays out the property sections of the selected clip', () => {

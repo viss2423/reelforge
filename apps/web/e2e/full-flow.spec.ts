@@ -20,6 +20,7 @@ import { existsSync } from 'node:fs'
 import type { APIRequestContext, Page, TestInfo } from '@playwright/test'
 import { mainTrackLayout, projectDuration } from '@reelforge/core'
 import type { Clip, Job, Project, Track } from '@reelforge/core'
+import { openTool } from './dock.ts'
 import { FLOW_MEDIA } from './env.ts'
 import { createProject, expect, isDesktop, openMediaLibrary, test } from './fixtures.ts'
 import { brightFraction, grayFrameAt, grayPng, integratedLoudness, probe } from './media.ts'
@@ -176,11 +177,27 @@ const seekInto = async (page: Page, id: string, fraction: number) => {
   await pointer(page, isTouch(page)).tap(b.x + b.width * fraction, ruler.y + ruler.height / 2)
 }
 
-/** Opens the AI panel and waits for an AI task; fails fast with the task's error. */
+/** The Magic tile that holds each tool's start button. */
+const MAGIC_TILE: Record<string, string> = {
+  'Generate captions': 'Captions',
+  'Find silences': 'Silences',
+  'Sync to beat': 'Beat sync',
+}
+
+/**
+ * Opens the Magic panel, opens the tool's tile and starts it; returns the task's row (which
+ * fails fast with the task's error in `until`).
+ */
 const runAiTask = async (page: Page, button: string, task: string) => {
   await deselect(page)
   if ((await tool(page, 'ai').getAttribute('aria-pressed')) !== 'true')
     await tool(page, 'ai').click()
+  const back = page.getByRole('button', { name: 'Back to Magic' })
+  if (await back.isVisible()) await back.click()
+  await page
+    .getByRole('region', { name: 'Magic tools' })
+    .getByRole('button', { name: MAGIC_TILE[button]!, exact: true })
+    .click()
   await page.getByRole('button', { name: button, exact: true }).click()
   return page.getByTestId(`task-${task}`)
 }
@@ -273,7 +290,7 @@ test.describe('full flow on real media', () => {
 
       const a = mainClips(p)[1]!
       await selectClip(page, a.id)
-      await tool(page, 'transition').click()
+      await openTool(page, 'transition') // behind More on phones
       await page
         .getByRole('group', { name: 'Transitions' })
         .getByRole('button')
@@ -281,7 +298,7 @@ test.describe('full flow on real media', () => {
         .nth(1)
         .click()
       if (!isDesktop(page)) await page.keyboard.press('Escape') // the transition sheet
-      await tool(page, 'filter').click()
+      await openTool(page, 'filter')
       await page
         .getByRole('group', { name: 'Filters' })
         .getByRole('button')
@@ -297,6 +314,7 @@ test.describe('full flow on real media', () => {
     await test.step('upload music to the audio track', async () => {
       await page.keyboard.press('Home')
       await tool(page, 'audio').click()
+      await page.getByRole('tab', { name: 'Mine' }).click()
       await page
         .getByTestId('upload-music')
         .setInputFiles(await fileFor(FLOW_MEDIA.music, names.music, 'audio/mp4'))
@@ -395,6 +413,8 @@ test.describe('full flow on real media', () => {
       await test.step('export 1080p on the GPU and download it', async () => {
         await deselect(page)
         await page.getByTestId('export-open').click()
+        // Resolution, encoder and loudness live under Advanced.
+        await page.getByRole('button', { name: 'Advanced', expanded: false }).click()
         await page.getByRole('radiogroup', { name: 'Resolution' }).getByText('1080p').click()
         const encoder = page.getByRole('radiogroup', { name: 'Encoder' })
         const gpu = encoder.getByRole('radio', { name: 'GPU' })

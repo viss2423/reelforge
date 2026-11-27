@@ -296,6 +296,118 @@ function AddTrack({ top, expanded }: { top: number; expanded: boolean }) {
   )
 }
 
+/**
+ * Phones have no header column: the timeline options sheet lists each lane with its
+ * mute / hide / lock toggles (same names as the header buttons) and the add-track choices.
+ */
+export function TrackControls({
+  rows,
+  captionsEnabled,
+  onAdded,
+}: {
+  rows: readonly Row[]
+  captionsEnabled: boolean
+  onAdded?: () => void
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <section aria-label="Tracks">
+        <h3 className="mb-1 text-[13px] font-semibold tracking-wide text-muted uppercase">
+          Tracks
+        </h3>
+        <ul className="flex flex-col">
+          {rows.map((row) => {
+            if (row.type === 'markers') return null
+            if (row.type === 'captions')
+              return (
+                <li key={row.key} className="flex h-11 items-center gap-3">
+                  <Subtitles size={18} className="shrink-0 text-muted" aria-hidden />
+                  <span className="min-w-0 flex-1 truncate text-[15px]">Captions</span>
+                  <BigToggle
+                    on={!captionsEnabled}
+                    label={captionsEnabled ? 'Hide captions' : 'Show captions'}
+                    onClick={() => toggleCaptions(editorStore)}
+                    icon={captionsEnabled ? Eye : EyeOff}
+                  />
+                </li>
+              )
+            const Icon = KIND_ICON[row.track.kind]
+            return (
+              <li key={row.key} className="flex h-11 items-center gap-3">
+                <Icon size={18} className="shrink-0 text-muted" aria-hidden />
+                <span className="min-w-0 flex-1 truncate text-[15px]">{trackLabel(row.track)}</span>
+                {FLAGS[row.track.kind].map((flag) => {
+                  const ui = FLAG_UI[flag]
+                  const on = row.track[flag]
+                  return (
+                    <BigToggle
+                      key={flag}
+                      on={on}
+                      icon={on ? ui.on : ui.off}
+                      label={`${ui.label[on ? 0 : 1]} ${trackLabel(row.track).toLowerCase()}`}
+                      onClick={() => toggleTrackFlag(editorStore, row.track.id, flag)}
+                    />
+                  )
+                })}
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+      <section aria-label="Add track">
+        <h3 className="mb-2 text-[13px] font-semibold tracking-wide text-muted uppercase">
+          Add track
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          {ADD_KINDS.map(({ kind, label, icon: Icon }) => (
+            <button
+              key={kind}
+              type="button"
+              aria-label={`Add ${label.toLowerCase()} track`}
+              onClick={() => {
+                addTrackOfKind(editorStore, kind)
+                onAdded?.()
+              }}
+              className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-surface-2 text-sm font-medium transition-colors hover:bg-surface-3"
+            >
+              <Icon size={16} aria-hidden />
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function BigToggle({
+  on,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  on: boolean
+  icon: LucideIcon
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={on}
+      title={label}
+      onClick={onClick}
+      className={cn(
+        'grid size-11 shrink-0 place-items-center rounded-full transition-colors',
+        on ? 'bg-warning/15 text-warning' : 'text-muted hover:bg-surface-2 hover:text-fg',
+      )}
+    >
+      <Icon size={18} />
+    </button>
+  )
+}
+
 /** Live playhead timecode, written straight to the DOM (no React render per frame). */
 function Timecode() {
   const ref = useRef<HTMLSpanElement>(null)

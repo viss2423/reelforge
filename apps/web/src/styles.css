@@ -151,3 +151,203 @@
     transition-duration: 1ms !important;
   }
 }
+
+/* ui:shell — editor shell (top bar, stage, transport, timeline chrome, tool dock) */
+@utility shell-gradient {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--rf-accent) 86%, #000) 0%,
+    color-mix(in srgb, var(--rf-violet) 88%, #000) 100%
+  );
+}
+/* The one primary action per screen (e.g. Export): hot-pink → violet pill. */
+@utility shell-primary {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--rf-accent) 86%, #000) 0%,
+    color-mix(in srgb, var(--rf-violet) 88%, #000) 100%
+  );
+  color: #ffffff;
+  box-shadow: 0 6px 20px -8px color-mix(in srgb, var(--rf-accent) 70%, transparent);
+  transition:
+    filter 150ms var(--ease-spring),
+    transform 150ms var(--ease-spring);
+  &:hover {
+    filter: brightness(1.08);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+}
+/* Translucent control floating over the video. Small elements only (backdrop blur). */
+@utility shell-glass {
+  background-color: rgb(0 0 0 / 0.4);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  color: #ffffff;
+}
+/* Magic (AI) entry points: a slow gradient shimmer, special without shouting. */
+@utility shell-magic {
+  /* Deeper than accent/violet so white labels on it keep their contrast. */
+  background-image: linear-gradient(
+    120deg,
+    #d6156a 0%,
+    #7c3aed 42%,
+    #9b6cf3 50%,
+    #7c3aed 58%,
+    #d6156a 100%
+  );
+  background-size: 250% 100%;
+  animation: shell-magic 4.5s ease-in-out infinite;
+}
+@keyframes shell-magic {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes shell-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+}
+@utility shell-pop {
+  animation: shell-pop 180ms var(--ease-spring);
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-magic,
+  .shell-pop {
+    animation: none !important;
+  }
+}
+
+/* ui:screens — app screens outside the editor (Home, Trending, Exports, Settings, Pair). */
+@theme {
+  --animate-rf-drift: rf-drift 14s ease-in-out infinite alternate;
+  --animate-rf-shimmer: rf-shimmer 3.2s linear infinite;
+  --animate-rf-rise: rf-rise 220ms var(--ease-spring) both;
+
+  @keyframes rf-drift {
+    0% {
+      background-position: 0% 30%;
+    }
+    100% {
+      background-position: 100% 70%;
+    }
+  }
+  @keyframes rf-shimmer {
+    from {
+      transform: translateX(-120%) skewX(-18deg);
+    }
+    to {
+      transform: translateX(260%) skewX(-18deg);
+    }
+  }
+  @keyframes rf-rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+}
+
+/* Translucent pill for controls that float over media or the page. */
+@utility glass {
+  background-color: rgb(0 0 0 / 0.4);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+
+/* The "Magic" gradient: accent → violet, used for the one primary action per screen. */
+@utility bg-magic {
+  background-image: linear-gradient(120deg, var(--rf-accent), var(--rf-violet));
+}
+
+/* Soft, slowly drifting gradient for the hero card (paused for reduced motion). */
+@utility bg-magic-soft {
+  background-image:
+    radial-gradient(120% 90% at 0% 0%, rgb(255 45 122 / 0.55), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, rgb(139 92 246 / 0.6), transparent 60%),
+    linear-gradient(135deg, #2a0f2e, #1a1240 50%, #3a0f2a);
+  background-size: 180% 180%;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* A light sweep across Magic entry points: special without shouting. */
+.rf-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.rf-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.16), transparent);
+  animation: var(--animate-rf-shimmer);
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-shimmer::after,
+  .animate-rf-drift,
+  .animate-rf-shimmer {
+    animation: none !important;
+  }
+}
+
+/* ui:panels — tool sheets, Export dialog and media library (panels agent) */
+@keyframes panels-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+@keyframes panels-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+/* The one primary action of a panel: hot pink → violet. */
+@utility panels-cta {
+  background-image: linear-gradient(120deg, var(--rf-accent) 10%, var(--rf-violet) 120%);
+}
+/* "Magic" surfaces: a slow, subtle gradient drift. */
+@utility panels-magic {
+  background-image: linear-gradient(
+    110deg,
+    color-mix(in oklab, var(--rf-violet) 26%, var(--rf-surface-2)),
+    color-mix(in oklab, var(--rf-accent) 18%, var(--rf-surface-2)),
+    color-mix(in oklab, var(--rf-violet) 26%, var(--rf-surface-2))
+  );
+  background-size: 200% 100%;
+  animation: panels-shimmer 8s linear infinite;
+}
+/* Nested views and expanding rows slide in with the app's spring. */
+@utility panels-enter {
+  animation: panels-pop 200ms var(--ease-spring);
+}
+@media (prefers-reduced-motion: reduce) {
+  .panels-magic,
+  .panels-enter {
+    animation: none !important;
+  }
+}

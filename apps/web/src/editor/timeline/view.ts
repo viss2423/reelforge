@@ -592,20 +592,29 @@ export class TimelineView {
     const spec = tickSpec(this.ppu, this.fps)
     const t0 = Math.max(0, this.timeAtViewportX(0))
     const t1 = this.timeAtViewportX(this.width + 40)
-    ctx.font = '10px ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace'
-    ctx.textBaseline = 'top'
+    // A light ruler: small labels at major ticks, dots between (no hard tick comb).
+    ctx.font = '500 10px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'left'
+    const mid = Math.round(RULER_HEIGHT / 2)
     for (let i = firstTickIndex(spec, t0, this.fps); ; i++) {
       const t = tickTime(spec, i, this.fps)
       if (t > t1) break
       const x = Math.round(this.viewportXOf(t))
-      const major = i % spec.majorEvery === 0
-      ctx.fillStyle = major ? this.#colors.major : this.#colors.tick
-      ctx.fillRect(x, major ? RULER_HEIGHT - 9 : RULER_HEIGHT - 5, 1, major ? 9 : 5)
-      if (major) {
+      if (i % spec.majorEvery === 0) {
+        ctx.globalAlpha = 1
         ctx.fillStyle = this.#colors.label
-        ctx.fillText(tickLabel(t, spec, this.fps), x + 3, 4)
+        ctx.fillText(tickLabel(t, spec, this.fps), x + 3, mid)
+        ctx.globalAlpha = 0.6
+        ctx.fillStyle = this.#colors.major
+        ctx.fillRect(x, mid - 4, 1, 8)
+      } else {
+        ctx.globalAlpha = 0.55
+        ctx.fillStyle = this.#colors.tick
+        ctx.fillRect(x - 0.5, mid - 1, 2, 2)
       }
     }
+    ctx.globalAlpha = 1
   }
 
   #placePlayhead(): void {

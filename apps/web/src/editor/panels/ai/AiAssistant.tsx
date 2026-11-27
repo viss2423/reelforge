@@ -1,28 +1,22 @@
 /**
- * The language-model half of the AI panel: Auto Edit (with variants), Best moments,
- * Hook & caption (copywriter) and Improve captions. Tools that need the model say so and
- * stay disabled when the host has none; Auto Edit and Best moments still work (heuristic).
+ * The language-model half of the Magic panel: the Auto edit hero (with its versions and the
+ * trending sound to add when posting) and the copywriter's result. Tools that need the
+ * local model say so and stay disabled without it; Auto edit still works (heuristic).
  */
-import { Captions, ClipboardCopy, Clapperboard, Plus, Scissors, Sparkles, Type } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { ClipboardCopy, Clapperboard, Info, Plus, Sparkles } from 'lucide-react'
+import { useState } from 'react'
 import { useSystem } from '@/api/queries.ts'
 import { Button } from '@/components/Button.tsx'
+import { SegmentedControl } from '@/components/SegmentedControl.tsx'
 import { toast } from '@/components/Toast.tsx'
 import { useEditor } from '@/state/selectors.ts'
 import { usePacksData } from '../hooks.ts'
-import { Chips, Hint, Section, Toggle } from '../ui.tsx'
+import { Chips } from '../ui.tsx'
 import { TARGETS, type TargetSeconds } from './autoedit/flow.ts'
 import { startAutoEdit, switchVariant, useAutoEditSession } from './autoedit/session.ts'
 import { VIBES } from './autoedit/style.ts'
-import {
-  insertHookText,
-  startBestMoments,
-  startCopywriter,
-  startImproveCaptions,
-  useCopyResult,
-} from './llmtools.ts'
-import { TaskCard } from './TaskCard.tsx'
-import type { AiTaskId } from './tasks.ts'
+import { insertHookText, useCopyResult } from './llmtools.ts'
+import { useAiTask } from './tasks.ts'
 
 const TARGET_OPTIONS = TARGETS.map((t) => ({ value: String(t), label: `${t} s` }))
 const VIBE_OPTIONS = VIBES.map((v) => ({ value: v.id, label: v.label }))
@@ -33,38 +27,24 @@ export const useLlmInstalled = (): boolean | undefined => {
   return s.isPending ? undefined : (s.data?.llm?.installed ?? false)
 }
 
+/** How to get the model (shown on request, not as a paragraph in the panel). */
 export const NO_LLM_HINT =
-  'Needs the local AI model on the host computer — run `pnpm bootstrap` there, then restart ReelForge.'
+  'Run `pnpm bootstrap` on the computer that runs ReelForge, then restart ReelForge.'
 
-function Card({
-  id,
-  icon,
-  title,
-  description,
-  children,
-  action,
-}: {
-  id: AiTaskId
-  icon: ReactNode
-  title: string
-  description: string
-  children?: ReactNode
-  action: ReactNode
-}) {
+/** One line saying a tool needs the local model, with the setup steps behind ⓘ. */
+export function NeedsModel({ text = 'Needs the local AI model.' }: { text?: string }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line p-3">
-      <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-violet/15 text-violet">
-          {icon}
-        </span>
-        <div className="flex min-w-0 flex-col">
-          <span className="font-semibold">{title}</span>
-          <span className="text-sm text-muted">{description}</span>
-        </div>
-      </div>
-      {children}
-      <TaskCard id={id}>{action}</TaskCard>
-    </div>
+    <p className="flex min-h-11 items-center gap-1 text-xs text-muted">
+      <span>{text}</span>
+      <button
+        type="button"
+        aria-label="How to install the AI model"
+        className="grid size-11 shrink-0 place-items-center rounded-full hover:text-fg"
+        onClick={() => toast('Install the AI model', { description: NO_LLM_HINT })}
+      >
+        <Info size={16} />
+      </button>
+    </p>
   )
 }
 
@@ -93,68 +73,83 @@ function TrendingSoundCard() {
   if (!sound) return null
   const label = sound.artist ? `${sound.name} — ${sound.artist}` : sound.name
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl bg-surface-2 p-3" data-testid="trending-sound">
-      <span className="text-xs font-semibold text-muted">
-        Suggested trending sound to add when posting
+    <div
+      className="flex items-center gap-2 rounded-2xl bg-black/25 py-1.5 pr-1.5 pl-3"
+      data-testid="trending-sound"
+    >
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-[11px] text-muted">Add when posting</span>
+        <span className="truncate text-sm font-semibold">{label}</span>
       </span>
-      <div className="flex items-center gap-2">
-        <span className="min-w-0 flex-1 text-sm font-semibold">{label}</span>
-        <Button
-          size="sm"
-          icon={<ClipboardCopy size={14} />}
-          onClick={() => void copyText(label, 'Sound name')}
-        >
-          Copy
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        icon={<ClipboardCopy size={14} />}
+        onClick={() => void copyText(label, 'Sound name')}
+      >
+        Copy
+      </Button>
     </div>
   )
 }
 
-export function AutoEditCard() {
+/** The hero of the Magic panel: length, vibe and one button. */
+export function AutoEditHero() {
   const packs = usePacksData()
   const llm = useLlmInstalled()
   const language = useEditor((s) => s.project?.captions?.language ?? 'auto')
+  const running = useAiTask('autoedit')?.status === 'running'
   const [target, setTarget] = useState<string>('30')
   const [vibe, setVibe] = useState<string>(VIBES[0]!.id)
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-violet/25 to-accent/15 p-4">
-      <div className="flex items-center gap-2">
-        <Clapperboard size={20} className="text-violet" />
-        <span className="text-lg font-bold">Auto edit</span>
+    <section
+      aria-label="Auto edit"
+      className="panels-magic flex flex-col gap-3 rounded-3xl p-4 ring-1 ring-white/10"
+    >
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 place-items-center rounded-xl bg-white/10 text-fg">
+          <Clapperboard size={18} />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <h3 className="text-lg leading-tight font-bold">Auto edit</h3>
+          <p className="truncate text-sm text-muted">Your clips, cut into a finished reel.</p>
+        </div>
       </div>
-      <p className="text-sm text-muted">
-        Turns your clips into a finished reel: hook first, best moments, cuts on the beat, music,
-        captions and a hook title — one undo step.
-        {llm === false ? ' (Smarter with the AI model installed on the host.)' : ''}
-      </p>
-      <Chips label="Length" options={TARGET_OPTIONS} value={target} onChange={setTarget} />
+      <SegmentedControl
+        label="Length"
+        size="sm"
+        options={TARGET_OPTIONS}
+        value={target}
+        onChange={setTarget}
+        className="bg-black/25"
+      />
       <Chips label="Vibe" options={VIBE_OPTIONS} value={vibe} onChange={setVibe} />
-      <TaskCard id="autoedit">
-        <Button
-          variant="primary"
-          block
-          icon={<Sparkles size={18} />}
-          onClick={() =>
-            startAutoEdit({
-              target: Number(target) as TargetSeconds,
-              vibe,
-              language,
-              llm: llm === true,
-              ...(packs ? { packs } : {}),
-            })
-          }
-        >
-          Auto edit this project
-        </Button>
-      </TaskCard>
+      <Button
+        variant="primary"
+        size="lg"
+        block
+        className="panels-cta"
+        icon={<Sparkles size={18} />}
+        loading={running}
+        onClick={() =>
+          startAutoEdit({
+            target: Number(target) as TargetSeconds,
+            vibe,
+            language,
+            llm: llm === true,
+            ...(packs ? { packs } : {}),
+          })
+        }
+      >
+        Make it a reel
+      </Button>
       <Variants />
       <TrendingSoundCard />
-    </div>
+    </section>
   )
 }
 
-const copyText = async (text: string, what: string): Promise<void> => {
+export const copyText = async (text: string, what: string): Promise<void> => {
   try {
     await navigator.clipboard.writeText(text)
     toast(`${what} copied`, { tone: 'success' })
@@ -163,19 +158,21 @@ const copyText = async (text: string, what: string): Promise<void> => {
   }
 }
 
-function CopyResult() {
+/** Hook titles to insert, the post caption and hashtags to copy. */
+export function CopyResult() {
   const projectId = useEditor((s) => s.project?.id)
   const copy = useCopyResult(projectId)
   const packs = usePacksData()
   if (!copy) return null
   return (
-    <div className="flex flex-col gap-2 rounded-xl bg-surface-2 p-3" data-testid="copy-result">
-      <span className="text-xs font-semibold text-muted">Hook text</span>
+    <div className="flex flex-col gap-2 rounded-2xl bg-surface-2 p-3" data-testid="copy-result">
+      <span className="text-[13px] font-semibold tracking-wide text-muted uppercase">Hooks</span>
       {copy.hooks.map((h) => (
         <div key={h} className="flex items-center gap-2">
           <span className="min-w-0 flex-1 text-sm font-semibold">{h}</span>
           <Button
             size="sm"
+            variant="ghost"
             icon={<Plus size={14} />}
             aria-label={`Insert “${h}”`}
             onClick={() => {
@@ -187,12 +184,7 @@ function CopyResult() {
           </Button>
         </div>
       ))}
-      {copy.caption && (
-        <>
-          <span className="mt-1 text-xs font-semibold text-muted">Caption</span>
-          <p className="text-sm">{copy.caption}</p>
-        </>
-      )}
+      {copy.caption && <p className="mt-1 text-sm">{copy.caption}</p>}
       {copy.hashtags.length > 0 && <p className="text-sm text-accent">{copy.hashtags.join(' ')}</p>}
       <div className="flex gap-2">
         <Button
@@ -213,69 +205,5 @@ function CopyResult() {
         </Button>
       </div>
     </div>
-  )
-}
-
-export function WriterTools() {
-  const llm = useLlmInstalled()
-  const hasCaptions = useEditor((s) => (s.project?.captions?.words.length ?? 0) > 0)
-  const [target, setTarget] = useState<string>('30')
-  const [chapters, setChapters] = useState(true)
-  return (
-    <Section title="AI assistant">
-      {llm === false && <Hint>{NO_LLM_HINT}</Hint>}
-      <Card
-        id="highlights"
-        icon={<Scissors size={20} />}
-        title="Best moments"
-        description="Keep the hook and the strongest moments — you review the cut first"
-        action={
-          <Button block onClick={() => startBestMoments(Number(target))}>
-            Find best moments
-          </Button>
-        }
-      >
-        <Chips label="Reel length" options={TARGET_OPTIONS} value={target} onChange={setTarget} />
-      </Card>
-      <Card
-        id="copy"
-        icon={<Type size={20} />}
-        title="Hook & caption"
-        description="Three hook titles, a post caption and hashtags in your video's language"
-        action={
-          <Button block disabled={llm !== true} onClick={() => startCopywriter()}>
-            Write hook & caption
-          </Button>
-        }
-      >
-        <CopyResult />
-      </Card>
-      <Card
-        id="emphasis"
-        icon={<Captions size={20} />}
-        title="Improve captions"
-        description={
-          hasCaptions
-            ? 'Highlight the words that matter, add fitting emoji and chapters'
-            : 'Generate captions first'
-        }
-        action={
-          <Button
-            block
-            disabled={llm !== true || !hasCaptions}
-            onClick={() => startImproveCaptions({ chapters })}
-          >
-            Improve captions
-          </Button>
-        }
-      >
-        <Toggle
-          label="Add chapters"
-          description="Topic markers on the timeline"
-          checked={chapters}
-          onChange={setChapters}
-        />
-      </Card>
-    </Section>
   )
 }

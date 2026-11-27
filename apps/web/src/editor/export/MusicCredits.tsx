@@ -27,14 +27,17 @@ export function MusicCredits() {
   }
   return (
     <div
-      className="flex w-full flex-col gap-2 rounded-xl bg-surface-2 p-3"
+      className="flex w-full items-center gap-2.5 rounded-2xl bg-surface-2 py-1.5 pr-1.5 pl-3"
       data-testid="music-credits"
     >
-      <p className="flex items-center gap-1.5 text-sm font-semibold">
-        <Music size={14} /> Add to your caption
-      </p>
-      <p className="text-xs break-words text-muted">{text}</p>
-      <Button size="sm" variant="secondary" icon={<Copy size={14} />} onClick={() => void copy()}>
+      <Music size={16} className="shrink-0 text-muted" />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-[11px] text-muted">Music credit for your caption</span>
+        <span className="truncate text-sm" title={text}>
+          {text}
+        </span>
+      </span>
+      <Button size="sm" variant="ghost" icon={<Copy size={14} />} onClick={() => void copy()}>
         Copy credits
       </Button>
     </div>

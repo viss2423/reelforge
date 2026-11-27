@@ -23,7 +23,17 @@ import {
   updateEffect,
   NEUTRAL_ADJUSTMENTS,
 } from '../model/edits.ts'
-import { Gallery, Hint, PackThumb, SecondsSlider, Section, Tile } from '../ui.tsx'
+import { useContext, useState } from 'react'
+import {
+  Gallery,
+  HeroSlider,
+  Hint,
+  PackThumb,
+  SecondsSlider,
+  Section,
+  SectionsCollapsible,
+  Tile,
+} from '../ui.tsx'
 
 export const ADJUSTMENTS: readonly { key: keyof Adjustments; label: string; min: number }[] = [
   { key: 'brightness', label: 'Brightness', min: -100 },
@@ -45,9 +55,14 @@ const isNeutral = (a: Adjustments) =>
   (Object.keys(NEUTRAL_ADJUSTMENTS) as (keyof Adjustments)[]).every((k) => a[k] === 0)
 
 export function AdjustSection({ clips }: { clips: readonly MediaClip[] }) {
+  // The inspector has room for every slider; a sheet shows one at a time, picked by chip.
+  const stacked = useContext(SectionsCollapsible)
+  const [picked, setPicked] = useState<keyof Adjustments>('brightness')
   const first = clips[0]
   if (!first) return null
   const ids = clips.map((c) => c.id)
+  const current = ADJUSTMENTS.find((a) => a.key === picked) ?? ADJUSTMENTS[0]!
+  const value = first.adjustments[current.key]
   return (
     <Section
       title="Adjust"
@@ -62,18 +77,65 @@ export function AdjustSection({ clips }: { clips: readonly MediaClip[] }) {
         </Button>
       }
     >
-      {ADJUSTMENTS.map((a) => (
-        <Slider
-          key={a.key}
-          label={a.label}
-          value={first.adjustments[a.key]}
-          min={a.min}
-          max={100}
-          step={1}
-          defaultValue={0}
-          {...gesture<number>(a.label, (d, v) => setAdjustment(d, ids, a.key, v))}
-        />
-      ))}
+      {stacked ? (
+        ADJUSTMENTS.map((a) => (
+          <Slider
+            key={a.key}
+            label={a.label}
+            value={first.adjustments[a.key]}
+            min={a.min}
+            max={100}
+            step={1}
+            defaultValue={0}
+            {...gesture<number>(a.label, (d, v) => setAdjustment(d, ids, a.key, v))}
+          />
+        ))
+      ) : (
+        <>
+          <HeroSlider
+            key={current.key}
+            label={current.label}
+            display={`${value > 0 ? '+' : ''}${value}`}
+            value={value}
+            min={current.min}
+            max={100}
+            step={1}
+            defaultValue={0}
+            {...gesture<number>(current.label, (d, v) => setAdjustment(d, ids, current.key, v))}
+          />
+          <div
+            role="radiogroup"
+            aria-label="Adjustment"
+            className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1"
+          >
+            {ADJUSTMENTS.map((a) => {
+              const on = a.key === current.key
+              const changed = first.adjustments[a.key] !== 0
+              return (
+                <button
+                  key={a.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setPicked(a.key)}
+                  className={cn(
+                    'relative flex h-10 shrink-0 items-center rounded-full px-3.5 text-sm font-semibold whitespace-nowrap transition-colors',
+                    on ? 'bg-fg text-canvas' : 'bg-surface-2 text-muted hover:text-fg',
+                  )}
+                >
+                  {a.label}
+                  {changed && (
+                    <>
+                      <span aria-hidden className="ml-1.5 size-1.5 rounded-full bg-accent" />
+                      <span className="sr-only"> (changed)</span>
+                    </>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
     </Section>
   )
 }

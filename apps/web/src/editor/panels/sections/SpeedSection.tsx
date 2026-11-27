@@ -1,6 +1,5 @@
 /** Speed: log-scale constant speed, speed-curve presets and preserve pitch. */
 import type { AudioClip, MediaClip } from '@reelforge/core'
-import { Slider } from '@/components/Slider.tsx'
 import { baseGesture, edit } from '../model/commands.ts'
 import { setAudio, setSpeed, setSpeedCurve } from '../model/edits.ts'
 import { isVideo } from '../model/draft.ts'
@@ -12,7 +11,10 @@ import {
   speedToPosition,
   type CurveId,
 } from '../model/speed.ts'
-import { Section, Tile, Toggle } from '../ui.tsx'
+import { Advanced, Chips, HeroSlider, Section, Tile, Toggle } from '../ui.tsx'
+
+/** One-tap speeds under the slider. */
+const PRESETS = [0.5, 1, 1.5, 2, 3].map((s) => ({ value: String(s), label: formatSpeed(s) }))
 
 /** Tiny SVG sparkline of a curve preset (tile preview). */
 function CurveGlyph({ id }: { id: CurveId | 'none' }) {
@@ -49,8 +51,9 @@ export function SpeedSection({ clip }: { clip: MediaClip | AudioClip }) {
   return (
     <>
       <Section title="Speed">
-        <Slider
+        <HeroSlider
           label="Speed"
+          display={formatSpeed(clip.speed)}
           value={speedToPosition(clip.speed)}
           min={0}
           max={1}
@@ -59,21 +62,29 @@ export function SpeedSection({ clip }: { clip: MediaClip | AudioClip }) {
           format={(p) => formatSpeed(positionToSpeed(p))}
           {...speedHandlers}
         />
-        <Toggle
-          label="Preserve pitch"
-          description="Keep voices natural when sped up or slowed down"
-          checked={clip.audio.preservePitch}
-          onChange={(on) =>
-            edit('Preserve pitch', (d) => setAudio(d, [clip.id], { preservePitch: on }))
-          }
+        <Chips
+          label="Speed presets"
+          options={PRESETS}
+          value={PRESETS.find((p) => Number(p.value) === clip.speed)?.value}
+          onChange={(v) => edit('Speed', (d) => setSpeed(d, clip.id, Number(v)))}
         />
+        <Advanced id="speed">
+          <Toggle
+            label="Preserve pitch"
+            description="Natural voices at any speed"
+            checked={clip.audio.preservePitch}
+            onChange={(on) =>
+              edit('Preserve pitch', (d) => setAudio(d, [clip.id], { preservePitch: on }))
+            }
+          />
+        </Advanced>
       </Section>
       {video && (
         <Section title="Speed curve">
           <div
             role="group"
             aria-label="Speed curves"
-            className="grid grid-cols-4 gap-2 sm:grid-cols-7"
+            className="-mx-4 grid auto-cols-[5.25rem] grid-flow-col gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid-flow-row sm:grid-cols-7 sm:px-0"
           >
             <Tile
               label="None"

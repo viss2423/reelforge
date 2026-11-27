@@ -5,12 +5,13 @@
  * mode and text editing); everything per frame is positioned by `OverlayController`.
  */
 import { produce } from 'immer'
-import { Crop as CropIcon, LayoutTemplate, Check } from 'lucide-react'
+import { Crop as CropIcon, Ellipsis, LayoutTemplate, Check } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { cn } from '@/lib/cn.ts'
 import { editorStore } from '@/state/editorStore.ts'
 import { locateClip, useEditor } from '@/state/selectors.ts'
 import { setEditPref, useEditPref } from '../../editPrefs.ts'
+import { ShellMenu, ShellMenuItem } from '../../ShellMenu.tsx'
 import { setText } from '../../panels/model/edits.ts'
 import { setPreviewOverride } from '../previewOverride.ts'
 import { OverlayController } from './controller.ts'
@@ -54,6 +55,7 @@ export function TransformOverlay({ width, height }: { width: number; height: num
     selectedId ? (locateClip(s.project, selectedId)?.clip.type ?? null) : null,
   )
   const safeZones = useEditPref('safeZones')
+  const hasClips = useEditor((s) => s.project?.tracks.some((t) => t.clips.length > 0) ?? false)
   const media = selectedType === 'video' || selectedType === 'image'
   const crop = cropMode && media
 
@@ -160,12 +162,15 @@ export function TransformOverlay({ width, height }: { width: number; height: num
         data-testid="transform-badge"
         className="pointer-events-none absolute top-0 left-0 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[11px] text-white"
       />
-      <OverlayToolbar
-        media={media}
-        crop={crop}
-        onCrop={() => setCropMode(!crop)}
-        safeZones={safeZones}
-      />
+      {/* An empty stage shows its own call to action instead of options. */}
+      {hasClips && (
+        <OverlayToolbar
+          media={media}
+          crop={crop}
+          onCrop={() => setCropMode(!crop)}
+          safeZones={safeZones}
+        />
+      )}
       {editing && (
         <InlineTextEditor
           clipId={editing}
@@ -188,38 +193,57 @@ function OverlayToolbar({
   onCrop: () => void
   safeZones: boolean
 }) {
-  const btn =
-    'flex h-8 items-center gap-1 rounded-md px-2 text-[11px] font-semibold text-white/90 hover:bg-white/15 aria-pressed:bg-accent aria-pressed:text-accent-fg'
-  return (
-    <div
-      data-ov-ignore
-      className="absolute top-1.5 right-1.5 z-10 flex items-center gap-0.5 rounded-lg bg-black/55 p-0.5 opacity-80 backdrop-blur hover:opacity-100"
-    >
+  // Cropping: a single glass "Done" pill replaces the menu until the crop is finished.
+  if (crop)
+    return (
       <button
         type="button"
-        aria-pressed={safeZones}
-        aria-label="Safe zones"
-        title="Show the Reels / TikTok / Shorts UI safe zones"
-        data-testid="safe-zones-toggle"
-        className={btn}
-        onClick={() => setEditPref('safeZones', !safeZones)}
+        data-ov-ignore
+        aria-pressed
+        aria-label="Done cropping"
+        data-testid="crop-toggle"
+        onClick={onCrop}
+        className="shell-glass shell-pop absolute top-2 left-1/2 z-10 flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-full px-4 text-sm font-semibold"
       >
-        <LayoutTemplate size={14} />
+        <Check size={16} aria-hidden />
+        Done
       </button>
-      {media && (
-        <button
-          type="button"
-          aria-pressed={crop}
-          aria-label={crop ? 'Done cropping' : 'Crop'}
-          data-testid="crop-toggle"
-          className={btn}
-          onClick={onCrop}
-        >
-          {crop ? <Check size={14} /> : <CropIcon size={14} />}
-          {crop ? 'Done' : 'Crop'}
-        </button>
+    )
+  return (
+    <ShellMenu
+      data-ov-ignore
+      label="Preview options"
+      tone="glass"
+      icon={<Ellipsis size={18} />}
+      triggerTestId="stage-more"
+      className="absolute top-2 right-2 z-10"
+    >
+      {(close) => (
+        <>
+          <ShellMenuItem
+            tone="glass"
+            icon={<LayoutTemplate size={16} />}
+            label="Safe zones"
+            hint="Where Reels, TikTok and Shorts draw their buttons"
+            pressed={safeZones}
+            data-testid="safe-zones-toggle"
+            onClick={() => setEditPref('safeZones', !safeZones)}
+          />
+          {media && (
+            <ShellMenuItem
+              tone="glass"
+              icon={<CropIcon size={16} />}
+              label="Crop"
+              data-testid="crop-toggle"
+              onClick={() => {
+                close()
+                onCrop()
+              }}
+            />
+          )}
+        </>
       )}
-    </div>
+    </ShellMenu>
   )
 }
 

@@ -144,10 +144,21 @@ export function TemplatesPanel() {
               {picked.template.slots.length} clips · {formatTimecode(picked.duration, false)}
               {picked.template.musicHint ? ` · ♪ ${picked.template.musicHint.title}` : ''}
             </p>
-            <Button variant="primary" block onClick={() => useHere(picked)}>
+            <Button
+              variant="primary"
+              size="lg"
+              block
+              className="panels-cta"
+              onClick={() => useHere(picked)}
+            >
               Use with my clips
             </Button>
-            <Button block loading={create.isPending} onClick={() => void startNew(picked)}>
+            <Button
+              block
+              variant="ghost"
+              loading={create.isPending}
+              onClick={() => void startNew(picked)}
+            >
               New project from template
             </Button>
           </div>

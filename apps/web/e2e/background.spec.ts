@@ -6,6 +6,7 @@
  */
 import { expect, test, type Locator, type Page, type WebSocketRoute } from '@playwright/test'
 import { Asset, Job, Project, sec, type Clip } from '@reelforge/core'
+import { openTool } from './dock.ts'
 
 const PROJECT_ID = 'bg-e2e'
 const NOW = '2026-01-01T00:00:00.000Z'
@@ -137,7 +138,7 @@ test.describe('AI background', () => {
     await page.goto(`/p/${PROJECT_ID}`)
     await expect(clipEl(page, 'm0')).toBeVisible()
     await clipEl(page, 'm0').click()
-    await page.locator('[data-tool="background"]').click()
+    await openTool(page, 'background')
 
     const modes = page.getByRole('radiogroup', { name: 'Background' })
     await expect(modes).toBeVisible()
@@ -220,7 +221,7 @@ test.describe('AI background', () => {
     const mock = await mockApi(page)
     await page.goto(`/p/${PROJECT_ID}`)
     await clipEl(page, 'm0').click()
-    await page.locator('[data-tool="background"]').click()
+    await openTool(page, 'background')
     await page
       .getByRole('radiogroup', { name: 'Background' })
       .getByRole('radio', { name: 'Blur' })
@@ -247,7 +248,7 @@ test.describe('AI background', () => {
     const mock = await mockApi(page)
     await page.goto(`/p/${PROJECT_ID}`)
     await clipEl(page, 't0').click()
-    await page.locator('[data-tool="text"]').click()
+    await openTool(page, 'text')
     const toggle = page.getByRole('switch', { name: /Behind subject/ })
     await expect(toggle).toHaveAttribute('aria-checked', 'false')
     await toggle.click()

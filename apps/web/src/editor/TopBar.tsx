@@ -1,16 +1,16 @@
 import type { Job } from '@reelforge/core'
-import { ChevronLeft, Cloud, CloudOff, Redo2, Undo2, Upload } from 'lucide-react'
+import { ChevronLeft, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { isActiveJob, useJobs } from '@/api/queries.ts'
-import { Button } from '@/components/Button.tsx'
 import { AdaptiveModal } from '@/components/Dialog.tsx'
 import { IconButton } from '@/components/IconButton.tsx'
 import { ProgressRing } from '@/components/ProgressRing.tsx'
 import { Spinner } from '@/components/Spinner.tsx'
+import { cn } from '@/lib/cn.ts'
 import { formatEta } from '@/lib/format.ts'
 import { editorStore } from '@/state/editorStore.ts'
-import { useHistoryFlags, useProjectName, useSyncInfo } from '@/state/selectors.ts'
+import { useProjectName, useSyncInfo } from '@/state/selectors.ts'
 import { useUploads } from '@/state/uploads.ts'
 import { ExportDialog } from './export/ExportDialog.tsx'
 import { flushProject } from './session.ts'
@@ -36,10 +36,15 @@ const JOB_LABEL: Record<Job['kind'], string> = {
   emphasis: 'Styling captions',
 }
 
-/** Editable project name; commits on blur/Enter as one undo step. */
+/**
+ * Editable project name, styled as the screen title (tap to rename); commits on blur/Enter
+ * as one undo step. The input sizes to its text (an invisible twin sets the width), so the
+ * save dot sits right after the name.
+ */
 function ProjectName() {
   const name = useProjectName()
   const [draft, setDraft] = useState<string | null>(null)
+  const value = draft ?? name
   const commit = () => {
     const next = draft?.trim()
     setDraft(null)
@@ -50,61 +55,72 @@ function ProjectName() {
     }
   }
   return (
-    <input
-      aria-label="Project name"
-      value={draft ?? name}
-      onChange={(e) => setDraft(e.target.value)}
-      onFocus={(e) => e.currentTarget.select()}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') e.currentTarget.blur()
-        if (e.key === 'Escape') {
-          setDraft(null)
-          requestAnimationFrame(() => (e.target as HTMLInputElement).blur())
-        }
-      }}
-      maxLength={200}
-      className="h-9 w-full min-w-0 truncate rounded-lg bg-transparent px-2 font-semibold outline-none hover:bg-surface-2 focus:bg-surface-2"
-    />
+    <span className="relative inline-grid max-w-full min-w-0 shrink grid-cols-1">
+      <span
+        aria-hidden
+        className="invisible col-start-1 row-start-1 overflow-hidden px-2 text-[17px] font-semibold whitespace-pre"
+      >
+        {value || ' '}
+      </span>
+      <input
+        aria-label="Project name"
+        title="Rename"
+        value={value}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={(e) => e.currentTarget.select()}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur()
+          if (e.key === 'Escape') {
+            setDraft(null)
+            requestAnimationFrame(() => (e.target as HTMLInputElement).blur())
+          }
+        }}
+        maxLength={200}
+        className="col-start-1 row-start-1 h-10 w-full min-w-0 truncate rounded-xl bg-transparent px-2 text-[17px] font-semibold outline-none transition-colors hover:bg-surface-2 focus:bg-surface-2"
+      />
+    </span>
   )
 }
 
+/** Save state as a tiny mark after the title: dot (saved), spinner (saving), amber (problem). */
 function SyncBadge() {
   const { status, error } = useSyncInfo()
-  if (status === 'offline' || status === 'error') {
-    return (
-      <span
-        title={error ?? undefined}
-        className="flex items-center gap-1 text-xs text-warning"
-        data-testid="sync"
-        data-status={status}
-      >
-        <CloudOff size={16} />
-        <span className="hidden sm:inline">{status === 'offline' ? 'Offline' : 'Not saved'}</span>
-      </span>
-    )
-  }
-  if (status === 'saving' || status === 'pending') {
-    return (
-      <span
-        className="flex items-center gap-1 text-xs text-muted"
-        aria-live="polite"
-        data-testid="sync"
-        data-status={status}
-      >
-        <Spinner size={14} />
-        <span className="hidden sm:inline">Saving</span>
-      </span>
-    )
-  }
+  const problem = status === 'offline' || status === 'error'
+  const saving = status === 'saving' || status === 'pending'
+  const text = problem
+    ? status === 'offline'
+      ? 'Offline'
+      : 'Not saved'
+    : saving
+      ? 'Saving'
+      : status === 'saved'
+        ? 'Saved'
+        : ''
   return (
     <span
-      className="flex items-center gap-1 text-xs text-subtle"
+      role="status"
+      title={problem ? (error ?? text) : text || undefined}
+      className={cn(
+        'flex shrink-0 items-center gap-1.5 text-xs',
+        problem ? 'text-warning' : 'text-muted',
+      )}
       data-testid="sync"
       data-status={status}
     >
-      <Cloud size={16} />
-      <span className="hidden sm:inline">{status === 'saved' ? 'Saved' : ''}</span>
+      {saving ? (
+        <Spinner size={12} />
+      ) : (
+        <span
+          aria-hidden
+          className={cn(
+            'size-1.5 rounded-full transition-colors duration-300',
+            problem ? 'bg-warning' : status === 'saved' ? 'bg-success/80' : 'bg-subtle',
+          )}
+        />
+      )}
+      {/* Problems say so in words; the calm states are a dot (read out to screen readers). */}
+      <span className={problem ? 'max-sm:sr-only' : 'sr-only'}>{text}</span>
     </span>
   )
 }
@@ -178,14 +194,16 @@ function Activity() {
   )
 }
 
-/** Editor header: back, name, save state, undo/redo, activity, Export. */
+/**
+ * Editor header: back, the project title (tap to rename) with its save mark, background
+ * activity, and the screen's one primary action, Export. Undo/redo live in the transport.
+ */
 export function TopBar() {
   const navigate = useNavigate()
-  const history = useHistoryFlags()
   const [exportOpen, setExportOpen] = useState(false)
   const s = editorStore.getState
   return (
-    <header className="flex h-14 shrink-0 items-center gap-1 border-b border-line bg-surface px-1 sm:px-2">
+    <header className="flex h-14 shrink-0 items-center gap-1 bg-canvas pr-2 pl-1 lg:bg-surface lg:pr-3">
       <IconButton
         label="Back to projects"
         icon={<ChevronLeft size={24} />}
@@ -195,36 +213,23 @@ export function TopBar() {
           void navigate('/')
         }}
       />
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-0.5">
         <ProjectName />
         <SyncBadge />
       </div>
       <Activity />
-      <IconButton
-        label={history.undoLabel ? `Undo ${history.undoLabel}` : 'Undo'}
-        icon={<Undo2 size={20} />}
-        disabled={!history.canUndo}
-        onClick={() => s().undo()}
-      />
-      <IconButton
-        label={history.redoLabel ? `Redo ${history.redoLabel}` : 'Redo'}
-        icon={<Redo2 size={20} />}
-        disabled={!history.canRedo}
-        onClick={() => s().redo()}
-      />
-      <Button
-        variant="primary"
-        size="sm"
-        className="ml-1"
-        icon={<Upload size={16} />}
+      <button
+        type="button"
         onClick={() => {
           s().setPlaying(false)
           setExportOpen(true)
         }}
         data-testid="export-open"
+        className="shell-primary ml-1 inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold"
       >
+        <Upload size={16} strokeWidth={2.5} aria-hidden />
         Export
-      </Button>
+      </button>
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
     </header>
   )

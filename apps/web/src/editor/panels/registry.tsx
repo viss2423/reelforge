@@ -25,7 +25,7 @@ import { SpeedSection } from './sections/SpeedSection.tsx'
 import { TextSection } from './sections/TextSection.tsx'
 import { TransformSection } from './sections/TransformSection.tsx'
 import { TransitionSection } from './sections/TransitionSection.tsx'
-import { PanelBody } from './ui.tsx'
+import { PanelBody, PanelTitle } from './ui.tsx'
 
 export interface PanelDef {
   title: string
@@ -128,7 +128,7 @@ const clipPanel = (id: ClipPanelId, title: string, snap: readonly number[] = SHO
   render: () => <ClipPanel id={id} />,
 })
 
-export const PANELS: Readonly<Record<PanelId, PanelDef>> = {
+const DEFS: Readonly<Record<PanelId, PanelDef>> = {
   [ROOT_PANEL.audio]: { title: 'Audio', snap: TALL, render: () => <AudioPanel /> },
   [ROOT_PANEL.text]: { title: 'Text', snap: TALL, render: () => <TextPanel /> },
   [ROOT_PANEL.captions]: { title: 'Captions', snap: TALL, render: () => <CaptionsPanel /> },
@@ -144,7 +144,7 @@ export const PANELS: Readonly<Record<PanelId, PanelDef>> = {
     render: () => <LookPanel kind="filters" />,
   },
   [ROOT_PANEL.templates]: { title: 'Templates', snap: TALL, render: () => <TemplatesPanel /> },
-  [ROOT_PANEL.ai]: { title: 'AI tools', snap: TALL, render: () => <AiPanel /> },
+  [ROOT_PANEL.ai]: { title: 'Magic', snap: TALL, render: () => <AiPanel /> },
   [ROOT_PANEL.canvas]: {
     title: 'Canvas',
     snap: TALL,
@@ -168,6 +168,17 @@ export const PANELS: Readonly<Record<PanelId, PanelDef>> = {
   [CLIP_PANEL.replace]: clipPanel(CLIP_PANEL.replace, 'Replace', TALL),
   [CLIP_PANEL.transition]: clipPanel(CLIP_PANEL.transition, 'Transition', TALL),
 }
+
+/** Every panel knows its title, so sections can skip a heading that repeats it. */
+export const PANELS: Readonly<Record<PanelId, PanelDef>> = Object.fromEntries(
+  Object.entries(DEFS).map(([id, def]) => [
+    id,
+    {
+      ...def,
+      render: () => <PanelTitle.Provider value={def.title}>{def.render()}</PanelTitle.Provider>,
+    },
+  ]),
+) as Record<PanelId, PanelDef>
 
 export const panelDef = (id: string | null): PanelDef | undefined =>
   id !== null && id in PANELS ? PANELS[id as PanelId] : undefined

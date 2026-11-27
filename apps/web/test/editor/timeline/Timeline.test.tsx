@@ -41,7 +41,8 @@ const find = (p: Project, id: string) => {
 
 /** Client coordinates for time `t` (µs) and lanes y. */
 const cx = (t: number) => 16 + (t / 1e6) * 100
-const ROW_Y = { text: 24 + 37, main: 24 + 84, audio: 24 + 134, ruler: 10 }
+/** Lane centres (no markers, so no marker row): text 4..34, main 38..94, audio 98..134. */
+const ROW_Y = { text: 24 + 19, main: 24 + 66, audio: 24 + 116, ruler: 10 }
 
 const makeProject = (extraTracks: Track[] = []) =>
   project([
@@ -146,6 +147,13 @@ describe('rendering', () => {
     expect(screen.getByRole('button', { name: /^Text clip Hello/ })).toBeTruthy()
     expect(screen.getByTestId('timeline-ruler')).toBeTruthy()
     expect(screen.getByRole('group', { name: 'Main track' })).toBeTruthy()
+    // The marker row only shows once there are markers.
+    expect(screen.queryByRole('group', { name: 'Markers' })).toBeNull()
+    act(() =>
+      s().dispatch('Add marker', (d) => {
+        d.markers.push({ id: 'mk', t: sec(1), kind: 'user' })
+      }),
+    )
     expect(screen.getByRole('group', { name: 'Markers' })).toBeTruthy()
     // Clip geometry comes from the zoom: m1 starts at 2 s → 16 + 200 px.
     expect(clipEl('m1')!.style.left).toBe('216px')
@@ -265,8 +273,8 @@ describe('trim', () => {
         ),
       ]),
     )
-    // Overlay row sits above text: markers, ov, text, main, audio.
-    const ovY = 24 + 22 + 20
+    // Overlay row sits above text: ov, text, main, audio (no markers → no marker row).
+    const ovY = 24 + 4 + 20
     // Start handle of i2 dragged into i1: stops at i1's end.
     down(cx(sec(2)) + 2, ovY)
     move(cx(sec(0.2)), ovY)
@@ -380,7 +388,7 @@ describe('move', () => {
     await mount(
       makeProject([track('overlay', [clip('video', sec(8), sec(1), { id: 'ov1' })], 'ov')]),
     )
-    const ovY = 24 + 22 + 20
+    const ovY = 24 + 4 + 20
     down(cx(sec(8.5)), ovY)
     move(cx(sec(4.5)), ovY)
     move(cx(sec(4.5)), ROW_Y.main + 30) // main row shifted down by the overlay row (+44)

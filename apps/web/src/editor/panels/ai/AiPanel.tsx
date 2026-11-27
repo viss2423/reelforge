@@ -1,27 +1,46 @@
 /**
- * AI tools, one tap each. Every tool runs on the host, shows live progress, can be
- * cancelled or retried, and lands as a single undo step. "Magic edit" chains them.
+ * Magic: the Auto edit hero, then a grid of one-word tools. A tile opens its options in a
+ * nested view; running tasks show as slim rows pinned on top; "Ask Magic…" finds the tool
+ * for a short request. Every tool runs on the host, can be cancelled or retried, and lands
+ * as a single undo step.
  */
 import type { AudioClip, MediaClip } from '@reelforge/core'
 import {
+  ArrowUp,
   AudioWaveform,
   Captions,
+  ChevronDown,
+  ChevronLeft,
   Crop,
   Eraser,
+  Highlighter,
+  Mic,
   Music,
+  Scissors,
   ScissorsLineDashed,
   Sparkles,
+  Type,
+  UserRoundX,
   Wand2,
 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Button } from '@/components/Button.tsx'
+import { ProgressRing } from '@/components/ProgressRing.tsx'
 import { SegmentedControl } from '@/components/SegmentedControl.tsx'
+import { toast } from '@/components/Toast.tsx'
+import { cn } from '@/lib/cn.ts'
+import { haptic } from '@/lib/haptics.ts'
+import { editorStore } from '@/state/editorStore.ts'
 import { useEditor, useEditorShallow } from '@/state/selectors.ts'
 import { usePacksData } from '../hooks.ts'
 import { edit } from '../model/commands.ts'
-import { hasAudio, isAudioClip, isVideo } from '../model/draft.ts'
+import { hasAudio, isAudioClip, isVideo, mainClipAt, mainMediaClips } from '../model/draft.ts'
 import { setAudio } from '../model/edits.ts'
-import { Chips, PanelBody, Section, Toggle } from '../ui.tsx'
+import { CLIP_PANEL, ROOT_PANEL } from '../panelIds.ts'
+import { Chips, Hint, PanelBody, Toggle } from '../ui.tsx'
+import { AutoEditHero, CopyResult, NeedsModel, useLlmInstalled } from './AiAssistant.tsx'
+import { routeAsk, type MagicToolId } from './ask.ts'
+import { TARGETS } from './autoedit/flow.ts'
 import { landscapeClips, musicClips, type BeatCut } from './flows.ts'
 import {
   captionStyleFor,
@@ -33,9 +52,9 @@ import {
   startScenes,
   startSilence,
 } from './launch.ts'
-import { AutoEditCard, useLlmInstalled, WriterTools } from './AiAssistant.tsx'
-import { TaskCard } from './TaskCard.tsx'
-import type { AiTaskId } from './tasks.ts'
+import { startBestMoments, startCopywriter, startImproveCaptions } from './llmtools.ts'
+import { useAiTask, type AiTaskId } from './tasks.ts'
+import { TaskStrip } from './TaskStrip.tsx'
 
 /** Pause lengths offered for silence removal (µs). */
 const PACES = [
@@ -60,35 +79,146 @@ const CUTS: ReadonlyArray<{ value: BeatCut; label: string }> = [
   { value: 'bar2', label: '2 bars' },
 ]
 
-function Tool({
-  id,
-  icon,
-  title,
-  description,
-  children,
-  action,
-}: {
-  id: AiTaskId
+const TARGET_OPTIONS = TARGETS.map((t) => ({ value: String(t), label: `${t} s` }))
+
+interface ToolDef {
+  id: MagicToolId
+  label: string
+  /** One line in the tool's view. */
+  blurb: string
   icon: ReactNode
-  title: string
-  description: string
-  children?: ReactNode
-  action: ReactNode
+  /** The AI task the tool runs (drives the tile's status dot). */
+  task?: AiTaskId
+  needsModel?: boolean
+}
+
+const TOOLS: readonly ToolDef[] = [
+  {
+    id: 'captions',
+    label: 'Captions',
+    blurb: 'Word-by-word captions in the trending style.',
+    icon: <Captions size={22} />,
+    task: 'captions',
+  },
+  {
+    id: 'silence',
+    label: 'Silences',
+    blurb: 'Cut the pauses. You see what it saves first.',
+    icon: <AudioWaveform size={22} />,
+    task: 'silence',
+  },
+  {
+    id: 'copy',
+    label: 'Hook',
+    blurb: 'Hook titles, a post caption and hashtags.',
+    icon: <Type size={22} />,
+    task: 'copy',
+    needsModel: true,
+  },
+  {
+    id: 'beats',
+    label: 'Beat sync',
+    blurb: 'Cut your clips on the beat of the music.',
+    icon: <Music size={22} />,
+    task: 'beats',
+  },
+  {
+    id: 'reframe',
+    label: 'Reframe',
+    blurb: 'Follow the subject when landscape goes 9:16.',
+    icon: <Crop size={22} />,
+    task: 'reframe',
+  },
+  {
+    id: 'removebg',
+    label: 'Remove BG',
+    blurb: 'Cut the subject out of the clip.',
+    icon: <UserRoundX size={22} />,
+  },
+  // Behind "More tools".
+  {
+    id: 'voice',
+    label: 'Clean audio',
+    blurb: 'Clearer voices, less background noise.',
+    icon: <Mic size={22} />,
+  },
+  {
+    id: 'highlights',
+    label: 'Highlights',
+    blurb: 'Keep the hook and the strongest moments.',
+    icon: <Scissors size={22} />,
+    task: 'highlights',
+  },
+  {
+    id: 'fillers',
+    label: 'Fillers',
+    blurb: 'Cut the “um”s and “uh”s.',
+    icon: <Eraser size={22} />,
+    task: 'fillers',
+  },
+  {
+    id: 'scenes',
+    label: 'Scenes',
+    blurb: 'Split long takes into shots.',
+    icon: <ScissorsLineDashed size={22} />,
+    task: 'scenes',
+  },
+  {
+    id: 'emphasis',
+    label: 'Caption pop',
+    blurb: 'Highlight key words, add emoji and chapters.',
+    icon: <Highlighter size={22} />,
+    task: 'emphasis',
+    needsModel: true,
+  },
+  {
+    id: 'magic',
+    label: 'Quick clean',
+    blurb: 'Silences, fillers, beat sync and captions in one tap.',
+    icon: <Wand2 size={22} />,
+    task: 'magic',
+  },
+]
+
+/** Tiles shown before "More tools". */
+const FIRST = 6
+
+const toolById = (id: MagicToolId): ToolDef => TOOLS.find((t) => t.id === id)!
+
+/* ------------------------------------------------------------------ shared bits */
+
+/** The tool's one action: the gradient button, busy while its task runs. */
+function Action({
+  task,
+  icon,
+  children,
+  disabled,
+  onClick,
+}: {
+  task?: AiTaskId | undefined
+  icon?: ReactNode
+  children: string
+  disabled?: boolean
+  onClick: () => void
 }) {
+  const state = useAiTask(task ?? 'magic')
+  const running = !!task && state?.status === 'running'
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line p-3">
-      <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-violet/15 text-violet">
-          {icon}
-        </span>
-        <div className="flex min-w-0 flex-col">
-          <span className="font-semibold">{title}</span>
-          <span className="text-sm text-muted">{description}</span>
-        </div>
-      </div>
+    <Button
+      variant="primary"
+      size="lg"
+      block
+      className="panels-cta"
+      icon={icon ?? <Sparkles size={18} />}
+      loading={running}
+      disabled={disabled}
+      onClick={() => {
+        haptic(8)
+        onClick()
+      }}
+    >
       {children}
-      <TaskCard id={id}>{action}</TaskCard>
-    </div>
+    </Button>
   )
 }
 
@@ -107,28 +237,30 @@ const useVoiceClips = () =>
     return out
   })
 
-function VoiceTools() {
+/* ------------------------------------------------------------------ tool views */
+
+function VoiceTool() {
   const clips = useVoiceClips()
   const ids = clips.map((c) => c.id)
   const all = (k: 'enhanceVoice' | 'denoise') =>
     clips.length > 0 && clips.every((c) => hasAudio(c) && c.audio[k])
   return (
-    <Section title="Voice">
+    <div className="flex flex-col gap-1">
       <Toggle
         label="Enhance voice"
-        description="Studio EQ and compression on every voice clip"
+        description="Studio EQ and compression"
         disabled={clips.length === 0}
         checked={all('enhanceVoice')}
         onChange={(on) => edit('Enhance voice', (d) => setAudio(d, ids, { enhanceVoice: on }))}
       />
       <Toggle
         label="Reduce noise"
-        description="AI noise removal on every voice clip"
+        description="Removes hum, wind and room noise"
         disabled={clips.length === 0}
         checked={all('denoise')}
         onChange={(on) => edit('Reduce noise', (d) => setAudio(d, ids, { denoise: on }))}
       />
-    </Section>
+    </div>
   )
 }
 
@@ -137,26 +269,21 @@ function BeatSyncTool() {
   const [chosen, setChosen] = useState<string | null>(null)
   const [cut, setCut] = useState<BeatCut>('beat')
   const clipId = chosen && music.some((m) => m.id === chosen) ? chosen : music[0]?.id
-  return (
-    <Tool
-      id="beats"
-      icon={<Music size={20} />}
-      title="Beat sync"
-      description={
-        music.length
-          ? 'Cut your clips on the beat of the music'
-          : 'Add a music track first (Audio tool)'
-      }
-      action={
+  if (music.length === 0)
+    return (
+      <>
+        <Hint>Add a music track first.</Hint>
         <Button
           block
-          disabled={!clipId}
-          onClick={() => clipId && startBeatSync({ musicClipId: clipId, cut })}
+          icon={<Music size={18} />}
+          onClick={() => editorStore.getState().setActivePanel(ROOT_PANEL.audio)}
         >
-          Sync to beat
+          Add music
         </Button>
-      }
-    >
+      </>
+    )
+  return (
+    <>
       {music.length > 1 && (
         <Chips
           label="Music clip"
@@ -165,156 +292,361 @@ function BeatSyncTool() {
           onChange={setChosen}
         />
       )}
-      {music.length > 0 && (
-        <SegmentedControl label="Cut on" size="sm" options={CUTS} value={cut} onChange={setCut} />
-      )}
-    </Tool>
+      <SegmentedControl label="Cut on" options={CUTS} value={cut} onChange={setCut} />
+      <Action
+        task="beats"
+        icon={<Music size={18} />}
+        disabled={!clipId}
+        onClick={() => clipId && startBeatSync({ musicClipId: clipId, cut })}
+      >
+        Sync to beat
+      </Action>
+    </>
   )
 }
 
-export function AiPanel() {
+function ToolBody({ id }: { id: MagicToolId }) {
   const packs = usePacksData()
+  const llm = useLlmInstalled()
+  const language = useEditor((s) => s.project?.captions?.language ?? 'auto')
+  const landscape = useEditor((s) => (s.project ? landscapeClips(s.project, s.assets).length : 0))
+  const hasCaptions = useEditor((s) => (s.project?.captions?.words.length ?? 0) > 0)
   const [pace, setPace] = useState<Pace>('tight')
   const [tracking, setTracking] = useState<Tracking>('balanced')
-  const landscape = useEditor((s) => (s.project ? landscapeClips(s.project, s.assets).length : 0))
-  const language = useEditor((s) => s.project?.captions?.language ?? 'auto')
-  const llm = useLlmInstalled()
+  const [target, setTarget] = useState('30')
+  const [chapters, setChapters] = useState(true)
   const captionStyle = () => {
     const c = captionStyleFor(packs)
     return { style: c.style, language, ...(c.ref ? { styleRef: c.ref } : {}) }
   }
-  return (
-    <PanelBody>
-      <AutoEditCard />
-      <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-accent/20 to-violet/20 p-4">
-        <div className="flex items-center gap-2">
-          <Wand2 size={20} className="text-accent" />
-          <span className="text-lg font-bold">Magic edit</span>
-        </div>
-        <p className="text-sm text-muted">
-          Cuts silences and filler words, syncs to your music and adds captions — in one tap,
-          undoable in one step.
-          {llm ? ' Long footage is first cut to its best 60 seconds.' : ''}
-        </p>
-        <TaskCard id="magic">
-          <Button
-            variant="primary"
-            block
-            icon={<Sparkles size={18} />}
+  switch (id) {
+    case 'captions':
+      return (
+        <Action
+          task="captions"
+          icon={<Captions size={18} />}
+          onClick={() => startCaptions(captionStyle())}
+        >
+          Generate captions
+        </Action>
+      )
+    case 'silence':
+      return (
+        <>
+          <SegmentedControl label="Pace" options={PACES} value={pace} onChange={setPace} />
+          <Action
+            task="silence"
+            icon={<AudioWaveform size={18} />}
             onClick={() =>
-              startMagic({
-                ...captionStyle(),
-                ...(llm ? { highlights: { targetSeconds: 60 } } : {}),
-              })
+              startSilence({ minSilence: PACES.find((p) => p.value === pace)!.minSilence })
             }
           >
-            Magic edit
-          </Button>
-        </TaskCard>
-      </div>
-
-      <Section title="Clean up">
-        <Tool
-          id="silence"
-          icon={<AudioWaveform size={20} />}
-          title="Remove silences"
-          description="Find the pauses and cut them — you'll see what it saves first"
-          action={
-            <Button
-              block
-              onClick={() =>
-                startSilence({ minSilence: PACES.find((p) => p.value === pace)!.minSilence })
-              }
-            >
-              Find silences
-            </Button>
-          }
-        >
+            Find silences
+          </Action>
+        </>
+      )
+    case 'fillers':
+      return (
+        <Action task="fillers" icon={<Eraser size={18} />} onClick={() => startFillers(language)}>
+          Find filler words
+        </Action>
+      )
+    case 'copy':
+      return (
+        <>
+          {llm === false && <NeedsModel />}
+          <Action
+            task="copy"
+            icon={<Type size={18} />}
+            disabled={llm !== true}
+            onClick={() => startCopywriter()}
+          >
+            Write hook & caption
+          </Action>
+          <CopyResult />
+        </>
+      )
+    case 'highlights':
+      return (
+        <>
           <SegmentedControl
-            label="Pace"
-            size="sm"
-            options={PACES}
-            value={pace}
-            onChange={setPace}
+            label="Reel length"
+            options={TARGET_OPTIONS}
+            value={target}
+            onChange={setTarget}
           />
-        </Tool>
-        <Tool
-          id="fillers"
-          icon={<Eraser size={20} />}
-          title="Remove filler words"
-          description="Cut the “um”s and “uh”s"
-          action={
-            <Button block onClick={() => startFillers(language)}>
-              Find filler words
-            </Button>
-          }
-        />
-        <Tool
-          id="captions"
-          icon={<Captions size={20} />}
-          title="Auto captions"
-          description="Word-perfect captions in the trending style"
-          action={
-            <Button block onClick={() => startCaptions(captionStyle())}>
-              Generate captions
-            </Button>
-          }
-        />
-      </Section>
-
-      <Section title="Edit">
-        <BeatSyncTool />
-        <Tool
-          id="scenes"
-          icon={<ScissorsLineDashed size={20} />}
-          title="Split at scene changes"
-          description="Cut long takes into shots automatically"
-          action={
-            <Button block onClick={() => startScenes()}>
-              Split scenes
-            </Button>
-          }
-        />
-        <Tool
-          id="reframe"
-          icon={<Crop size={20} />}
-          title="Auto reframe"
-          description={
-            landscape
-              ? `Follow the subject in ${landscape} landscape clip${landscape === 1 ? '' : 's'}`
-              : 'Only needed for landscape (16:9) clips'
-          }
-          action={
-            <Button
-              block
-              disabled={landscape === 0}
-              onClick={() =>
-                startReframe(
-                  undefined,
-                  undefined,
-                  TRACKING.find((t) => t.value === tracking)!.strength,
-                )
-              }
-            >
-              Reframe to 9:16
-            </Button>
-          }
-        >
-          {landscape > 0 && (
+          <Action
+            task="highlights"
+            icon={<Scissors size={18} />}
+            onClick={() => startBestMoments(Number(target))}
+          >
+            Find best moments
+          </Action>
+        </>
+      )
+    case 'beats':
+      return <BeatSyncTool />
+    case 'reframe':
+      return (
+        <>
+          {landscape > 0 ? (
             <SegmentedControl
               label="Camera"
-              size="sm"
               options={TRACKING}
               value={tracking}
               onChange={setTracking}
             />
+          ) : (
+            <Hint>No landscape (16:9) clips to reframe.</Hint>
           )}
-        </Tool>
-      </Section>
+          <Action
+            task="reframe"
+            icon={<Crop size={18} />}
+            disabled={landscape === 0}
+            onClick={() =>
+              startReframe(
+                undefined,
+                undefined,
+                TRACKING.find((t) => t.value === tracking)!.strength,
+              )
+            }
+          >
+            Reframe to 9:16
+          </Action>
+        </>
+      )
+    case 'scenes':
+      return (
+        <Action task="scenes" icon={<ScissorsLineDashed size={18} />} onClick={() => startScenes()}>
+          Split scenes
+        </Action>
+      )
+    case 'emphasis':
+      return (
+        <>
+          {llm === false && <NeedsModel />}
+          {!hasCaptions && <Hint>Generate captions first.</Hint>}
+          <Toggle
+            label="Add chapters"
+            description="Topic markers on the timeline"
+            checked={chapters}
+            onChange={setChapters}
+          />
+          <Action
+            task="emphasis"
+            icon={<Highlighter size={18} />}
+            disabled={llm !== true || !hasCaptions}
+            onClick={() => startImproveCaptions({ chapters })}
+          >
+            Improve captions
+          </Action>
+        </>
+      )
+    case 'voice':
+      return <VoiceTool />
+    case 'magic':
+      return (
+        <Action
+          task="magic"
+          icon={<Wand2 size={18} />}
+          onClick={() =>
+            startMagic({
+              ...captionStyle(),
+              ...(llm ? { highlights: { targetSeconds: 60 } } : {}),
+            })
+          }
+        >
+          Magic edit
+        </Action>
+      )
+    case 'removebg':
+      return null
+  }
+  return null
+}
 
-      <WriterTools />
+function ToolView({ id, onBack }: { id: MagicToolId; onBack: () => void }) {
+  const tool = toolById(id)
+  return (
+    <section aria-label={tool.label} className="panels-enter flex flex-col gap-4">
+      <header className="-ml-2 flex items-center gap-1">
+        <button
+          type="button"
+          aria-label="Back to Magic"
+          onClick={onBack}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg"
+        >
+          <ChevronLeft size={22} />
+        </button>
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-violet/15 text-violet">
+          {tool.icon}
+        </span>
+        <div className="ml-1.5 flex min-w-0 flex-col">
+          <h3 className="text-[17px] leading-tight font-bold">{tool.label}</h3>
+          <p className="text-sm leading-snug text-muted">{tool.blurb}</p>
+        </div>
+      </header>
+      <ToolBody id={id} />
+    </section>
+  )
+}
 
-      <VoiceTools />
+/* ------------------------------------------------------------------ the grid */
+
+function TileStatus({ task }: { task: AiTaskId }) {
+  const t = useAiTask(task)
+  if (!t) return null
+  if (t.status === 'running')
+    return (
+      <ProgressRing
+        value={t.progress}
+        size={18}
+        stroke={2.5}
+        label={`${t.label} running`}
+        className="absolute top-2 right-2 text-accent"
+      />
+    )
+  return (
+    <span
+      aria-label={t.status === 'review' ? 'Ready to review' : 'Failed'}
+      className={cn(
+        'absolute top-2.5 right-2.5 size-2.5 rounded-full',
+        t.status === 'review' ? 'bg-accent' : 'bg-danger',
+      )}
+    />
+  )
+}
+
+function ToolTile({ tool, onOpen }: { tool: ToolDef; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        haptic(5)
+        onOpen()
+      }}
+      className="relative flex min-h-[4.5rem] items-center gap-3 rounded-2xl bg-surface-2 px-3 text-left transition-[background-color,transform] duration-150 hover:bg-surface-3 active:scale-[0.97]"
+    >
+      <span
+        className="grid size-10 shrink-0 place-items-center rounded-xl bg-violet/15 text-violet"
+        aria-hidden
+      >
+        {tool.icon}
+      </span>
+      <span className="min-w-0 text-[15px] leading-tight font-semibold">{tool.label}</span>
+      {tool.task && <TileStatus task={tool.task} />}
+    </button>
+  )
+}
+
+/** Selects the main clip under the playhead and opens its Background panel. */
+const openRemoveBackground = () => {
+  const s = editorStore.getState()
+  if (!s.project) return
+  const clip = mainClipAt(s.project, s.playhead) ?? mainMediaClips(s.project)[0]
+  if (!clip) {
+    toast('Add a video or photo first')
+    return
+  }
+  s.select([clip.id])
+  s.setActivePanel(CLIP_PANEL.background)
+}
+
+function AskMagic({ onRoute }: { onRoute: (id: MagicToolId | 'autoedit') => void }) {
+  const [q, setQ] = useState('')
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    const r = routeAsk(q)
+    if (r.kind === 'unknown') {
+      toast('Try “add captions”, “cut the pauses” or “add music”')
+      return
+    }
+    setQ('')
+    if (r.kind === 'music') editorStore.getState().setActivePanel(ROOT_PANEL.audio)
+    else if (r.kind === 'autoedit') onRoute('autoedit')
+    else onRoute(r.id)
+  }
+  return (
+    <form
+      onSubmit={submit}
+      role="search"
+      aria-label="Ask Magic"
+      className="flex h-12 items-center gap-2 rounded-full bg-surface-2 pr-1 pl-4 ring-1 ring-line focus-within:ring-accent"
+    >
+      <Sparkles size={16} className="shrink-0 text-violet" aria-hidden />
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Ask Magic… “cut the pauses”"
+        aria-label="Ask Magic"
+        enterKeyHint="go"
+        maxLength={120}
+        className="h-full min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-subtle"
+      />
+      <button
+        type="submit"
+        aria-label="Ask"
+        disabled={q.trim() === ''}
+        className="panels-cta grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-fg transition-opacity disabled:opacity-30"
+      >
+        <ArrowUp size={18} />
+      </button>
+    </form>
+  )
+}
+
+export function AiPanel() {
+  const [view, setView] = useState<MagicToolId | null>(null)
+  const [more, setMore] = useState(false)
+  const llm = useLlmInstalled()
+  const open = (id: MagicToolId) => {
+    if (id === 'removebg') openRemoveBackground()
+    else setView(id)
+  }
+  const shown = more ? TOOLS : TOOLS.slice(0, FIRST)
+  return (
+    <PanelBody>
+      <TaskStrip />
+      {view ? (
+        <ToolView key={view} id={view} onBack={() => setView(null)} />
+      ) : (
+        <>
+          <AutoEditHero />
+          <section aria-label="Magic tools" className="flex flex-col gap-2.5">
+            <h3 className="text-[13px] font-semibold tracking-wide text-muted uppercase">Tools</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {shown.map((t) => (
+                <ToolTile key={t.id} tool={t} onOpen={() => open(t.id)} />
+              ))}
+            </div>
+            <button
+              type="button"
+              aria-expanded={more}
+              onClick={() => setMore(!more)}
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl text-sm font-semibold text-muted hover:text-fg"
+            >
+              {more ? 'Fewer tools' : 'More tools'}
+              <ChevronDown
+                size={16}
+                className={cn('transition-transform duration-200', more && 'rotate-180')}
+              />
+            </button>
+            {llm === false && <NeedsModel text="Hook and Caption pop need the local AI model." />}
+          </section>
+          <AskMagic
+            onRoute={(id) => {
+              if (id === 'autoedit') {
+                document
+                  .querySelector<HTMLElement>('section[aria-label="Auto edit"] button.panels-cta')
+                  ?.focus()
+                return
+              }
+              if (TOOLS.findIndex((t) => t.id === id) >= FIRST) setMore(true)
+              open(id)
+            }}
+          />
+        </>
+      )}
     </PanelBody>
   )
 }

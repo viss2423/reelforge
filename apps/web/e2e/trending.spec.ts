@@ -154,12 +154,18 @@ test('Trending Now: topics, sounds, idea → Make this reel, refresh', async ({ 
   await page.goto('/')
   await page.getByRole('link', { name: 'Trending' }).filter({ visible: true }).first().click()
   await expect(page).toHaveURL(/\/trending$/)
-  await expect(page.getByTestId('trends-updated')).toContainText('Google Trends')
+  // The freshness chip opens the colour key for the source dots.
+  const updated = page.getByTestId('trends-updated')
+  await expect(updated).toContainText('just now')
+  await updated.click()
+  const legend = page.getByTestId('trend-sources-legend')
+  await expect(legend).toContainText('Google Trends')
+  await expect(legend).toContainText('Deezer')
 
   const topics = page.getByTestId('trend-topics')
   await expect(topics.getByText('oklahoma state basketball')).toBeVisible()
   await expect(page.getByTestId('trend-sounds')).toContainText('Dracula')
-  await expect(page.getByTestId('trend-sounds')).toContainText('118 BPM (est.)')
+  await expect(page.getByTestId('trend-sounds')).toContainText('~118 BPM')
   await expect(page.getByRole('link', { name: 'Find Dracula' })).toHaveAttribute(
     'href',
     /deezer\.com\/search/,
@@ -177,6 +183,13 @@ test('Trending Now: topics, sounds, idea → Make this reel, refresh', async ({ 
   await idea.getByRole('button', { name: 'Make this reel' }).click()
   await expect(page).toHaveURL(/[?&]autoedit=1&topic=oklahoma\+state\+basketball&vibe=\w+/)
   await expect(page.getByTestId('autoedit-start')).toBeVisible()
+  await page.goto('/trending')
+
+  // The arrow on a top topic skips the idea and opens Auto Edit straight away.
+  await page.getByRole('button', { name: 'Make a reel about thanksgiving' }).click()
+  await expect(page).toHaveURL(/[?&]autoedit=1&topic=thanksgiving&vibe=\w+/)
+  await expect(page.getByTestId('autoedit-start')).toBeVisible()
+  expect(calls.ideas).toEqual([])
   await page.goto('/trending')
 
   // On-demand idea for a topic without one.
@@ -205,6 +218,8 @@ test('Home lists generated templates first with a New today badge', async ({ pag
 test('Settings → Trends: sources, refresh, publish toggle state', async ({ page }) => {
   const calls = await mockApi(page)
   await page.goto('/settings')
+  // Sources and publishing live under Advanced.
+  await page.getByRole('button', { name: 'Advanced' }).click()
   const sources = page.getByTestId('trend-sources')
   await expect(sources).toContainText('Google Trends')
   await expect(sources).toContainText('20 items')

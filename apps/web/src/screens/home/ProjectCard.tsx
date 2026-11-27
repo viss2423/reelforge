@@ -20,11 +20,8 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
 
   return (
     <div className="group relative" data-testid="project-card">
-      <Link
-        to={`/p/${project.id}`}
-        className="block overflow-hidden rounded-card border border-line bg-surface transition-transform active:scale-[0.98]"
-      >
-        <div className="relative aspect-[9/16] bg-surface-2">
+      <Link to={`/p/${project.id}`} className="block rounded-2xl">
+        <div className="relative aspect-[9/16] overflow-hidden rounded-2xl bg-surface-2 transition-transform duration-200 ease-[var(--ease-spring)] group-active:scale-[0.98]">
           {project.thumbAssetId && !posterFailed ? (
             <img
               src={api.posterUrl(project.thumbAssetId)}
@@ -35,25 +32,25 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
               className="absolute inset-0 size-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-subtle">
-              <Clapperboard size={32} />
+            <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-violet/25 to-accent/15 text-white/70">
+              <Clapperboard size={28} aria-hidden />
             </div>
           )}
           {project.duration > 0 && (
-            <span className="absolute right-2 bottom-2 rounded-md bg-black/70 px-1.5 py-0.5 text-xs font-semibold text-white tabular-nums">
+            <span className="glass absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums">
               {formatDuration(project.duration)}
             </span>
           )}
         </div>
-        <div className="px-3 py-2.5 pr-10">
-          <p className="truncate font-semibold">{project.name}</p>
+        <div className="pt-2 pr-9">
+          <p className="truncate text-[15px] font-semibold">{project.name}</p>
           <p className="truncate text-xs text-muted">{formatRelative(project.updatedAt)}</p>
         </div>
       </Link>
       <IconButton
         label={`Options for ${project.name}`}
         icon={<EllipsisVertical size={18} />}
-        className="absolute right-0 bottom-1"
+        className="absolute -right-2 bottom-0 text-muted"
         onClick={() => setMenu(true)}
       />
 
@@ -97,7 +94,7 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
         open={confirm}
         onClose={() => setConfirm(false)}
         title="Delete project?"
-        description={`“${project.name}” will be deleted on the host. Media stays in your library.`}
+        description={`“${project.name}” will be deleted. Your media stays in the library.`}
         locked={remove.isPending}
         snapPoints={[0.34]}
         footer={

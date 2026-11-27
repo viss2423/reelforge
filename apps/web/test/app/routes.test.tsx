@@ -156,7 +156,7 @@ describe('routes', () => {
     expect(await screen.findByTestId('preview-fallback')).toBeTruthy()
     expect(screen.getByTestId('timeline')).toBeTruthy()
     expect(screen.getByRole('toolbar', { name: 'Tools' })).toBeTruthy()
-    expect(screen.getByTestId('timecode').textContent).toContain('0:05.00')
+    expect(screen.getByTestId('timecode').textContent).toBe('0:00 / 0:05')
   }, 20_000)
 
   it('shows "Project not found" for a deleted project', async () => {

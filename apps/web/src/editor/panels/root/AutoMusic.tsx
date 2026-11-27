@@ -5,10 +5,21 @@
  */
 import type { LibraryTrack, MusicMood, RankedTrack } from '@reelforge/core'
 import { useQuery } from '@tanstack/react-query'
-import { Copy, Pause, Play, Plus, RefreshCw, Search, Sparkles, TrendingUp } from 'lucide-react'
+import {
+  Copy,
+  Music,
+  Pause,
+  Play,
+  Plus,
+  RefreshCw,
+  Search,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react'
 import { useDeferredValue, useEffect, useRef, useState } from 'react'
 import { api } from '@/api/index.ts'
 import { Button } from '@/components/Button.tsx'
+import { IconButton } from '@/components/IconButton.tsx'
 import { Spinner } from '@/components/Spinner.tsx'
 import { toast } from '@/components/Toast.tsx'
 import { formatDuration } from '@/lib/format.ts'
@@ -16,7 +27,7 @@ import { useAssetsMap, useProject } from '@/state/selectors.ts'
 import { usePacksData } from '../hooks.ts'
 import { describeError } from '../model/commands.ts'
 import { MOOD_OPTIONS, autoMusic, detectSpeech, placeTrack, trendingHint } from '../model/music.ts'
-import { Chips, Hint, Section, Toggle } from '../ui.tsx'
+import { Advanced, Chips, Hint, Section, Toggle } from '../ui.tsx'
 
 /* ------------------------------------------------------------------ preview player */
 
@@ -191,47 +202,44 @@ export function AutoMusicSection() {
     : undefined
 
   return (
-    <Section title="Auto music">
+    <section
+      aria-label="Auto music"
+      className="flex flex-col gap-3 rounded-3xl bg-surface-2 p-4"
+      data-testid="auto-music-card"
+    >
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 place-items-center rounded-xl bg-accent/15 text-accent">
+          <Music size={18} />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <h3 className="text-[17px] leading-tight font-bold">Auto music</h3>
+          <p className="truncate text-sm text-muted">A free track, cut to your reel.</p>
+        </div>
+      </div>
       <Chips label="Vibe" options={MOOD_OPTIONS} value={mood} onChange={setMood} />
-      <input
-        type="text"
-        value={vibe}
-        onChange={(e) => setVibe(e.target.value)}
-        maxLength={200}
-        placeholder="Describe it (optional): summer road trip, gym…"
-        aria-label="Describe the vibe"
-        className="h-11 rounded-xl border border-line bg-surface-2 px-3 text-sm"
-      />
-      <Toggle
-        label="Duck under speech"
-        description={
-          detected
-            ? 'Speech detected: instrumentals preferred'
-            : 'Lower the music while people talk'
-        }
-        checked={ducking}
-        onChange={setDuck}
-      />
       <Button
         variant="primary"
+        size="lg"
         block
+        className="panels-cta"
         icon={<Sparkles size={18} />}
         loading={status !== undefined}
         onClick={() => void run()}
         data-testid="auto-music"
       >
-        Add music automatically
+        Add music
       </Button>
       {status && (
-        <p className="text-xs text-muted" aria-live="polite" data-testid="auto-music-status">
+        <p
+          className="truncate text-xs text-muted"
+          aria-live="polite"
+          data-testid="auto-music-status"
+        >
           {status}
         </p>
       )}
       {result && (
-        <div
-          className="flex flex-col gap-2 rounded-xl bg-surface-2 p-3"
-          data-testid="auto-music-pick"
-        >
+        <div className="panels-enter flex flex-col gap-1" data-testid="auto-music-pick">
           <div className="flex items-center gap-2">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{result.pick.title}</span>
@@ -239,39 +247,58 @@ export function AutoMusicSection() {
                 {[
                   result.pick.artist,
                   result.pick.bpm && `${Math.round(result.pick.bpm)} BPM`,
-                  ...result.pick.reasons.filter((r) => !r.includes('BPM')).slice(0, 2),
+                  ...result.pick.reasons.filter((r) => !r.includes('BPM')).slice(0, 1),
                 ]
                   .filter(Boolean)
                   .join(' · ')}
               </span>
             </span>
             <LicenceBadge track={result.pick} />
+            {nextPick && nextPick.id !== result.pick.id && (
+              <IconButton
+                size="sm"
+                label={`Try another: ${nextPick.title}`}
+                icon={<RefreshCw size={16} />}
+                disabled={status !== undefined}
+                onClick={() => void run(nextPick)}
+              />
+            )}
           </div>
           {result.pick.attribution && (
-            <p className="text-xs text-muted" data-testid="auto-music-credit">
-              Credit (added to your export caption): {result.pick.attribution}
-            </p>
-          )}
-          {nextPick && nextPick.id !== result.pick.id && (
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<RefreshCw size={14} />}
-              disabled={status !== undefined}
-              onClick={() => void run(nextPick)}
+            <p
+              className="truncate text-xs text-muted"
+              title={result.pick.attribution}
+              data-testid="auto-music-credit"
             >
-              Try another: {nextPick.title}
-            </Button>
+              Credit: {result.pick.attribution}
+            </p>
           )}
         </div>
       )}
+      <Advanced label="More options" id="auto-music">
+        <input
+          type="text"
+          value={vibe}
+          onChange={(e) => setVibe(e.target.value)}
+          maxLength={200}
+          placeholder="Describe it: summer road trip, gym…"
+          aria-label="Describe the vibe"
+          className="h-11 rounded-xl bg-surface px-3 text-sm ring-1 ring-line outline-none focus:ring-accent"
+        />
+        <Toggle
+          label="Duck under speech"
+          description={detected ? 'Speech found: instrumentals first' : 'Quieter while people talk'}
+          checked={ducking}
+          onChange={setDuck}
+        />
+      </Advanced>
       {hint && <TrendingHint hint={hint} />}
-    </Section>
+    </section>
   )
 }
 
 function TrendingHint({ hint }: { hint: { title: string; bpm?: number; url?: string } }) {
-  const text = hint.bpm ? `${hint.title} (${hint.bpm} BPM)` : hint.title
+  const text = hint.bpm ? `${hint.title} · ${hint.bpm} BPM` : hint.title
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(hint.title)
@@ -282,19 +309,15 @@ function TrendingHint({ hint }: { hint: { title: string; bpm?: number; url?: str
   }
   return (
     <div
-      className="flex items-start gap-3 rounded-xl border border-line p-3"
+      className="flex items-center gap-2 rounded-2xl bg-surface py-1.5 pr-1.5 pl-3"
       data-testid="trending-hint"
     >
-      <TrendingUp size={18} className="mt-0.5 shrink-0 text-accent" />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold">Trending sound to add when posting</p>
-        <p className="truncate text-sm">{text}</p>
-        <p className="text-xs text-muted">
-          Trending sounds are copyrighted, so ReelForge can&apos;t include them: pick it in the app
-          when you post.
-        </p>
-      </div>
-      <Button size="sm" variant="secondary" icon={<Copy size={14} />} onClick={() => void copy()}>
+      <TrendingUp size={16} className="shrink-0 text-accent" />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-[11px] text-muted">Template sound · add when posting</span>
+        <span className="truncate text-sm font-semibold">{text}</span>
+      </span>
+      <Button size="sm" variant="ghost" icon={<Copy size={14} />} onClick={() => void copy()}>
         Copy
       </Button>
     </div>
@@ -350,27 +373,40 @@ export function MusicLibrarySection() {
   }
 
   return (
-    <Section title="Royalty-free library" collapsible defaultOpen={false}>
-      <label className="flex h-11 items-center gap-2 rounded-xl border border-line bg-surface-2 px-3">
-        <Search size={16} className="text-muted" />
+    <Section title="Royalty-free library">
+      <div className="flex h-11 items-center gap-2 rounded-xl bg-surface-2 pr-1 pl-3 ring-1 ring-transparent focus-within:ring-accent">
+        <Search size={16} className="shrink-0 text-muted" />
         <input
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search title, genre, instrument…"
+          placeholder="Search title, genre…"
           aria-label="Search music"
-          className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"
+          className="h-full min-w-0 flex-1 bg-transparent text-[15px] outline-none"
         />
-      </label>
+        <select
+          aria-label="Tempo"
+          value={bpm}
+          onChange={(e) =>
+            setBpm(BPM_OPTIONS.find((o) => o.value === e.target.value)?.value ?? 'any')
+          }
+          className="h-9 shrink-0 rounded-lg bg-surface-3 px-2 text-xs font-semibold"
+        >
+          {BPM_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <Chips
         label="Mood"
         options={MOOD_OPTIONS}
         value={mood}
         onChange={(m) => setMood(m === mood ? undefined : m)}
       />
-      <Chips label="Tempo" options={BPM_OPTIONS} value={bpm} onChange={setBpm} />
       {!enabled ? (
-        <Hint>Pick a mood or search. Tracks are CC0 or CC BY, free to use in your posts.</Hint>
+        <p className="py-6 text-center text-sm text-muted">Pick a mood or search.</p>
       ) : search.isPending ? (
         <div className="flex justify-center py-4">
           <Spinner />
@@ -379,7 +415,7 @@ export function MusicLibrarySection() {
         <Hint>The music library is unreachable: {describeError(search.error)}</Hint>
       ) : search.data.tracks.length === 0 ? (
         <Hint>
-          No royalty-free tracks found.
+          No tracks found.
           {search.data.warnings[0] ? ` ${search.data.warnings[0]}` : ' Try another search.'}
         </Hint>
       ) : (
@@ -389,10 +425,7 @@ export function MusicLibrarySection() {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted">
-        From Openverse and ccMixter (plus Jamendo with a free key). Credits for CC BY tracks are
-        added to the caption suggestion when you export.
-      </p>
+      <p className="text-xs text-muted">Free to use: CC0 and CC BY. Credits go in your caption.</p>
     </Section>
   )
 }

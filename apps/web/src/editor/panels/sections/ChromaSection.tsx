@@ -9,13 +9,15 @@ import { Pipette } from 'lucide-react'
 import { useState, type MouseEvent } from 'react'
 import { api } from '@/api/index.ts'
 import { Button } from '@/components/Button.tsx'
-import { ColorPicker } from '@/components/ColorPicker.tsx'
 import { Slider } from '@/components/Slider.tsx'
 import { toast } from '@/components/Toast.tsx'
 import { rgbaToHex } from '@/lib/color.ts'
 import { edit, gesture } from '../model/commands.ts'
 import { DEFAULT_CHROMA, setChroma } from '../model/edits.ts'
-import { Section, Toggle } from '../ui.tsx'
+import { Advanced, HeroSlider, Section, SwatchPicker, Toggle } from '../ui.tsx'
+
+/** Screen colours people actually key out. */
+const KEY_SWATCHES = ['#00B140', '#00FF00', '#0047BB', '#0000FF', '#FFFFFF', '#000000'] as const
 
 interface EyeDropperResult {
   sRGBHex: string
@@ -106,13 +108,15 @@ export function ChromaSection({ clip }: { clip: MediaClip }) {
             )}
           </div>
           {sampling && <PosterSampler clip={clip} onPick={pickColor} />}
-          <ColorPicker
+          <SwatchPicker
             label="Key colour"
             value={key.color}
+            swatches={KEY_SWATCHES}
             {...gesture<string>('Key colour', (d, color) => setChroma(d, clip.id, { color }))}
           />
-          <Slider
+          <HeroSlider
             label="Strength"
+            display={`${Math.round(key.similarity * 100)}%`}
             value={Math.round(key.similarity * 100)}
             min={0}
             max={100}
@@ -123,18 +127,20 @@ export function ChromaSection({ clip }: { clip: MediaClip }) {
               setChroma(d, clip.id, { similarity: v / 100 }),
             )}
           />
-          <Slider
-            label="Edge softness"
-            value={Math.round(key.blend * 100)}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={10}
-            unit="%"
-            {...gesture<number>('Chroma softness', (d, v) =>
-              setChroma(d, clip.id, { blend: v / 100 }),
-            )}
-          />
+          <Advanced id="chroma">
+            <Slider
+              label="Edge softness"
+              value={Math.round(key.blend * 100)}
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={10}
+              unit="%"
+              {...gesture<number>('Chroma softness', (d, v) =>
+                setChroma(d, clip.id, { blend: v / 100 }),
+              )}
+            />
+          </Advanced>
         </>
       )}
     </Section>

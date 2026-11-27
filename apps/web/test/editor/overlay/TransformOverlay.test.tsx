@@ -11,6 +11,7 @@ import { Asset, sec, type Project } from '@reelforge/core'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { Profiler } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CLIP_PANEL } from '@/editor/panels/panelIds.ts'
 import { subscribePreviewOverride } from '@/editor/viewer/previewOverride.ts'
 import { TransformOverlay } from '@/editor/viewer/overlay/TransformOverlay.tsx'
 import { editorStore, locateClip } from '@/state/index.ts'
@@ -66,6 +67,12 @@ const drag = (from: [number, number], to: [number, number], o: P = {}, el?: Elem
     move(from[0] + ((to[0] - from[0]) * i) / 4, from[1] + ((to[1] - from[1]) * i) / 4, o)
   up(...to, o)
 }
+const frameEl = () => screen.getByTestId('transform-frame')
+/** Taps the sticker on the canvas (selects it and shows its frame). */
+const tapSticker = () => {
+  down(540, 960)
+  up(540, 960)
+}
 const clipOf = (id: string) => {
   const c = locateClip(s().project, id)!.clip
   if (c.type === 'audio') throw new Error('not visual')
@@ -109,6 +116,28 @@ describe('selection', () => {
     down(540, 300)
     up(540, 300)
     expect(s().selection.clipIds).toEqual(['tx'])
+  })
+
+  it('frames a clip only after the video is touched or Transform is open', async () => {
+    await mount()
+    // Selected elsewhere (the timeline): the stage stays clean.
+    act(() => s().select(['st']))
+    await frame()
+    expect(frameEl().hidden).toBe(true)
+    // The Transform tool shows it…
+    act(() => s().setActivePanel(CLIP_PANEL.transform))
+    await frame()
+    expect(frameEl().hidden).toBe(false)
+    act(() => s().setActivePanel(null))
+    await frame()
+    expect(frameEl().hidden).toBe(true)
+    // …and so does touching the video, until the selection changes elsewhere.
+    tapSticker()
+    await frame()
+    expect(frameEl().hidden).toBe(false)
+    act(() => s().select(['m0']))
+    await frame()
+    expect(frameEl().hidden).toBe(true)
   })
 
   it('clears the selection on an empty tap', async () => {
@@ -230,7 +259,7 @@ describe('move', () => {
 describe('scale and rotate', () => {
   it('scales from a corner handle about the centre', async () => {
     await mount()
-    s().select(['st'])
+    tapSticker()
     await frame()
     drag([796, 1216], [1052, 1472], {}, screen.getByTestId('handle-se'))
     expect(clipOf('st').transform.scale.value).toBeCloseTo(2, 3)
@@ -240,7 +269,7 @@ describe('scale and rotate', () => {
 
   it('rotates with the rotate handle and snaps to right angles', async () => {
     await mount()
-    s().select(['st'])
+    tapSticker()
     await frame()
     drag([540, 600], [900, 970], {}, screen.getByTestId('handle-rot'))
     expect(clipOf('st').transform.rotation.value).toBe(90)
@@ -272,6 +301,8 @@ describe('crop mode', () => {
     await mount()
     s().select(['m0'])
     await frame()
+    // Crop lives in the stage's glass ⋯ menu.
+    fireEvent.click(screen.getByTestId('stage-more'))
     fireEvent.click(screen.getByTestId('crop-toggle'))
     await frame()
     expect(screen.getByTestId('crop-frame').hidden).toBe(false)

@@ -4,14 +4,13 @@
  * snapping guides — is painted imperatively by `TimelineView` in requestAnimationFrame,
  * driven by `TimelineGestures`. Edits are committed as single store dispatches.
  */
-import { ArrowRightLeft, Maximize2, WrapText, ZoomIn, ZoomOut } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useLayoutEffect, useRef, useState, type DragEvent } from 'react'
 import { cn } from '@/lib/cn.ts'
 import { useIsDesktop } from '@/lib/useMediaQuery.ts'
 import { editorStore, useEditor, useFps, useTracks, useZoom } from '@/state/index.ts'
-import { setEditPref, useEditPref } from '../editPrefs.ts'
 import { ASSET_DRAG_MIME } from '../media/MediaLibrary.tsx'
-import { ZOOM_STEP } from '../shortcuts.ts'
+import { MEDIA_PANEL } from '../layout.ts'
 import { dropAsset, trackAccepts } from './commands.ts'
 import { ADD_TRACK_SPACE, RULER_HEIGHT } from './constants.ts'
 import { TimelineViewContext } from './context.ts'
@@ -26,6 +25,7 @@ import {
 } from './geometry.ts'
 import { TimelineGestures } from './gestures.ts'
 import { CaptionLane, MarkerLane, TrackLane } from './Lanes.tsx'
+import { TimelineOptions } from './TimelineOptions.tsx'
 import { TrackHeaders } from './TrackHeaders.tsx'
 import { TimelineView } from './view.ts'
 
@@ -54,7 +54,8 @@ export function Timeline() {
   const zoom = useZoom()
   const ppu = pxPerUs(zoom)
   const hasCaptions = words.length > 0
-  const layout = layoutRows(tracks, hasCaptions)
+  const layout = layoutRows(tracks, hasCaptions, markers.length > 0)
+  const mainRow = layout.rows.find((r) => r.type === 'track' && r.track.kind === 'main')
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -103,7 +104,7 @@ export function Timeline() {
   useLayoutEffect(() => {
     view.els.headers = headersRef.current
     view.scrollTo(view.scrollX, view.scrollY)
-  }, [view, expanded])
+  }, [view, expanded, desktop])
 
   /* ---------------------------------------------------------------- library drops */
 
@@ -141,14 +142,17 @@ export function Timeline() {
         data-testid="timeline"
       >
         <div className="relative flex min-h-0 flex-1">
-          <TrackHeaders
-            rows={layout.rows}
-            rowsHeight={layout.height}
-            expanded={expanded}
-            onToggleExpanded={() => setExpanded(!expanded)}
-            captionsEnabled={captionsEnabled}
-            innerRef={headersRef}
-          />
+          {/* Phones skip the header column: track controls live in the timeline options. */}
+          {desktop && (
+            <TrackHeaders
+              rows={layout.rows}
+              rowsHeight={layout.height}
+              expanded={expanded}
+              onToggleExpanded={() => setExpanded(!expanded)}
+              captionsEnabled={captionsEnabled}
+              innerRef={headersRef}
+            />
+          )}
           <div
             ref={viewportRef}
             role="region"
@@ -163,7 +167,7 @@ export function Timeline() {
               ref={rulerRef}
               aria-hidden
               data-testid="timeline-ruler"
-              className="absolute top-0 left-0 cursor-col-resize border-b border-line bg-surface"
+              className="absolute top-0 left-0 cursor-col-resize bg-surface"
               style={{ height: RULER_HEIGHT }}
             />
             <div
@@ -248,12 +252,23 @@ export function Timeline() {
               <div className="absolute inset-y-0 -left-px w-0.5 bg-fg shadow-[0_0_2px_rgb(0_0_0/0.6)]" />
               <div className="absolute top-0 -left-[6px] h-3.5 w-3 rounded-b-sm bg-fg [clip-path:polygon(0_0,100%_0,100%_60%,50%_100%,0_60%)]" />
             </div>
-            <TimelineTools view={view} zoom={desktop} />
-            {empty && (
-              <p className="pointer-events-none absolute right-3 bottom-2 text-[11px] text-subtle">
-                Add media to start editing
-              </p>
+            {!desktop && (
+              // Scrolls vertically with the lanes (the view moves it like the header column).
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 overflow-hidden"
+                style={{ top: RULER_HEIGHT }}
+              >
+                <div ref={headersRef} className="absolute inset-x-0 top-0">
+                  {mainRow && !empty && <AddToMain top={mainRow.y} height={mainRow.height} />}
+                </div>
+              </div>
             )}
+            <TimelineOptions
+              view={view}
+              desktop={desktop}
+              rows={layout.rows}
+              captionsEnabled={captionsEnabled}
+            />
           </div>
         </div>
       </div>
@@ -261,83 +276,30 @@ export function Timeline() {
   )
 }
 
-/** Edit-mode toggles (ripple trim, roll) and, on desktop, zoom buttons. */
-function TimelineTools({ view, zoom }: { view: TimelineView; zoom: boolean }) {
-  const ripple = useEditPref('ripple')
-  const roll = useEditPref('roll')
-  const btn =
-    'flex size-7 items-center justify-center rounded-md text-muted hover:bg-surface-3 hover:text-fg'
-  // Phones get 36 px buttons (the bar sits over the lanes, away from the thumbs).
-  const toggle = cn(
-    btn,
-    'max-lg:size-9 aria-pressed:bg-accent aria-pressed:text-accent-fg aria-pressed:hover:bg-accent',
-  )
+/**
+ * CapCut-style "+" pinned to the right end of the main track (phones): the clips slide
+ * under a soft fade, and the button opens the media library.
+ */
+function AddToMain({ top, height }: { top: number; height: number }) {
+  const size = Math.min(40, height - 8)
   return (
-    <div
-      data-tl-ignore
-      className="absolute right-2 bottom-2 z-30 flex items-center gap-0.5 rounded-lg border border-line bg-surface/90 p-0.5 shadow backdrop-blur"
-    >
+    <div className="absolute right-0 flex items-center pr-2" style={{ top, height }}>
+      <div
+        aria-hidden
+        className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-surface from-45% to-transparent"
+      />
       <button
         type="button"
-        aria-label="Ripple trim"
-        aria-pressed={ripple}
-        title="Ripple trim: trimming a clip moves the clips after it on its track"
-        data-testid="ripple-toggle"
-        className={toggle}
-        onClick={() => setEditPref('ripple', !ripple)}
+        data-tl-ignore
+        aria-label="Add media"
+        title="Add media"
+        data-testid="add-media"
+        onClick={() => editorStore.getState().setActivePanel(MEDIA_PANEL)}
+        className="pointer-events-auto relative grid place-items-center rounded-xl bg-fg text-canvas shadow-pop transition-transform duration-150 ease-[var(--ease-spring)] before:absolute before:-inset-1 before:content-[''] active:scale-95"
+        style={{ width: size, height: size }}
       >
-        <WrapText size={14} />
+        <Plus size={22} strokeWidth={2.5} />
       </button>
-      <button
-        type="button"
-        aria-label="Roll edit"
-        aria-pressed={roll}
-        title="Roll edit: dragging a cut on the main track trims both clips (Alt+drag also rolls)"
-        data-testid="roll-toggle"
-        className={toggle}
-        onClick={() => setEditPref('roll', !roll)}
-      >
-        <ArrowRightLeft size={14} />
-      </button>
-      {zoom && <ZoomButtons view={view} btn={btn} />}
     </div>
-  )
-}
-
-function ZoomButtons({ view, btn }: { view: TimelineView; btn: string }) {
-  return (
-    <>
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-line" />
-      <button
-        type="button"
-        aria-label="Zoom out"
-        title="Zoom out"
-        className={btn}
-        onClick={() => view.zoomTo(view.zoom / ZOOM_STEP)}
-      >
-        <ZoomOut size={14} />
-      </button>
-      <button
-        type="button"
-        aria-label="Zoom in"
-        title="Zoom in"
-        className={btn}
-        onClick={() => view.zoomTo(view.zoom * ZOOM_STEP)}
-      >
-        <ZoomIn size={14} />
-      </button>
-      <button
-        type="button"
-        aria-label="Zoom to fit"
-        title="Zoom to fit"
-        className={btn}
-        onClick={() => {
-          view.zoomTo(view.fitZoom(), 0)
-          view.scrollTo(0)
-        }}
-      >
-        <Maximize2 size={14} />
-      </button>
-    </>
   )
 }

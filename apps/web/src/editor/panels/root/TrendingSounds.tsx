@@ -12,19 +12,22 @@
 import {
   Copy,
   ExternalLink,
+  MoreHorizontal,
   Music2,
   Pause,
   Play,
+  Plus,
   Scissors,
-  Sparkles,
   TrendingUp,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { api } from '@/api/index.ts'
 import { useTrends } from '@/api/queries.ts'
 import { Button } from '@/components/Button.tsx'
+import { IconButton } from '@/components/IconButton.tsx'
 import { Spinner } from '@/components/Spinner.tsx'
 import { toast } from '@/components/Toast.tsx'
+import { cn } from '@/lib/cn.ts'
 import { sourceLabel } from '@/lib/trends.ts'
 import { editorStore } from '@/state/editorStore.ts'
 import { useProject } from '@/state/selectors.ts'
@@ -39,7 +42,7 @@ import {
   soundRef,
   type TrendSound,
 } from '../model/trendSounds.ts'
-import { Hint, Section } from '../ui.tsx'
+import { Section } from '../ui.tsx'
 
 const MAX_SOUNDS = 6
 
@@ -48,20 +51,14 @@ const same = (a: { title: string; artist?: string | undefined } | undefined, b: 
 
 export function TrendingSounds({ compact = false }: { compact?: boolean }) {
   const trends = useTrends()
-  const sounds = (trends.data?.sounds ?? []).slice(0, MAX_SOUNDS)
+  const sounds = (trends.data?.sounds ?? []).slice(0, compact ? 3 : MAX_SOUNDS)
   if (trends.isPending) return null
   return (
-    <Section title="Trending sounds today">
+    <Section title="Trending today">
       {sounds.length === 0 ? (
-        <Hint>
-          No chart sounds yet — the trend engine refreshes daily (Trending tab → pull to refresh).
-        </Hint>
+        <p className="text-sm text-muted">No chart sounds yet. They refresh daily.</p>
       ) : (
-        <ul
-          className="flex flex-col gap-2"
-          aria-label="Trending sounds"
-          data-testid="trending-sounds"
-        >
+        <ul className="flex flex-col" aria-label="Trending sounds" data-testid="trending-sounds">
           {sounds.map((s) => (
             <SoundRow
               key={`${s.title}|${s.artist ?? ''}`}
@@ -73,8 +70,7 @@ export function TrendingSounds({ compact = false }: { compact?: boolean }) {
         </ul>
       )}
       <p className="text-xs text-muted">
-        Chart songs are copyrighted: ReelForge never downloads or exports them. Add the sound in
-        Instagram when you post, or use a similar free track.
+        Chart songs stay in Instagram: add them when you post, or use a similar free track.
       </p>
     </Section>
   )
@@ -93,6 +89,7 @@ function SoundRow({
   const previewing = useSoundPreview((s) => same(s.sound, sound))
   const [busy, setBusy] = useState<'similar' | 'preview' | 'cuts' | undefined>()
   const [noPreview, setNoPreview] = useState(false)
+  const [open, setOpen] = useState(false)
   const abort = useRef<AbortController | undefined>(undefined)
 
   const copy = async () => {
@@ -173,95 +170,125 @@ function SoundRow({
 
   const sources = sound.sources.map(sourceLabel).join(', ')
   const longReel = musicLength(project) > PREVIEW_CLIP_US
+  const matchCuts = (
+    <Button
+      size="sm"
+      variant="ghost"
+      icon={<Scissors size={14} />}
+      loading={busy === 'cuts'}
+      disabled={busy !== undefined}
+      onClick={() => void cuts()}
+      data-testid="match-cuts"
+    >
+      Match cuts
+    </Button>
+  )
+  const lead = 'grid size-11 shrink-0 place-items-center rounded-full transition-colors'
   return (
     <li
-      className="flex flex-col gap-2 rounded-xl border border-line p-3"
+      className="flex flex-col border-b border-line/60 py-1.5 last:border-b-0"
       data-testid="trending-sound"
     >
-      <div className="flex items-start gap-3">
-        <TrendingUp size={18} className="mt-0.5 shrink-0 text-accent" />
+      <div className="flex items-center gap-2.5">
+        {compact ? (
+          <span className={cn(lead, 'bg-accent/10 text-accent')} aria-hidden>
+            <TrendingUp size={18} />
+          </span>
+        ) : previewEnabled ? (
+          <button
+            type="button"
+            aria-label={
+              previewing ? `Stop preview of ${sound.title}` : `Preview ${sound.title} with my reel`
+            }
+            aria-pressed={previewing}
+            disabled={busy !== undefined && busy !== 'preview'}
+            onClick={() => void preview()}
+            data-testid="preview-sound"
+            className={cn(
+              lead,
+              previewing
+                ? 'panels-cta bg-accent text-accent-fg'
+                : 'bg-surface-2 text-fg hover:bg-surface-3',
+            )}
+          >
+            {busy === 'preview' ? (
+              <Spinner />
+            ) : previewing ? (
+              <Pause size={18} />
+            ) : (
+              <Play size={18} />
+            )}
+          </button>
+        ) : (
+          <a
+            href={sound.link}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label={`Listen to ${sound.title} on Deezer`}
+            className={cn(lead, 'bg-surface-2 text-fg hover:bg-surface-3')}
+            data-testid="listen-sound"
+          >
+            <ExternalLink size={16} />
+          </a>
+        )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{sound.title}</p>
-          <p className="truncate text-xs text-muted">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <span className="truncate">{sound.title}</span>
+            {sound.fresh && (
+              <span className="shrink-0 rounded-full bg-accent/15 px-1.5 text-[11px] font-semibold text-accent">
+                {freshness(sound)}
+              </span>
+            )}
+          </p>
+          <p className="truncate text-xs text-muted" title={sources}>
             {[
               sound.artist,
               `${Math.round(sound.bpm)} BPM${sound.measured ? '' : ' (est.)'}`,
-              sources,
+              !sound.fresh && freshness(sound),
             ]
               .filter(Boolean)
               .join(' · ')}
           </p>
         </div>
-        <span
-          className={
-            sound.fresh
-              ? 'shrink-0 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-fg'
-              : 'shrink-0 text-[11px] text-muted'
-          }
-        >
-          {freshness(sound)}
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="secondary" icon={<Copy size={14} />} onClick={() => void copy()}>
-          Add this sound when you post
-        </Button>
         <Button
           size="sm"
           variant="secondary"
-          icon={<Sparkles size={14} />}
+          icon={<Plus size={14} />}
           loading={busy === 'similar'}
           disabled={busy !== undefined}
           onClick={() => void similar()}
           data-testid="find-similar"
+          aria-label={`Add a free track similar to ${sound.title}`}
+          className="rounded-full"
         >
-          Find similar free track
+          Similar
         </Button>
-        {!compact && !previewEnabled && (
-          <>
-            <a
-              href={sound.link}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold hover:bg-surface-2"
-              data-testid="listen-sound"
-            >
-              <ExternalLink size={14} /> Listen on Deezer
-            </a>
-            <Button
-              size="sm"
-              variant="ghost"
-              icon={<Scissors size={14} />}
-              loading={busy === 'cuts'}
-              disabled={busy !== undefined}
-              onClick={() => void cuts()}
-              data-testid="match-cuts"
-            >
-              Match cuts to this sound
-            </Button>
-          </>
-        )}
-        {!compact && previewEnabled && (
-          <Button
-            size="sm"
-            variant={previewing ? 'primary' : 'ghost'}
-            icon={previewing ? <Pause size={14} /> : <Play size={14} />}
-            loading={busy === 'preview'}
-            disabled={busy !== undefined && busy !== 'preview'}
-            onClick={() => void preview()}
-            data-testid="preview-sound"
-          >
-            {previewing ? 'Stop preview' : 'Preview with my reel'}
-          </Button>
-        )}
+        <IconButton
+          size="sm"
+          label={`More for ${sound.title}`}
+          icon={<MoreHorizontal size={18} />}
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+        />
       </div>
+      {open && (
+        <div className="panels-enter flex flex-wrap gap-1 pt-1 pl-[3.375rem]">
+          <Button size="sm" variant="ghost" icon={<Copy size={14} />} onClick={() => void copy()}>
+            Add this sound when you post
+          </Button>
+          {!compact && !previewEnabled && matchCuts}
+        </div>
+      )}
       {noPreview && (
-        <p className="flex items-center gap-2 text-xs text-muted" data-testid="no-preview">
+        <p
+          className="flex items-center gap-2 pl-[3.375rem] text-xs text-muted"
+          data-testid="no-preview"
+        >
           <Music2 size={14} className="shrink-0" />
-          No official preview for this sound.
+          No official preview.
           <button
             type="button"
-            className="font-semibold text-accent underline"
+            className="min-h-8 font-semibold text-accent underline"
             onClick={() => void similar()}
           >
             Use the closest free match
@@ -270,24 +297,13 @@ function SoundRow({
       )}
       {previewing && (
         <div
-          className="flex flex-wrap items-center gap-2 text-xs text-muted"
+          className="flex items-center gap-2 pl-[3.375rem] text-xs text-muted"
           data-testid="sound-previewing"
         >
-          {busy === 'cuts' ? <Spinner /> : null}
-          <span className="flex-1">
-            Playing the official 30 s preview with your reel
-            {longReel ? ' (loops every 30 s)' : ''} — not saved or exported.
+          <span className="min-w-0 flex-1">
+            Playing with your reel{longReel ? ' (loops every 30 s)' : ''}. Not saved or exported.
           </span>
-          <Button
-            size="sm"
-            variant="ghost"
-            icon={<Scissors size={14} />}
-            disabled={busy !== undefined}
-            onClick={() => void cuts()}
-            data-testid="match-cuts"
-          >
-            Match cuts to this sound
-          </Button>
+          {matchCuts}
         </div>
       )}
     </li>

@@ -162,9 +162,14 @@ export interface RowLayout {
 /**
  * Vertical order (top → bottom): markers, captions, visual tracks top-most first (later
  * tracks draw on top, so they sit higher), the main track, then audio tracks. This mirrors
- * the stacking order of the preview so the timeline reads like the frame.
+ * the stacking order of the preview so the timeline reads like the frame. The marker row is
+ * left out when there are no markers (`hasMarkers: false`).
  */
-export const layoutRows = (tracks: readonly Track[], hasCaptions: boolean): RowLayout => {
+export const layoutRows = (
+  tracks: readonly Track[],
+  hasCaptions: boolean,
+  hasMarkers = true,
+): RowLayout => {
   const rows: Row[] = []
   let y = ROWS_PAD
   const push = (r: Row) => {
@@ -178,7 +183,7 @@ export const layoutRows = (tracks: readonly Track[], hasCaptions: boolean): RowL
     y,
     height: TRACK_ROW_HEIGHT[t.kind],
   })
-  push({ type: 'markers', key: 'markers', y, height: MARKER_ROW_HEIGHT })
+  if (hasMarkers) push({ type: 'markers', key: 'markers', y, height: MARKER_ROW_HEIGHT })
   if (hasCaptions) push({ type: 'captions', key: 'captions', y, height: CAPTION_ROW_HEIGHT })
   for (let i = tracks.length - 1; i >= 0; i--) {
     const t = tracks[i]!

@@ -1,13 +1,13 @@
 import {
-  Cpu,
+  ChevronDown,
   Download,
   LogOut,
-  MonitorSmartphone,
-  Package,
+  Monitor,
+  Moon,
   RefreshCw,
   Share,
   Smartphone,
-  TrendingUp,
+  Sun,
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
@@ -23,52 +23,101 @@ import {
   useTrendSettings,
   useTrends,
 } from '@/api/queries.ts'
-import { sourceLabel } from '@/lib/trends.ts'
 import { promptInstall, useInstallState } from '@/app/install.ts'
 import { setThemePref, useThemePref, type ThemePref } from '@/app/theme.ts'
 import { Button } from '@/components/Button.tsx'
 import { SegmentedControl } from '@/components/SegmentedControl.tsx'
 import { Skeleton } from '@/components/Skeleton.tsx'
 import { toast } from '@/components/Toast.tsx'
+import { cn } from '@/lib/cn.ts'
 import { formatBytes, formatRelative } from '@/lib/format.ts'
+import { sourceLabel } from '@/lib/trends.ts'
 import { AppFrame, SectionTitle } from './AppFrame.tsx'
 
-/** Settings: appearance, install, host info, paired devices, packs, storage, about. */
+/**
+ * Settings, grouped into calm cards: look, this app, devices, your computer and content
+ * updates. Everything technical (trend sources, publishing, diagnostics, storage,
+ * versions) sits under "Advanced".
+ */
 export function SettingsScreen() {
+  const [advanced, setAdvanced] = useState(false)
   return (
     <AppFrame title="Settings">
-      <div className="grid gap-x-6 lg:grid-cols-2">
-        <div>
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-x-8 lg:grid-cols-2">
+        <div className="min-w-0">
           <Appearance />
           <Install />
           <Devices />
         </div>
-        <div>
+        <div className="min-w-0">
           <Host />
-          <Packs />
-          <TrendsSection />
-          <Storage />
-          <About />
+          <Content />
         </div>
+      </div>
+      <div className="mx-auto mt-8 max-w-5xl">
+        <button
+          type="button"
+          aria-expanded={advanced}
+          aria-controls="settings-advanced"
+          onClick={() => setAdvanced((v) => !v)}
+          className="flex h-12 w-full items-center justify-between rounded-2xl bg-surface px-4 text-[15px] font-semibold hover:bg-surface-2"
+        >
+          Advanced
+          <ChevronDown
+            size={18}
+            aria-hidden
+            className={cn('text-muted transition-transform duration-200', advanced && 'rotate-180')}
+          />
+        </button>
+        {advanced && (
+          <div
+            id="settings-advanced"
+            className="animate-rf-rise grid grid-cols-1 gap-x-8 lg:grid-cols-2"
+          >
+            <div className="min-w-0">
+              <TrendsAdvanced />
+              <Storage />
+            </div>
+            <div className="min-w-0">
+              <Diagnostics />
+            </div>
+          </div>
+        )}
+        <About />
       </div>
     </AppFrame>
   )
 }
 
-function Card({ children }: { children: ReactNode }) {
+function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col divide-y divide-line rounded-card border border-line bg-surface">
+    <div className={cn('flex flex-col overflow-hidden rounded-2xl bg-surface', className)}>
       {children}
     </div>
   )
 }
 
-/** A label/value row; values wrap instead of overflowing on phones. */
-function Row({ label, children }: { label: string; children: ReactNode }) {
+/** Label (plus a muted one-liner) on the left, value or control on the right. */
+function Row({
+  label,
+  hint,
+  children,
+  className,
+}: {
+  label: ReactNode
+  hint?: ReactNode
+  children?: ReactNode
+  className?: string
+}) {
   return (
-    <div className="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
-      <span className="shrink-0 text-sm text-muted">{label}</span>
-      <span className="min-w-0 text-right text-sm font-medium break-words">{children}</span>
+    <div className={cn('flex min-h-14 items-center justify-between gap-4 px-4 py-3', className)}>
+      <div className="min-w-0">
+        <div className="text-[15px] font-medium">{label}</div>
+        {hint && <div className="truncate text-xs text-muted">{hint}</div>}
+      </div>
+      {children !== undefined && (
+        <div className="min-w-0 shrink text-right text-sm break-words text-muted">{children}</div>
+      )}
     </div>
   )
 }
@@ -79,15 +128,36 @@ function Appearance() {
   const pref = useThemePref()
   return (
     <>
-      <SectionTitle>Appearance</SectionTitle>
+      <SectionTitle>Look</SectionTitle>
       <SegmentedControl<ThemePref>
         label="Theme"
         value={pref}
         onChange={setThemePref}
         options={[
-          { value: 'dark', label: 'Dark' },
-          { value: 'light', label: 'Light' },
-          { value: 'system', label: 'System' },
+          {
+            value: 'dark',
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                <Moon size={15} aria-hidden /> Dark
+              </span>
+            ),
+          },
+          {
+            value: 'light',
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                <Sun size={15} aria-hidden /> Light
+              </span>
+            ),
+          },
+          {
+            value: 'system',
+            label: (
+              <span className="inline-flex items-center gap-1.5">
+                <Monitor size={15} aria-hidden /> Auto
+              </span>
+            ),
+          },
         ]}
       />
     </>
@@ -101,30 +171,31 @@ function Install() {
     <>
       <SectionTitle>App</SectionTitle>
       <Card>
-        <div className="flex items-center gap-3 p-4">
-          <MonitorSmartphone size={22} className="shrink-0 text-violet" />
-          {state === 'installed' ? (
-            <p className="text-sm">ReelForge is installed on this device.</p>
-          ) : state === 'available' ? (
-            <>
-              <p className="flex-1 text-sm">
-                Install ReelForge for a full-screen, app-like editor.
-              </p>
-              <Button
-                variant="primary"
-                icon={<Download size={18} />}
-                onClick={() => void promptInstall()}
-              >
-                Install app
-              </Button>
-            </>
-          ) : (
-            <p className="text-sm">
-              To install on iPhone or iPad: tap <Share size={14} className="inline align-[-2px]" />{' '}
-              Share in Safari, then <b>Add to Home Screen</b>.
-            </p>
-          )}
-        </div>
+        {state === 'installed' ? (
+          <Row label="Installed" hint="ReelForge is on this device" />
+        ) : state === 'available' ? (
+          <Row label="Install the app" hint="Full screen, works like a native app">
+            <Button
+              size="sm"
+              variant="primary"
+              className="h-9 rounded-full px-4"
+              icon={<Download size={16} />}
+              onClick={() => void promptInstall()}
+            >
+              Install
+            </Button>
+          </Row>
+        ) : (
+          <Row
+            label="Add to Home Screen"
+            hint={
+              <>
+                In Safari, tap <Share size={12} className="inline align-[-1px]" /> Share, then Add
+                to Home Screen
+              </>
+            }
+          />
+        )}
       </Card>
     </>
   )
@@ -141,7 +212,7 @@ function Devices() {
   }
   return (
     <>
-      <SectionTitle>Paired devices</SectionTitle>
+      <SectionTitle>Devices</SectionTitle>
       <Card>
         {devices.isPending ? (
           <div className="p-4">
@@ -153,12 +224,18 @@ function Devices() {
           devices.data.map((d) => {
             const current = d.current ?? d.id === me
             return (
-              <div key={d.id} className="flex min-h-14 items-center gap-3 px-4 py-2">
-                <Smartphone size={20} className="shrink-0 text-muted" />
+              <div key={d.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-2 text-muted">
+                  <Smartphone size={17} aria-hidden />
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">
-                    {d.name}
-                    {current && <span className="ml-2 text-xs text-accent">This device</span>}
+                  <p className="flex items-center gap-2 truncate text-[15px] font-medium">
+                    <span className="truncate">{d.name}</span>
+                    {current && (
+                      <span className="shrink-0 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent">
+                        This device
+                      </span>
+                    )}
                   </p>
                   {d.lastSeenAt && (
                     <p className="text-xs text-muted">Active {formatRelative(d.lastSeenAt)}</p>
@@ -177,43 +254,46 @@ function Devices() {
                       })
                     }
                   >
-                    Revoke
+                    Remove
                   </Button>
                 )}
               </div>
             )
           })
         )}
-        <div className="p-3">
-          <Button
-            variant="ghost"
-            className="text-danger"
-            icon={<LogOut size={18} />}
-            onClick={signOut}
-          >
-            Forget this device
-          </Button>
-        </div>
+        <button
+          type="button"
+          onClick={signOut}
+          className="flex min-h-12 items-center gap-3 px-4 text-left text-[15px] font-medium text-danger hover:bg-surface-2"
+        >
+          <LogOut size={18} aria-hidden />
+          Forget this device
+        </button>
       </Card>
     </>
   )
 }
 
-function Host() {
-  const sys = useSystem()
-  const s = sys.data
-  const encoders = s?.hwEncoders
+const useEncoders = () => {
+  const s = useSystem().data
+  return s?.hwEncoders
     ? Object.entries(s.hwEncoders)
         .filter(([, v]) => typeof v === 'string' && v)
         .map(([, v]) => v as string)
     : []
+}
+
+function Host() {
+  const sys = useSystem()
+  const s = sys.data
+  const encoders = useEncoders()
   return (
     <>
-      <SectionTitle>Host computer</SectionTitle>
+      <SectionTitle>Your computer</SectionTitle>
       <Card>
         {sys.isPending ? (
           <div className="flex flex-col gap-2 p-4">
-            {[0, 1, 2, 3].map((i) => (
+            {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-6 w-full" />
             ))}
           </div>
@@ -221,38 +301,13 @@ function Host() {
           <p className="p-4 text-sm text-danger">{sys.error.message}</p>
         ) : (
           <>
-            {s?.hostname && <Row label="Name">{s.hostname}</Row>}
-            <Row label="CPU">
-              <Cpu size={14} className="mr-1 inline align-[-2px]" />
-              {s?.cpu ? `${s.cpu.model} · ${s.cpu.threads} threads` : DASH}
+            <Row label="Name" hint="Where your videos are edited and saved">
+              {s?.hostname ?? DASH}
             </Row>
-            <Row label="GPU">{s?.gpu ?? DASH}</Row>
-            <Row label="GPU encoders">
-              {encoders.length ? encoders.join(', ') : 'None (CPU encoding)'}
+            <Row label="Free space">{s?.disk ? formatBytes(s.disk.free) : DASH}</Row>
+            <Row label="Export speed" hint={encoders.length ? encoders.join(', ') : undefined}>
+              {encoders.length ? 'Fast (GPU)' : 'Standard (CPU)'}
             </Row>
-            {s?.memory && <Row label="Memory">{formatBytes(s.memory.total)}</Row>}
-            <Row label="Disk free">
-              {s?.disk ? `${formatBytes(s.disk.free)} of ${formatBytes(s.disk.total)}` : DASH}
-            </Row>
-            <Row label="FFmpeg">{s?.ffmpegVersion ?? DASH}</Row>
-            <Row label="Speech models">
-              {s?.whisper?.installed ? s.whisper.models.join(', ') || 'None' : 'Not installed'}
-            </Row>
-            <Row label="AI language model">
-              {s?.llm?.installed
-                ? (s.llm.model ?? 'Installed').replace(/\.gguf$/i, '')
-                : 'Not installed (run pnpm bootstrap)'}
-            </Row>
-            {s?.tailscale?.hostname && <Row label="Tailscale">{s.tailscale.hostname}</Row>}
-            {s?.urls?.length ? (
-              <Row label="Addresses">
-                {s.urls.map((u) => (
-                  <span key={u} className="block font-mono text-xs">
-                    {u}
-                  </span>
-                ))}
-              </Row>
-            ) : null}
           </>
         )}
       </Card>
@@ -260,43 +315,73 @@ function Host() {
   )
 }
 
-function Packs() {
+function Content() {
   const packs = usePacks()
   const sync = useSyncPacks()
+  const trends = useTrends()
+  const refresh = useRefreshTrends()
   const idx = packs.data?.index
+  const t = trends.data
   return (
     <>
-      <SectionTitle>Trend packs</SectionTitle>
+      <SectionTitle>Content</SectionTitle>
       <Card>
-        <Row label="Version">{idx?.version ?? DASH}</Row>
-        <Row label="Updated">{idx ? formatRelative(idx.updatedAt) : DASH}</Row>
-        <Row label="Packs">
-          <Package size={14} className="mr-1 inline align-[-2px]" />
-          {idx ? idx.packs.length : DASH}
-        </Row>
-        <div className="p-3">
+        <Row
+          label="Templates & effects"
+          hint={idx ? `Updated ${formatRelative(idx.updatedAt)}` : undefined}
+        >
           <Button
-            icon={<RefreshCw size={18} />}
+            size="sm"
+            variant="ghost"
+            className="h-9 rounded-full"
+            icon={<RefreshCw size={15} />}
             loading={sync.isPending}
             onClick={() =>
               sync.mutate(undefined, {
-                onSuccess: () => toast.success('Checking for new trends…'),
+                onSuccess: () => toast.success('Checking for new templates…'),
                 onError: (e) => toast.error('Update check failed', e.message),
               })
             }
           >
-            Check for updates
+            Check
           </Button>
-        </div>
+        </Row>
+        {t && (
+          <Row
+            label="Trends"
+            hint={
+              t.running
+                ? 'Checking now…'
+                : t.generatedAt
+                  ? `Updated ${formatRelative(t.generatedAt)}`
+                  : 'Not checked yet'
+            }
+          >
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 rounded-full"
+              icon={<RefreshCw size={15} />}
+              loading={refresh.isPending || t.running}
+              onClick={() =>
+                refresh.mutate(undefined, {
+                  onSuccess: () => toast.success('Refreshing trends…'),
+                  onError: (e) => toast.error('Could not refresh trends', e.message),
+                })
+              }
+            >
+              Refresh now
+            </Button>
+          </Row>
+        )}
       </Card>
     </>
   )
 }
 
-/** Trend engine: last refresh, per-source status, refresh now, auto-publish to GitHub. */
-function TrendsSection() {
+/** Trend engine internals: per-source status, local AI use, auto-publish to GitHub. */
+function TrendsAdvanced() {
   const trends = useTrends()
-  const refresh = useRefreshTrends()
   const settings = useTrendSettings()
   const t = trends.data
   const autoPublish = t?.settings.autoPublish ?? false
@@ -312,30 +397,27 @@ function TrendsSection() {
           <p className="p-4 text-sm text-danger">{trends.error.message}</p>
         ) : t ? (
           <>
-            <Row label="Last refresh">
-              <TrendingUp size={14} className="mr-1 inline align-[-2px]" />
-              {t.running ? 'Running now…' : t.generatedAt ? formatRelative(t.generatedAt) : 'Never'}
-            </Row>
-            {t.nextRunAt && !t.running && <Row label="Next run">{formatRelative(t.nextRunAt)}</Row>}
+            {t.nextRunAt && !t.running && (
+              <Row label="Next check">{formatRelative(t.nextRunAt)}</Row>
+            )}
             {t.lastError && <Row label="Last error">{t.lastError}</Row>}
-            <Row label="Local AI">
-              {t.llm.used ? 'Writing new presets' : 'Ranking + beat remixes'}
-            </Row>
-            <div className="px-4 py-2.5" data-testid="trend-sources">
-              <p className="mb-1.5 text-sm text-muted">Sources</p>
-              <ul className="flex flex-col gap-1">
+            <Row label="Local AI">{t.llm.used ? 'Writing new presets' : 'Ranking only'}</Row>
+            <div className="px-4 py-3" data-testid="trend-sources">
+              <p className="mb-2 text-[15px] font-medium">Sources</p>
+              <ul className="flex flex-col gap-1.5">
                 {t.sources.map((s) => (
                   <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
                     <span className="flex items-center gap-2">
                       <span
                         aria-hidden
-                        className={
+                        className={cn(
+                          'size-2 rounded-full',
                           s.state === 'ok'
-                            ? 'size-2 rounded-full bg-success'
+                            ? 'bg-success'
                             : s.state === 'error'
-                              ? 'size-2 rounded-full bg-danger'
-                              : 'size-2 rounded-full bg-line'
-                        }
+                              ? 'bg-danger'
+                              : 'bg-line',
+                        )}
                       />
                       {sourceLabel(s.id)}
                     </span>
@@ -353,20 +435,16 @@ function TrendsSection() {
                 ))}
               </ul>
             </div>
-            <div className="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
-              <span className="text-sm">
-                Auto-publish to GitHub
-                {!t.publishAvailable && (
-                  <span className="block text-xs text-muted">
-                    Set PUBLISH_TRENDS=github on the host
-                  </span>
-                )}
-                {t.publish && (
-                  <span className="block text-xs text-muted">
-                    {t.publish.status} {formatRelative(t.publish.at)}
-                  </span>
-                )}
-              </span>
+            <Row
+              label="Auto-publish to GitHub"
+              hint={
+                !t.publishAvailable
+                  ? 'Set PUBLISH_TRENDS=github on the computer'
+                  : t.publish
+                    ? `${t.publish.status} ${formatRelative(t.publish.at)}`
+                    : undefined
+              }
+            >
               <button
                 type="button"
                 role="switch"
@@ -379,28 +457,64 @@ function TrendsSection() {
                     { onError: (e) => toast.error('Could not save', e.message) },
                   )
                 }
-                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40 ${autoPublish ? 'bg-accent' : 'bg-surface-3'}`}
+                className={cn(
+                  'relative block h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40',
+                  autoPublish ? 'bg-accent' : 'bg-surface-3',
+                )}
               >
                 <span
-                  className={`absolute top-0.5 size-6 rounded-full bg-white transition-[left] ${autoPublish ? 'left-[22px]' : 'left-0.5'}`}
+                  className={cn(
+                    'absolute top-0.5 size-6 rounded-full bg-white transition-[left] duration-200 ease-[var(--ease-spring)]',
+                    autoPublish ? 'left-[22px]' : 'left-0.5',
+                  )}
                 />
               </button>
-            </div>
-            <div className="p-3">
-              <Button
-                icon={<RefreshCw size={18} />}
-                loading={refresh.isPending || t.running}
-                onClick={() =>
-                  refresh.mutate(undefined, {
-                    onSuccess: () => toast.success('Refreshing trends…'),
-                    onError: (e) => toast.error('Could not refresh trends', e.message),
-                  })
-                }
-              >
-                Refresh now
-              </Button>
-            </div>
+            </Row>
           </>
+        ) : null}
+      </Card>
+    </>
+  )
+}
+
+function Diagnostics() {
+  const sys = useSystem()
+  const packs = usePacks()
+  const s = sys.data
+  const encoders = useEncoders()
+  const idx = packs.data?.index
+  return (
+    <>
+      <SectionTitle>Diagnostics</SectionTitle>
+      <Card className="text-sm">
+        <Row label="CPU">{s?.cpu ? `${s.cpu.model} · ${s.cpu.threads} threads` : DASH}</Row>
+        <Row label="GPU">{s?.gpu ?? DASH}</Row>
+        <Row label="GPU encoders">{encoders.length ? encoders.join(', ') : 'None'}</Row>
+        {s?.memory && <Row label="Memory">{formatBytes(s.memory.total)}</Row>}
+        <Row label="Disk">
+          {s?.disk ? `${formatBytes(s.disk.free)} free of ${formatBytes(s.disk.total)}` : DASH}
+        </Row>
+        <Row label="FFmpeg">{s?.ffmpegVersion ?? DASH}</Row>
+        <Row label="Speech models">
+          {s?.whisper?.installed ? s.whisper.models.join(', ') || 'None' : 'Not installed'}
+        </Row>
+        <Row label="AI model">
+          {s?.llm?.installed
+            ? (s.llm.model ?? 'Installed').replace(/\.gguf$/i, '')
+            : 'Not installed (run pnpm bootstrap)'}
+        </Row>
+        <Row label="Content packs">
+          {idx ? `v${idx.version} · ${idx.packs.length} packs` : DASH}
+        </Row>
+        {s?.tailscale?.hostname && <Row label="Tailscale">{s.tailscale.hostname}</Row>}
+        {s?.urls?.length ? (
+          <Row label="Addresses">
+            {s.urls.map((u) => (
+              <span key={u} className="block font-mono text-xs break-all">
+                {u}
+              </span>
+            ))}
+          </Row>
         ) : null}
       </Card>
     </>
@@ -425,17 +539,11 @@ function Storage() {
   }, [])
   return (
     <>
-      <SectionTitle>Storage on this device</SectionTitle>
+      <SectionTitle>This device</SectionTitle>
       <Card>
-        <Row label="App cache">
-          {estimate?.usage !== undefined
-            ? `${formatBytes(estimate.usage)}${estimate.quota ? ` of ${formatBytes(estimate.quota)}` : ''}`
-            : DASH}
+        <Row label="App cache" hint="Media and exports stay on your computer">
+          {estimate?.usage !== undefined ? formatBytes(estimate.usage) : DASH}
         </Row>
-        <p className="px-4 py-3 text-xs text-muted">
-          Your media and exports live on the host. This device only keeps the app and trend-pack
-          files.
-        </p>
       </Card>
     </>
   )
@@ -444,15 +552,13 @@ function Storage() {
 function About() {
   const health = useHealth()
   return (
-    <>
-      <SectionTitle>About</SectionTitle>
-      <Card>
-        <Row label="App version">{__APP_VERSION__}</Row>
-        <Row label="Server version">{health.data?.version ?? DASH}</Row>
-        <p className="px-4 py-3 text-xs text-muted">
-          ReelForge is open-source and self-hosted: your videos never leave your own computer.
-        </p>
-      </Card>
-    </>
+    <p className="mt-8 text-center text-xs text-muted">
+      ReelForge {__APP_VERSION__}
+      {health.data?.version && health.data.version !== __APP_VERSION__
+        ? ` · server ${health.data.version}`
+        : ''}
+      <br />
+      Open source and self-hosted: your videos never leave your computer.
+    </p>
   )
 }

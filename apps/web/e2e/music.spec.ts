@@ -354,7 +354,7 @@ test.describe('auto music', () => {
   test('browses the library, previews a track and adds it', async ({ page, browserName }) => {
     const mock = await mockApi(page)
     await openAudioPanel(page)
-    await page.getByRole('button', { name: 'Royalty-free library' }).click()
+    await page.getByRole('tab', { name: 'Library' }).click()
     await page.getByRole('radio', { name: 'Chill' }).last().click()
 
     const rows = page.getByTestId('music-track')
@@ -421,6 +421,7 @@ test.describe('trending sounds', () => {
     await expect(row).toContainText('Club Hit')
     await expect(row).toContainText('126 BPM')
     await expect(row).toContainText('New today')
+    await row.getByRole('button', { name: 'More for Club Hit' }).click()
     await row.getByRole('button', { name: 'Add this sound when you post' }).click()
     expect(await page.evaluate(() => (window as { __copied?: string }).__copied)).toBe(
       'Club Hit – DJ Y',
@@ -492,6 +493,7 @@ test.describe('trending sounds', () => {
     await expect(row.getByTestId('preview-sound')).toHaveCount(0)
     await expect(row.getByTestId('listen-sound')).toHaveAttribute('href', trends.sounds[0]!.link)
     const saves = mock.saves.length
+    await row.getByRole('button', { name: 'More for Club Hit' }).click()
     await row.getByTestId('match-cuts').click()
     await expect.poll(() => mock.saves.length).toBeGreaterThan(saves)
     expect(mock.previews).toHaveLength(0)

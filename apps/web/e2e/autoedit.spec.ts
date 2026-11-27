@@ -6,6 +6,7 @@
  */
 import { expect, test, type Page } from '@playwright/test'
 import { Asset, Project, sec } from '@reelforge/core'
+import { dockTool } from './dock.ts'
 
 const PROJECT_ID = 'ae-e2e'
 const NOW = '2026-01-01T00:00:00.000Z'
@@ -214,9 +215,7 @@ test.describe('Auto edit', () => {
       ])
   })
 
-  test('AI panel: Auto edit this project, switch version, and the no-model hint', async ({
-    page,
-  }) => {
+  test('Magic panel: Make it a reel, switch version, and the no-model hint', async ({ page }) => {
     const a1 = video('a1')
     const a2 = video('a2')
     const mock = await mockApi(page, {
@@ -226,9 +225,9 @@ test.describe('Auto edit', () => {
     })
     await page.goto(`/p/${PROJECT_ID}`)
     await expect(page.getByTestId('editor')).toBeVisible()
-    await page.getByRole('button', { name: 'AI', exact: true }).click()
-    await expect(page.getByText(/Needs the local AI model/)).toBeVisible()
-    await page.getByRole('button', { name: 'Auto edit this project' }).click()
+    await dockTool(page, 'ai').click() // Magic
+    await expect(page.getByText(/need the local AI model/)).toBeVisible()
+    await page.getByRole('button', { name: 'Make it a reel' }).click()
     await expect.poll(() => mainClips(lastSave(mock)).length, { timeout: 30_000 }).toBe(3)
     expect(mock.jobKinds).not.toContain('copywriter') // no model on this host
     const versions = page.getByTestId('autoedit-variants')

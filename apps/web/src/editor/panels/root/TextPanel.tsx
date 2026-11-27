@@ -26,7 +26,14 @@ export function TextPanel() {
   const hasPresets = catalog(packs, 'textPresets').length > 0
   return (
     <PanelBody>
-      <Button variant="primary" block icon={<Type size={18} />} onClick={() => insert()}>
+      <Button
+        variant="primary"
+        size="lg"
+        block
+        className="panels-cta"
+        icon={<Type size={18} />}
+        onClick={() => insert()}
+      >
         Add text
       </Button>
       {hasPresets && (

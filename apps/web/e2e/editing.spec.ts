@@ -7,6 +7,7 @@
  */
 import { expect, test, type Page } from '@playwright/test'
 import { Asset, Project, sec, type Clip } from '@reelforge/core'
+import { enableEditMode, stageOption } from './dock.ts'
 import { isTouch, pointer } from './pointer.ts'
 
 const PROJECT_ID = 'edit-e2e'
@@ -180,13 +181,13 @@ test.describe('on-canvas transform', () => {
 
   test('safe zones and crop mode', async ({ page }) => {
     const mock = await open(page)
-    await page.getByTestId('safe-zones-toggle').click()
+    await stageOption(page, 'safe-zones-toggle')
     await expect(page.getByTestId('safe-zones')).toBeVisible()
     const at = await canvas(page)
     // Below the sticker: the main clip.
     await ov(page).tap(...at(540, 1700))
     await expect(page.getByTestId('transform-frame')).toHaveAttribute('data-clip-id', 'm0')
-    await page.getByTestId('crop-toggle').click()
+    await stageOption(page, 'crop-toggle')
     await expect(page.getByTestId('crop-frame')).toBeVisible()
     const h = (await page.getByTestId('crop-left').boundingBox())!
     const [x] = at(270, 0)
@@ -244,8 +245,7 @@ test.describe('timeline pro edits', () => {
   test('roll mode moves the cut between two main clips', async ({ page }) => {
     const mock = await open(page)
     const touch = isTouch(page)
-    await page.getByTestId('roll-toggle').click()
-    await expect(page.getByTestId('roll-toggle')).toHaveAttribute('aria-pressed', 'true')
+    await enableEditMode(page, 'roll-toggle')
     const b = await clipBox(page, 'm1')
     const y = b.y + b.height / 2
     const p = pointer(page, touch)
@@ -289,7 +289,7 @@ test.describe('timeline pro edits', () => {
   test('ripple trim shifts later clips on a free track', async ({ page }) => {
     const mock = await open(page)
     const touch = isTouch(page)
-    await page.getByTestId('ripple-toggle').click()
+    await enableEditMode(page, 'ripple-toggle')
     const b = await clipBox(page, 'tx')
     const y = b.y + b.height / 2
     const p = pointer(page, touch)

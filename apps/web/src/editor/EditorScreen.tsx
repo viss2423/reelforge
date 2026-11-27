@@ -14,12 +14,11 @@
  *  └───────────────────┘             │ Timeline slot                            │
  *   + media Sheet                    └──────────────────────────────────────────┘
  */
-import { FileQuestion, Plus, TriangleAlert } from 'lucide-react'
+import { FileQuestion, TriangleAlert } from 'lucide-react'
 import { useParams, useNavigate } from 'react-router'
 import { ApiError } from '@/api/index.ts'
 import { Button } from '@/components/Button.tsx'
 import { EmptyState } from '@/components/EmptyState.tsx'
-import { IconButton } from '@/components/IconButton.tsx'
 import { Sheet } from '@/components/Sheet.tsx'
 import { Splash } from '@/app/Splash.tsx'
 import { useIsDesktop } from '@/lib/useMediaQuery.ts'
@@ -71,14 +70,14 @@ function DesktopLayout() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1">
         <aside
-          className="flex shrink-0 flex-col border-r border-line bg-surface"
+          className="flex shrink-0 flex-col bg-surface"
           style={{ width: DESKTOP_LIBRARY_WIDTH }}
         >
           <MediaLibrary className="flex-1" />
         </aside>
         <PreviewArea className="min-w-0 flex-1" />
         <aside
-          className="shrink-0 overflow-y-auto border-l border-line bg-surface"
+          className="shrink-0 overflow-y-auto bg-surface"
           style={{ width: DESKTOP_INSPECTOR_WIDTH }}
           aria-label="Inspector"
           data-slot="inspector"
@@ -86,7 +85,7 @@ function DesktopLayout() {
           <Inspector />
         </aside>
       </div>
-      <div className="shrink-0 border-t border-line bg-surface pb-safe">
+      <div className="shrink-0 bg-surface pb-safe">
         <div data-slot="tools">
           <ToolPanels variant="desktop" />
         </div>
@@ -106,26 +105,16 @@ function MobileLayout() {
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <PreviewArea
-        className="min-h-0 flex-1"
-        transportLeading={
-          <IconButton
-            label="Add media"
-            icon={<Plus size={22} />}
-            onClick={() => s().setActivePanel(MEDIA_PANEL)}
-            className="bg-surface-2"
-            data-testid="add-media"
-          />
-        }
-      />
+      {/* "Add media" lives in the timeline (the "+" on the main track) and the empty stage. */}
+      <PreviewArea className="min-h-0 flex-1" />
       <div
-        className="shrink-0 border-t border-line bg-surface"
+        className="shrink-0 overflow-hidden rounded-t-3xl bg-surface pt-1"
         style={{ height: `${MOBILE_TIMELINE_VH * 100}dvh` }}
         data-slot="timeline"
       >
         <Timeline />
       </div>
-      <div className="shrink-0 border-t border-line bg-surface pb-safe" data-slot="tools">
+      <div className="shrink-0 bg-surface pb-safe" data-slot="tools">
         <ToolPanels variant="mobile" />
       </div>
       <Sheet

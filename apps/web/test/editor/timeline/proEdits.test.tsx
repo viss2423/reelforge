@@ -18,8 +18,8 @@ import { clip, mainClips, project, track } from './helpers.ts'
 
 const s = () => editorStore.getState()
 const cx = (t: number) => 16 + (t / 1e6) * 100
-/** Rows: markers (4..18), text (22..52), main (56..112), audio (116..152). */
-const Y = { text: 24 + 37, main: 24 + 84 }
+/** Rows (no markers → no marker row): text (4..34), main (38..94), audio (98..134). */
+const Y = { text: 24 + 19, main: 24 + 66 }
 
 const vid = Asset.parse({
   id: 'vid',
@@ -275,8 +275,8 @@ describe('group moves', () => {
     ])
     await mount(p)
     s().select(['a', 'b'])
-    // Rows top → bottom: markers, t3 (22..52), t2 (56..86), t1 (90..120), main.
-    drag([cx(sec(1.5)), 24 + 37], [cx(sec(1.5)), 24 + 71])
+    // Rows top → bottom: t3 (4..34), t2 (38..68), t1 (72..102), main.
+    drag([cx(sec(1.5)), 24 + 19], [cx(sec(1.5)), 24 + 53])
     expect(get('a').track.id).toBe('t2')
     expect(get('b').track.id).toBe('t1')
     expect(get('a').clip.start).toBe(sec(1))

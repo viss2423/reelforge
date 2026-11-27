@@ -249,10 +249,29 @@ test.describe('real Android device', () => {
     // treated as a fling (measured on the OnePlus: the click never fires).
     await new Promise((r) => setTimeout(r, 1000))
   }
-  /** Opens a tool panel from the tool bar with a real tap. */
+  /**
+   * Opens a tool panel from the tool dock with a real tap. Tools that aren't docked are
+   * behind "More": tap it, then the tool in its grid; the open tool then shows, pressed, in
+   * the dock.
+   */
   const openTool = async (id: string) => {
     const sel = `[role="toolbar"] [data-tool="${id}"]`
-    await fingerTap(sel)
+    const docked = await tab.eval<boolean>((q: string) => !!document.querySelector(q), sel)
+    if (docked) await fingerTap(sel)
+    else {
+      await fingerTap('[data-testid="dock-more"]')
+      const item = `[data-testid="dock-more-sheet"] [data-tool="${id}"]`
+      // Let the grid sheet finish sliding in before tapping into it.
+      let b = await tab.waitBox(item)
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => setTimeout(r, 80))
+        const next = await tab.waitBox(item)
+        const still = Math.abs(next.y - b.y) < 0.5
+        b = next
+        if (still) break
+      }
+      await fingerTap(item)
+    }
     await tab.waitFor(
       `${id} panel`,
       (q: string) => document.querySelector(q)?.getAttribute('aria-pressed') === 'true',
@@ -356,9 +375,8 @@ test.describe('real Android device', () => {
     await tab.send('Input.insertText', { text: E2E_PAIR_CODE })
     // Functions run in the page: they can't close over Node-side helpers.
     await tab.waitFor('home', () => {
-      const button = [...document.querySelectorAll('button')].find((b) =>
-        b.textContent?.includes('New project'),
-      )
+      // Home's quiet "Blank project" button keeps the accessible name "New project".
+      const button = document.querySelector('button[aria-label="New project"]')
       button?.setAttribute('data-rf-test', 'new-project')
       return !!button
     })
@@ -557,14 +575,19 @@ preview stats: ${JSON.stringify(await stats())}`)
     await expect.poll(width0).toBeGreaterThan(w1 * 1.5)
   })
 
-  test('AI panel opens with its tools', async () => {
+  test('Magic panel opens with its tools', async () => {
     await tab.eval(() =>
       document.querySelector<HTMLButtonElement>('[role="toolbar"] [aria-label="Done"]')?.click(),
     )
     await tab.tapOn('[role="toolbar"] [data-tool="ai"]')
-    await tab.waitFor('AI tools', () => {
-      const labels = [...document.querySelectorAll('button')].map((b) => b.textContent?.trim())
-      return labels.includes('Generate captions') && labels.includes('Find silences')
+    await tab.waitFor('Magic tools', () => {
+      const grid = document.querySelector('[aria-label="Magic tools"]')
+      const labels = [...(grid?.querySelectorAll('button') ?? [])].map((b) => b.textContent?.trim())
+      return (
+        !!document.querySelector('[aria-label="Auto edit"]') &&
+        labels.includes('Captions') &&
+        labels.includes('Silences')
+      )
     })
     await closeSheet()
   })
@@ -619,7 +642,7 @@ preview stats: ${JSON.stringify(await stats())}`)
   test('auto edit this project with the local LLM, variants to choose from', async () => {
     test.setTimeout(300_000)
     await openTool('ai')
-    await tapText('Auto edit this project')
+    await tapText('Make it a reel')
     const t0 = Date.now()
     const outcome = await tab.waitFor<string>(
       'auto edit variants',
