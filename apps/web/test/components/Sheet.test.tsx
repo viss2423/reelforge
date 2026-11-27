@@ -98,6 +98,20 @@ describe('Sheet', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
+  it('a swipe delivered before React renders the moves still dismisses', () => {
+    // Fast swipes (and real phones under load) can send pointerup before React has rendered
+    // the last pointermove; one act() batches the whole gesture into a single render.
+    const onClose = vi.fn<() => void>()
+    render(
+      <Sheet open onClose={onClose} title="Panel" snapPoints={[0.9]}>
+        x
+      </Sheet>,
+    )
+    enter()
+    act(() => drag(100, 990, 800))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
   it('non-dismissible sheets spring back', () => {
     const onClose = vi.fn<() => void>()
     render(
@@ -175,5 +189,26 @@ describe('Sheet', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(document.activeElement).toBe(opener)
     opener.remove()
+  })
+})
+
+describe('Sheet closing', () => {
+  it('lets taps through while it animates closed', () => {
+    const { rerender } = render(
+      <Sheet open onClose={() => undefined} title="Panel" modal={false}>
+        x
+      </Sheet>,
+    )
+    act(() => {
+      vi.advanceTimersByTime(32)
+    })
+    expect(screen.getByRole('dialog').className).toContain('pointer-events-auto')
+    rerender(
+      <Sheet open={false} onClose={() => undefined} title="Panel" modal={false}>
+        x
+      </Sheet>,
+    )
+    expect(screen.getByRole('dialog').className).toContain('pointer-events-none')
+    expect(screen.getByRole('dialog').className).not.toContain('pointer-events-auto')
   })
 })

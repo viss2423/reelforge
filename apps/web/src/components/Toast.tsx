@@ -67,9 +67,12 @@ const ICONS = { info: Info, success: CircleCheck, error: CircleAlert }
 export function Toaster() {
   const toasts = useStore(store, (s) => s.toasts)
   return createPortal(
+    // Phones: below the 56-px top bar, never over it — a full-width toast there covered the
+    // editor's Export button (tapping Export dismissed the toast instead). Wider screens
+    // centre a narrow toast in the header, clear of its buttons.
     <div
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),12px)]"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100] flex flex-col items-center gap-2 px-3 pt-[calc(env(safe-area-inset-top)+4rem)] sm:pt-[max(env(safe-area-inset-top),12px)]"
     >
       {toasts.map((t) => {
         const Icon = ICONS[t.tone]

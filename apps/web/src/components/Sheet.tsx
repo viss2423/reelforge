@@ -89,7 +89,18 @@ export function Sheet({
   const [entered, setEntered] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const restoreFocus = useRef<HTMLElement | null>(null)
-  const drag = useRef<{ startY: number; lastY: number; lastT: number; v: number } | null>(null)
+  /**
+   * Live drag state. `h` is the dragged height, kept here as well as in `dragY`: a fast
+   * swipe can deliver pointerup before React has rendered the last move, and deciding the
+   * snap from stale state would ignore the swipe.
+   */
+  const drag = useRef<{
+    startY: number
+    lastY: number
+    lastT: number
+    v: number
+    h: number
+  } | null>(null)
 
   const heights = snapPoints.map((f) => Math.round(f * vh))
   const maxH = heights.at(-1) ?? vh
@@ -155,7 +166,7 @@ export function Sheet({
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
     e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { startY: e.clientY, lastY: e.clientY, lastT: e.timeStamp, v: 0 }
+    drag.current = { startY: e.clientY, lastY: e.clientY, lastT: e.timeStamp, v: 0, h: snapH }
     setDragY(snapH)
   }
   const onPointerMove = (e: ReactPointerEvent) => {
@@ -169,13 +180,14 @@ export function Sheet({
     const raw = snapH - (e.clientY - d.startY)
     // Rubber-band beyond the tallest snap point.
     const h = raw > maxH ? maxH + (raw - maxH) * 0.2 : raw
-    setDragY(Math.max(0, h))
+    d.h = Math.max(0, h)
+    setDragY(d.h)
   }
   const onPointerUp = () => {
     const d = drag.current
-    if (!d || dragY === null) return
+    if (!d) return
     drag.current = null
-    const next = resolveSnap({ heights, current: dragY, velocity: d.v, dismissible })
+    const next = resolveSnap({ heights, current: d.h, velocity: d.v, dismissible })
     setDragY(null)
     if (next === -1) {
       haptic(6)
@@ -187,7 +199,9 @@ export function Sheet({
   }
 
   return createPortal(
-    <div className={cn('fixed inset-0 z-50', !modal && 'pointer-events-none')}>
+    // A closing sheet lets taps through at once: the tool bar under it must respond during
+    // the exit animation (tap a tool right after swiping a panel away).
+    <div className={cn('fixed inset-0 z-50', (!modal || closing) && 'pointer-events-none')}>
       {modal && (
         <div
           aria-hidden
@@ -206,7 +220,8 @@ export function Sheet({
         tabIndex={-1}
         data-snap={snap}
         className={cn(
-          'pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t border-line bg-surface shadow-sheet outline-none',
+          'absolute inset-x-0 bottom-0 flex flex-col rounded-t-3xl border-t border-line bg-surface shadow-sheet outline-none',
+          closing ? 'pointer-events-none' : 'pointer-events-auto',
           dragY === null && 'transition-transform duration-300 ease-[var(--ease-spring)]',
           className,
         )}
