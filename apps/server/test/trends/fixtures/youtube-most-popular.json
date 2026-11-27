@@ -1,0 +1,35 @@
+{
+  "kind": "youtube#videoListResponse",
+  "_note": "Synthetic sample in the documented YouTube Data API v3 videos.list shape (a live call needs an API key).",
+  "items": [
+    {
+      "kind": "youtube#video",
+      "id": "a1",
+      "snippet": {
+        "title": "POV: you finally booked the trip #photodump #travel",
+        "description": "a cozy winter photo dump from the alps #y2k",
+        "tags": ["photo dump", "travel vlog", "winter"],
+        "categoryId": "19"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "id": "a2",
+      "snippet": {
+        "title": "GRWM for the holiday party (lowercase captions only)",
+        "description": "get ready with me #grwm #holiday #fyp",
+        "tags": ["grwm", "makeup"],
+        "categoryId": "26"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "id": "a3",
+      "snippet": {
+        "title": "Top 10 games of 2026 - tier list",
+        "description": "",
+        "categoryId": "20"
+      }
+    }
+  ]
+}

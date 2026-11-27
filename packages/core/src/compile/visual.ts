@@ -15,7 +15,14 @@
  *     sprite       anything that leaves canvas visible (contain fit, PiP, opacity, keying)
  *                  → alpha sprite composited with `overlay` (warped only when animated).
  */
-import type { Adjustments, FilterRef, MediaClip, StickerClip, Transform } from '../schema.ts'
+import type {
+  Adjustments,
+  ClipBackground,
+  FilterRef,
+  MediaClip,
+  StickerClip,
+  Transform,
+} from '../schema.ts'
 import type { AnimationPreset } from '../packs.ts'
 import { sampledCommands, sendcmdFilter } from './cmd.ts'
 import { isHdr, tonemapFilters, displaySize } from './color.ts'
@@ -73,6 +80,12 @@ export interface VideoEnv {
   fps: number
   /** swscale flags for the one-time source scale. */
   scaler: string
+  /**
+   * Subject pass (text behind subject): main clips are rendered as their matte-cut subject
+   * over transparency (yuva420p), without pixel effects, so the result can be laid over
+   * text drawn on the normal composite.
+   */
+  subject?: boolean
 }
 
 const even = (x: number): number => Math.max(2, Math.round(x / 2) * 2)
@@ -532,6 +545,143 @@ function stickerPre(env: VideoEnv, px: number): (l: string) => string {
     ])
 }
 
+/* ------------------------------------------------------------------ AI background (matte) */
+
+/** Background σ in canvas px per unit of `ClipBackground.blur` (shared with the preview). */
+export const BACKGROUND_BLUR_SIGMA = 0.4
+/** Matte feather σ in canvas px per unit of `ClipBackground.feather` (shared with the preview). */
+export const MATTE_FEATHER_SIGMA = 0.08
+
+/** The clip's AI background and matte file, when it applies (mode ≠ keep, matte ready). */
+export function activeBackground(
+  ctx: CompileContext,
+  clip: MediaClip | StickerClip,
+  forceRemove = false,
+): { bg: ClipBackground; matte: string } | undefined {
+  if (clip.type === 'sticker') return undefined
+  const bg = clip.background
+  if (!forceRemove && (!bg || bg.mode === 'keep')) return undefined
+  if (!forceRemove && bg?.mode === 'image' && !(bg.assetId && ctx.assets[bg.assetId]))
+    return undefined
+  const matte = ctx.resolveMatte?.(clip.assetId)
+  if (!matte) return undefined
+  const base: ClipBackground = bg ?? {
+    mode: 'remove',
+    color: '#000000',
+    blur: 50,
+    feather: 0,
+  }
+  return { bg: forceRemove ? { ...base, mode: 'remove' } : base, matte }
+}
+
+/** Matte pre stage: exactly the clip's crop/flip/scale, as 8-bit gray (full range). */
+function maskPre(
+  env: VideoEnv,
+  clip: MediaClip,
+  size: { w: number; h: number; region?: Region },
+  feather: number,
+): (l: string) => string {
+  const sigma = feather * MATTE_FEATHER_SIGMA * env.S
+  return (l) =>
+    env.g.chain(l, [
+      'format=gray',
+      regionCropFilter(clip, size.region ?? FULL),
+      ...flipFilters(clip.transform),
+      filter('scale', { w: size.w, h: size.h, flags: 'bilinear' }),
+      sigma >= 0.3 ? filter('gblur', { sigma: num(sigma, 3) }) : undefined,
+    ])
+}
+
+/**
+ * A still image cover-fitted to the clip's whole frame, of which `region` (w×h px) is kept,
+ * for exactly `frames` frames (pts from 0). Covering the whole frame (not just the region a
+ * crop path decodes) keeps the framing identical to the preview's per-layer cover fit.
+ */
+function imageLayer(
+  env: VideoEnv,
+  path: string,
+  size: { w: number; h: number; region?: Region },
+  frames: number,
+): string {
+  const { g, fps } = env
+  const r = size.region ?? FULL
+  const fw = even(size.w / Math.max(1e-6, r.x1 - r.x0))
+  const fh = even(size.h / Math.max(1e-6, r.y1 - r.y0))
+  const x = clamp(Math.round(r.x0 * fw), 0, Math.max(0, fw - size.w))
+  const y = clamp(Math.round(r.y0 * fh), 0, Math.max(0, fh - size.h))
+  const i = g.input({ path })
+  return g.chain(`${i}:v`, [
+    filter('scale', {
+      w: fw,
+      h: fh,
+      force_original_aspect_ratio: 'increase',
+      flags: env.scaler,
+      out_color_matrix: 'bt709',
+      out_range: 'tv',
+    }),
+    `crop=${fw}:${fh}`,
+    fw === size.w && fh === size.h ? undefined : `crop=${size.w}:${size.h}:${x}:${y}`,
+    'format=yuv420p',
+    `settb=1/${fps}`,
+    frames > 1 ? `loop=loop=${frames - 1}:size=1:start=0` : undefined,
+    'setpts=N',
+    `fps=${fps}`,
+    `trim=end_frame=${frames}`,
+  ])
+}
+
+/**
+ * Decode a media clip window through its pre stage and, when it has an active AI
+ * background, composite it in the clip's own frame space (before geometry): the matte is
+ * decoded with the same timing, crop, flips and size, then
+ * - remove → `alphamerge` (yuva420p: the caller must composite it as a sprite)
+ * - blur / color / image → the subject (alpha = matte) `overlay`ed on that background.
+ */
+function decodeMedia(
+  env: VideoEnv,
+  clip: MediaClip,
+  src: VisualSource,
+  win: ClipWindow,
+  size: { w: number; h: number; alpha?: boolean; region?: Region },
+): string {
+  const { g } = env
+  const fg = decode(env, clip, src, win, mediaPre(env, clip, src, size))
+  const active = activeBackground(env.ctx, clip, env.subject)
+  if (!active) return fg
+  const { bg, matte } = active
+  const mask = decode(
+    env,
+    clip,
+    { path: matte, kind: src.kind, hdr: false },
+    win,
+    maskPre(env, clip, size, bg.feather),
+  )
+  if (bg.mode === 'remove') return g.add([fg, mask], ['alphamerge'])[0]!
+  let back: string
+  let subject: string
+  if (bg.mode === 'blur') {
+    const [a, b] = g.pair(fg)
+    const sigma = bg.blur * BACKGROUND_BLUR_SIGMA * env.S
+    back = sigma >= 0.3 ? g.chain(a, [filter('gblur', { sigma: num(sigma, 3) })]) : a
+    subject = b
+  } else {
+    back =
+      bg.mode === 'image'
+        ? imageLayer(env, env.ctx.assets[bg.assetId!]!.path, size, win.frames)
+        : g.source([
+            filter('color', { c: ffColor(bg.color), s: `${size.w}x${size.h}`, r: env.fps }),
+            'format=yuv420p',
+            `trim=end_frame=${win.frames}`,
+          ])
+    subject = fg
+  }
+  const cut = g.add([subject, mask], ['alphamerge'])[0]!
+  return g.add(
+    [back, cut],
+    [filter('overlay', { format: 'yuv420', shortest: 1 }), 'format=yuv420p'],
+  )[0]!
+}
+
 /**
  * Static pre stage for a media clip: `region` of the (cropped, flipped) frame scaled to
  * w×h export px. `alpha` keeps transparency of stills (logos on overlay tracks); main-track
@@ -608,13 +758,7 @@ export function buildSprite(env: VideoEnv, s: SpriteInput): { sprite: Sprite; fi
   if (clip.type === 'sticker') {
     label = decode(env, clip, s.src, win, stickerPre(env, PW))
   } else {
-    label = decode(
-      env,
-      clip,
-      s.src,
-      win,
-      mediaPre(env, clip, s.src, { w: PW, h: PH, alpha: s.keepAlpha }),
-    )
+    label = decodeMedia(env, clip, s.src, win, { w: PW, h: PH, alpha: s.keepAlpha })
   }
   let fill: string | undefined
   if (s.wantFill) [label, fill] = g.pair(label)
@@ -770,8 +914,13 @@ export function renderMainClip(
   const cs = croppedSize(src, clip)
   const base = fitSize(clip.fit, cs.w, cs.h)
   const m = clipMotion(clip, effects, base.w, ctx)
+  const cutout = activeBackground(ctx, clip, env.subject)
+  if (env.subject && !cutout) return transparent(env, win.frames)
   const opaque =
-    m.opacity.constant !== undefined && m.opacity.constant >= 0.999 && !clip.chromaKey?.enabled
+    m.opacity.constant !== undefined &&
+    m.opacity.constant >= 0.999 &&
+    !clip.chromaKey?.enabled &&
+    cutout?.bg.mode !== 'remove'
   const covers = opaque && coversCanvas(m, base.w, base.h, win, fps)
   let label: string
   if (covers && isStatic(m.cx) && isStatic(m.cy) && isStatic(m.z) && m.rot.constant === 0) {
@@ -788,7 +937,7 @@ export function renderMainClip(
       x1: Math.min(1, (x0 + CANVAS_W) / zw),
       y1: Math.min(1, (y0 + CANVAS_H) / zh),
     }
-    label = decode(env, clip, src, win, mediaPre(env, clip, src, { w: W, h: H, region }))
+    label = decodeMedia(env, clip, src, win, { w: W, h: H, region })
   } else if (covers) {
     // perspective path: prescale to the largest zoom (so zoomed frames keep detail), but
     // never beyond the source's own resolution (that adds area, not detail) nor 1.5×; the
@@ -805,7 +954,7 @@ export function renderMainClip(
     // the crop selects exactly the whole-pixel window that is then scaled 1:1 to BW×BH, so
     // the warp's centre offset (ox, oy) is exact.
     const region = { x0: ox / PW, y0: oy / PH, x1: (ox + BW) / PW, y1: (oy + BH) / PH }
-    const decoded = decode(env, clip, src, win, mediaPre(env, clip, src, { w: BW, h: BH, region }))
+    const decoded = decodeMedia(env, clip, src, win, { w: BW, h: BH, region })
     // perspective's output is its input size: pad up to the canvas if the window is smaller.
     const FW = Math.max(W, BW)
     const FH = Math.max(H, BH)
@@ -836,10 +985,12 @@ export function renderMainClip(
       base,
       motion: m,
       effects: [],
-      wantFill: project.backgroundBlur,
+      wantFill: project.backgroundBlur && !env.subject,
       keepAlpha: false,
     })
-    const bg = background(env, fill, win.frames, project.background)
+    const bg = env.subject
+      ? transparent(env, win.frames)
+      : background(env, fill, win.frames, project.background)
     const T = localTime(headUs)
     label = g.add(
       [bg, sprite.label],
@@ -853,12 +1004,22 @@ export function renderMainClip(
       ],
     )[0]!
   }
+  if (env.subject) return g.chain(label, ['setsar=1', 'format=yuva420p'])
   label = applyPixelEffects(g, label, shiftEffects(effects, headUs), {
     fps,
     scale: S,
     size: { w: W, h: H },
   })
   return g.chain(label, ['setsar=1', 'format=yuv420p'])
+}
+
+/** Fully transparent canvas frames (subject pass). */
+export function transparent(env: VideoEnv, frames: number): string {
+  return env.g.source([
+    filter('color', { c: 'black@0', s: `${env.W}x${env.H}`, r: env.fps }),
+    'format=yuva420p',
+    `trim=end_frame=${frames}`,
+  ])
 }
 
 /* ------------------------------------------------------------------ overlay-track clip */

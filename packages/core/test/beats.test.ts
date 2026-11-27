@@ -5,6 +5,7 @@ import {
   mainTrack,
   mainTrackLayout,
   sourceRange,
+  beatGrid,
   syncToBeats,
   validateProject,
   type MediaClip,
@@ -92,5 +93,36 @@ describe('syncToBeats (free tracks)', () => {
     // b's start is 100 ms from the beat: it moves onto it, keeping its length.
     expect([b.start, b.duration]).toEqual([900_000, 1_000_000])
     expect(validateProject(p)).toEqual([])
+  })
+})
+
+describe('beatGrid / downbeat-aware sync', () => {
+  // 120 BPM: beats every 0.5 s from 0.5 s; bars start at 1.0 s (the first beat is a pickup).
+  const beats = Array.from({ length: 16 }, (_, i) => (i + 1) * 500_000)
+  const downbeats = beats.filter((_, i) => i % 4 === 1)
+
+  it('keeps the old phase without downbeats', () => {
+    expect(beatGrid(beats, { every: 2 }).slice(0, 3)).toEqual([500_000, 1_500_000, 2_500_000])
+  })
+
+  it('phase-aligns every-n beats to the downbeats', () => {
+    expect(beatGrid(beats, { every: 2, downbeats }).slice(0, 3)).toEqual([
+      1_000_000, 2_000_000, 3_000_000,
+    ])
+    expect(beatGrid(beats, { every: 4, downbeats })).toEqual(downbeats)
+  })
+
+  it('cuts on bars and every n bars', () => {
+    expect(beatGrid(beats, { unit: 'bar', downbeats })).toEqual(downbeats)
+    expect(beatGrid(beats, { unit: 'bar', every: 2, downbeats })).toEqual([1_000_000, 5_000_000])
+    // Without downbeats a bar is every 4th beat.
+    expect(beatGrid(beats, { unit: 'bar' })).toEqual([500_000, 2_500_000, 4_500_000, 6_500_000])
+  })
+
+  it('syncs main-track cuts to bar starts', () => {
+    const { p, assets } = projectWithMain([2_700_000, 2 * SEC])
+    syncToBeats(p, beats, { unit: 'bar', downbeats })
+    expect(mainTrack(p).clips[0]!.duration).toBe(1_000_000)
+    expect(validateProject(p, assets)).toEqual([])
   })
 })

@@ -23,9 +23,9 @@ export const TEXT_THUMB = { w: 360, h: 200 }
 export const thumbPath = (kind, id) => `thumbs/${kind}-${id}.webp`
 
 /** Run ffmpeg, rejecting with its stderr on failure. */
-export function ffmpeg(args, cwd) {
+export function ffmpeg(args, cwd, bin = 'ffmpeg') {
   return new Promise((resolve, reject) => {
-    const child = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], {
+    const child = spawn(bin, ['-hide_banner', '-loglevel', 'error', '-y', ...args], {
       cwd,
       stdio: ['ignore', 'ignore', 'pipe'],
       windowsHide: true,
@@ -74,12 +74,26 @@ function textChain(ass, y) {
  *
  * Planning is synchronous (it only builds file lists and filtergraphs); the temp inputs are
  * then staged concurrently and the encodes run on the process pool.
- * @param {{ manifests: { dir: string, manifest: any }[], fontFiles: string[] }} opts
- *   `manifests` are raw pack.json objects; `fontFiles` absolute .ttf paths (flattened for
- *   libass, whose `fontsdir` is not recursive).
+ * @param {{
+ *   manifests: { dir: string, manifest: any }[],
+ *   fontFiles: string[],
+ *   refManifests?: { dir: string, manifest: any }[],
+ *   ffmpegPath?: string,
+ *   concurrency?: number,
+ * }} opts
+ *   `manifests` are raw pack.json objects whose thumbs are (re)generated; `refManifests`
+ *   (default: `manifests`) are searched for the filters/text presets templates reference;
+ *   `fontFiles` absolute .ttf paths (flattened for libass, whose `fontsdir` is not recursive).
  * @returns {Promise<number>} number of thumbnails written
  */
-export async function generateThumbs({ manifests, fontFiles }) {
+export async function generateThumbs({
+  manifests,
+  fontFiles,
+  refManifests = manifests,
+  ffmpegPath = 'ffmpeg',
+  concurrency = availableParallelism(),
+}) {
+  const lookup = [...manifests, ...refManifests]
   const tmp = await mkdtemp(path.join(tmpdir(), 'reelforge-thumbs-'))
   try {
     // Temp-dir inputs, keyed by name relative to `tmp`: generated content, and copied files.
@@ -93,7 +107,7 @@ export async function generateThumbs({ manifests, fontFiles }) {
       let name = lutFile.get(ref)
       if (!name) {
         const [packId, id] = ref.split('/')
-        const pack = manifests.find((m) => m.manifest.id === packId)
+        const pack = lookup.find((m) => m.manifest.id === packId)
         const preset = pack?.manifest.filters?.find((f) => f.id === id)
         if (!preset) throw new Error(`unknown filter ref ${ref}`)
         name = `lut-${lutFile.size}.cube`
@@ -136,7 +150,7 @@ export async function generateThumbs({ manifests, fontFiles }) {
         const filterRef = t.slots.find((s) => s.filter)?.filter
         if (filterRef) filters.push(`lut3d=file=${lutFor(filterRef)}:interp=tetrahedral`)
         const presetRef = first?.text?.preset
-        const preset = presetRef ? findTextPreset(manifests, presetRef) : undefined
+        const preset = presetRef ? findTextPreset(lookup, presetRef) : undefined
         if (preset) {
           const style = TextStyle.parse(preset.style)
           const ass = stageAss('template', textPreviewAss(style, first.text.text, 760))
@@ -162,8 +176,9 @@ export async function generateThumbs({ manifests, fontFiles }) {
       encodes.map(
         ([vf, file]) =>
           () =>
-            ffmpeg(['-i', 'scene.png', '-vf', vf, ...WEBP, ...BITEXACT, file], tmp),
+            ffmpeg(['-i', 'scene.png', '-vf', vf, ...WEBP, ...BITEXACT, file], tmp, ffmpegPath),
       ),
+      concurrency,
     )
     return encodes.length
   } finally {

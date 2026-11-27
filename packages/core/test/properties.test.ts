@@ -11,6 +11,7 @@ import {
   addTrack,
   applyReframe,
   buildCaptions,
+  copyClips,
   deleteClips,
   duplicateClip,
   insertAudioClip,
@@ -21,9 +22,13 @@ import {
   mainTrack,
   mergeRanges,
   moveClip,
+  moveClips,
   normalizeMainTrack,
+  pasteClips,
   removeSourceRanges,
+  rollEdit,
   setClipSpeed,
+  slipClip,
   sourceRange,
   sourceToTimeline,
   speedAt,
@@ -231,6 +236,52 @@ const ops: fc.Arbitrary<Op>[] = [
       c.speedRamp = uniqueSorted(ramp.map(([t, v]) => ({ t, value: v, easing: 'easeInOut' })))
       const r = sourceRange(c)
       if (r.end > (w.assets[c.assetId]?.duration ?? 0)) c.speedRamp = before
+    }),
+  // Pro editing ops: slip, roll, ripple trim, copy/paste, group move.
+  fc
+    .record({ k: idx, d: fc.integer({ min: -6 * SEC, max: 6 * SEC }) })
+    .map(({ k, d }) => (w: World) => {
+      const c = pickClip(w.p, k)
+      if (c && (c.type === 'video' || c.type === 'audio'))
+        slipClip(w.p, c.id, d, { asset: w.assets[c.assetId] })
+    }),
+  fc
+    .record({ k: idx, d: fc.integer({ min: -4 * SEC, max: 4 * SEC }) })
+    .map(({ k, d }) => (w: World) => {
+      const main = mainTrack(w.p).clips
+      if (main.length < 2) return
+      rollEdit(w.p, main[1 + (k % (main.length - 1))]!.id, d, { assets: w.assets })
+    }),
+  fc
+    .record({ k: idx, d: fc.integer({ min: -2 * SEC, max: 2 * SEC }), head: fc.boolean() })
+    .map(({ k, d, head }) => (w: World) => {
+      const c = pickClip(w.p, k)
+      if (!c) return
+      const assetDuration = 'assetId' in c && c.assetId ? w.assets[c.assetId]?.duration : undefined
+      const edges = head
+        ? { start: Math.max(0, c.start + d) }
+        : { end: Math.max(0, c.start + c.duration + d) }
+      trimClip(w.p, c.id, edges, {
+        ripple: true,
+        ...(assetDuration === undefined ? {} : { asset: { duration: assetDuration } }),
+      })
+    }),
+  fc
+    .record({ ks: fc.array(idx, { maxLength: 3 }), at: fc.nat(12 * SEC) })
+    .map(({ ks, at }) => (w: World) => {
+      const ids = [...new Set(ks.map((k) => pickClip(w.p, k)?.id).filter((x) => x !== undefined))]
+      pasteClips(w.p, copyClips(w.p, ids), { at })
+    }),
+  fc
+    .record({ ks: fc.array(idx, { maxLength: 3 }), d: fc.integer({ min: -3 * SEC, max: 3 * SEC }) })
+    .map(({ ks, d }) => (w: World) => {
+      const free = w.p.tracks.filter((t) => t.kind !== 'main').flatMap((t) => t.clips)
+      if (free.length === 0) return
+      const picked = [...new Set(ks.map((k) => free[k % free.length]!))]
+      moveClips(
+        w.p,
+        picked.map((c) => ({ clipId: c.id, start: Math.max(0, c.start + d) })),
+      )
     }),
 ]
 

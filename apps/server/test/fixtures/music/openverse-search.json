@@ -1,0 +1,343 @@
+{
+  "result_count": 84,
+  "page_count": 17,
+  "page_size": 5,
+  "page": 1,
+  "results": [
+    {
+      "id": "974ea27f-d5d0-4b9e-bf62-afd7f86a79b4",
+      "title": "Think About You",
+      "foreign_landing_url": "https://www.jamendo.com/track/1761753",
+      "url": "https://prod-1.storage.jamendo.com/?trackid=1761753&format=mp32",
+      "creator": "Square a Saw",
+      "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+      "license": "by",
+      "license_version": "3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "provider": "jamendo",
+      "source": "jamendo",
+      "category": "music",
+      "genres": ["dance"],
+      "filesize": null,
+      "filetype": "mp32",
+      "tags": [
+        {
+          "name": "electricguitar",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "female",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "happy",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "speed_high",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "synthesizer",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "upbeat",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "vocal",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        }
+      ],
+      "attribution": "\"Think About You\" by Square a Saw is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.",
+      "mature": false,
+      "audio_set": {
+        "title": "Hope",
+        "foreign_landing_url": "https://www.jamendo.com/album/193761/hope",
+        "creator": "Square a Saw",
+        "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+        "url": null,
+        "filesize": null,
+        "filetype": null
+      },
+      "duration": 176000,
+      "detail_url": "https://api.openverse.org/v1/audio/974ea27f-d5d0-4b9e-bf62-afd7f86a79b4/"
+    },
+    {
+      "id": "1462dcef-5471-4dca-9c5e-c71a835b9a02",
+      "title": "Hola",
+      "foreign_landing_url": "https://www.jamendo.com/track/1761754",
+      "url": "https://prod-1.storage.jamendo.com/?trackid=1761754&format=mp32",
+      "creator": "Square a Saw",
+      "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+      "license": "by",
+      "license_version": "3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "provider": "jamendo",
+      "source": "jamendo",
+      "category": "music",
+      "genres": ["pop"],
+      "filesize": null,
+      "filetype": "mp32",
+      "tags": [
+        {
+          "name": "female",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "happy",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "piano",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "speed_medium",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "synthesizer",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "upbeat",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "vocal",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        }
+      ],
+      "attribution": "\"Hola\" by Square a Saw is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.",
+      "mature": false,
+      "audio_set": {
+        "title": "Hope",
+        "foreign_landing_url": "https://www.jamendo.com/album/193761/hope",
+        "creator": "Square a Saw",
+        "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+        "url": null,
+        "filesize": null,
+        "filetype": null
+      },
+      "duration": 126000,
+      "detail_url": "https://api.openverse.org/v1/audio/1462dcef-5471-4dca-9c5e-c71a835b9a02/"
+    },
+    {
+      "id": "b13b426d-d3b0-43c9-b67f-893ec3b968db",
+      "title": "A Little Of Hope",
+      "foreign_landing_url": "https://www.jamendo.com/track/1761752",
+      "url": "https://prod-1.storage.jamendo.com/?trackid=1761752&format=mp32",
+      "creator": "Square a Saw",
+      "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+      "license": "by",
+      "license_version": "3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "provider": "jamendo",
+      "source": "jamendo",
+      "category": "music",
+      "genres": ["pop"],
+      "filesize": null,
+      "filetype": "mp32",
+      "tags": [
+        {
+          "name": "brass",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "female",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "happy",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "speed_medium",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "synthesizer",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "upbeat",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "vocal",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        }
+      ],
+      "attribution": "\"A Little Of Hope\" by Square a Saw is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.",
+      "mature": false,
+      "audio_set": {
+        "title": "Hope",
+        "foreign_landing_url": "https://www.jamendo.com/album/193761/hope",
+        "creator": "Square a Saw",
+        "creator_url": "https://www.jamendo.com/artist/495572/Square_a_Saw",
+        "url": null,
+        "filesize": null,
+        "filetype": null
+      },
+      "duration": 139000,
+      "detail_url": "https://api.openverse.org/v1/audio/b13b426d-d3b0-43c9-b67f-893ec3b968db/"
+    },
+    {
+      "id": "a07eb306-f9e2-4af3-82b2-3e2392a44d2f",
+      "title": "Saturday (Instrumental)",
+      "foreign_landing_url": "https://www.jamendo.com/track/625679",
+      "url": "https://prod-1.storage.jamendo.com/?trackid=625679&format=mp32",
+      "creator": "Josh Woodward (Instrumental Versions)",
+      "creator_url": "https://www.jamendo.com/artist/354648/Josh_Woodward_(Instrumental_Versions)",
+      "license": "by",
+      "license_version": "3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "provider": "jamendo",
+      "source": "jamendo",
+      "category": "music",
+      "genres": ["pop"],
+      "filesize": null,
+      "filetype": "mp32",
+      "tags": [
+        {
+          "name": "electricguitar",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "happy",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "instrumental",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "neutral",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "piano",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "speed_medium",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "upbeat",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        }
+      ],
+      "attribution": "\"Saturday (Instrumental)\" by Josh Woodward (Instrumental Versions) is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.",
+      "mature": false,
+      "audio_set": {
+        "title": "The Simple Life (Instrumental)",
+        "foreign_landing_url": "https://www.jamendo.com/album/72458/the-simple-life-instrumental",
+        "creator": "Josh Woodward (Instrumental Versions)",
+        "creator_url": "https://www.jamendo.com/artist/354648/Josh_Woodward_(Instrumental_Versions)",
+        "url": null,
+        "filesize": null,
+        "filetype": null
+      },
+      "duration": 267000,
+      "detail_url": "https://api.openverse.org/v1/audio/a07eb306-f9e2-4af3-82b2-3e2392a44d2f/"
+    },
+    {
+      "id": "1a9d920e-8a1e-42d8-b722-6d856cf205da",
+      "title": "Mona Lisa (Instrumental Version)",
+      "foreign_landing_url": "https://www.jamendo.com/track/628963",
+      "url": "https://prod-1.storage.jamendo.com/?trackid=628963&format=mp32",
+      "creator": "Josh Woodward (Instrumental Versions)",
+      "creator_url": "https://www.jamendo.com/artist/354648/Josh_Woodward_(Instrumental_Versions)",
+      "license": "by",
+      "license_version": "3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "provider": "jamendo",
+      "source": "jamendo",
+      "category": "music",
+      "genres": ["folk", "pop"],
+      "filesize": null,
+      "filetype": "mp32",
+      "tags": [
+        {
+          "name": "acousticguitar",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "electricguitar",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "happy",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "instrumental",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "neutral",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "speed_medium",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        },
+        {
+          "name": "upbeat",
+          "accuracy": null,
+          "unstable__provider": "jamendo"
+        }
+      ],
+      "attribution": "\"Mona Lisa (Instrumental Version)\" by Josh Woodward (Instrumental Versions) is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.",
+      "mature": false,
+      "audio_set": {
+        "title": "Here Today (Instrumental Version)",
+        "foreign_landing_url": "https://www.jamendo.com/album/72864/here-today-instrumental-version",
+        "creator": "Josh Woodward (Instrumental Versions)",
+        "creator_url": "https://www.jamendo.com/artist/354648/Josh_Woodward_(Instrumental_Versions)",
+        "url": null,
+        "filesize": null,
+        "filetype": null
+      },
+      "duration": 241000,
+      "detail_url": "https://api.openverse.org/v1/audio/1a9d920e-8a1e-42d8-b722-6d856cf205da/"
+    }
+  ]
+}

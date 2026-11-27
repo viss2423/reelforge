@@ -137,3 +137,38 @@ const hitTrack = (ctx: HitContext, ri: number, track: Track, x: number, t: numbe
   }
   return best ?? { kind: 'track', row: ri, track, t }
 }
+
+/** A marquee rectangle in content coordinates (time axis in µs, lanes y in px). */
+export interface Box {
+  t0: number
+  t1: number
+  y0: number
+  y1: number
+}
+
+/** Normalises a box spanned by two corners. */
+export const boxFrom = (ta: number, ya: number, tb: number, yb: number): Box => ({
+  t0: Math.min(ta, tb),
+  t1: Math.max(ta, tb),
+  y0: Math.min(ya, yb),
+  y1: Math.max(ya, yb),
+})
+
+/**
+ * Ids of the clips a marquee touches: every clip on a track row overlapping the box
+ * vertically whose playback span intersects [t0, t1]. Locked tracks are skipped.
+ * O(rows · log clips + result).
+ */
+export const clipsInBox = (rows: readonly Row[], box: Box): string[] => {
+  const out: string[] = []
+  for (const r of rows) {
+    if (r.type !== 'track' || r.track.locked) continue
+    if (r.y + r.height <= box.y0 || r.y >= box.y1) continue
+    const spans = trackSpans(r.track)
+    for (let i = Math.max(0, upperBound(spans.ends, box.t0)); i < r.track.clips.length; i++) {
+      if (spans.starts[i]! >= box.t1) break
+      out.push(r.track.clips[i]!.id)
+    }
+  }
+  return out
+}

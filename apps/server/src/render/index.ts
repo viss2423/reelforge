@@ -6,7 +6,7 @@
  *             `<exports>/<jobId>.mp4`, so the same file route serves it.
  * Both run in the `gpu-encode` resource class.
  */
-import { ExportSettings, frameDuration, type Project } from '@reelforge/core'
+import { ExportSettings, frameDuration, type Project, withoutMusic } from '@reelforge/core'
 import type { ExportPayload, JobContext, JobDefinition, PreviewPayload } from '../contracts.ts'
 import { exportFile } from '../paths.ts'
 import { defaultDeps, renderProject, type RenderDeps, type RenderOutcome } from './pipeline.ts'
@@ -38,8 +38,9 @@ export async function runExport(
   ctx: JobContext<ExportPayload>,
   deps: RenderDeps = defaultDeps,
 ): Promise<RenderOutcome> {
-  const project = loadProject(ctx, ctx.payload.projectId)
+  const loaded = loadProject(ctx, ctx.payload.projectId)
   const settings = ExportSettings.parse(ctx.payload.settings ?? {})
+  const project = settings.music === 'none' ? withoutMusic(loaded) : loaded
   return renderProject(ctx, { project, settings, output: outputFile(ctx) }, deps)
 }
 

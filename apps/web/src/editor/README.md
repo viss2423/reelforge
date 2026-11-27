@@ -85,8 +85,46 @@ trackId, at })`). Its container on phones is 30 dvh tall.
 />
 ```
 
+## On-canvas editing (`viewer/overlay/`)
+
+`TransformOverlay` sits over the preview (outside its clipping box so handles stay
+grabbable at the edges); `OverlayController` does all per-frame work imperatively, like the
+timeline's view.
+
+| Input                                 | Result                                                                    |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| tap a clip / empty canvas             | select the top-most visual clip (text above media) / deselect             |
+| drag                                  | move; snaps to centre, edges and safe-zone lines (haptic tick); Alt off   |
+| corner handle · rotate handle         | scale about the centre (100 % snap) · rotate (90° snap, Shift = 15°)      |
+| two fingers                           | move + pinch-scale + twist together                                       |
+| double-tap text                       | inline editor (Ctrl/⌘+Enter or click away commits, Esc cancels)           |
+| Crop (toolbar) · Safe zones (toolbar) | drag the crop window over the whole source · Reels/TikTok/Shorts UI zones |
+
+A gesture previews through `viewer/previewOverride.ts` (the engine gets a patched project;
+the store and React are untouched — no re-render per pointer move) and commits ONE dispatch
+on release. Keyframe-aware: animated properties get a keyframe written/updated at the
+playhead (`panels/model/keyframes.ts` semantics), constant ones change their value.
+Geometry (`overlay/geometry.ts`) reuses the compositor's `computeLayer` through the preview's
+additive geometry API, so the frame matches the drawn pixels.
+
+## Timeline edit modes
+
+- **Slip**: Alt+drag a video/audio clip (touch: keep holding after the lift haptic until a
+  second haptic, then drag). A ghost filmstrip shows the whole available source.
+- **Roll**: Alt+drag a main-track cut, or turn on the Roll toggle (timeline tool bar).
+- **Ripple trim**: Ripple toggle — trimming a free-track clip shifts the later clips on its
+  track (the main track always ripples).
+- **Box select**: mouse drag on empty lanes (Shift adds); two-finger drag on touch (a pinch
+  is recognised when the finger distance changes first).
+- **Groups** move across tracks by whole rows and snap on any member's edges.
+- **Copy / cut / paste** (`clipboard.ts`): across tracks, pasted at the playhead, persisted
+  per device so clips can go to another project.
+
+Modes are device preferences in `editPrefs.ts` (not project data).
+
 ## Keyboard shortcuts (defaults)
 
 Space play/pause · J back 1 s · K pause · L play · ←/→ frame (Shift = 1 s) · S split ·
 Delete/Backspace delete (Shift = ripple) · Ctrl/Cmd+Z undo · Ctrl/Cmd+Shift+Z or Ctrl+Y redo ·
-Ctrl/Cmd+D duplicate · +/− zoom · Home/End · Esc clear selection.
+Ctrl/Cmd+D duplicate · Ctrl/Cmd+C / X / V copy, cut, paste · +/− zoom · Home/End · Esc clear
+selection (or cancel the running gesture).

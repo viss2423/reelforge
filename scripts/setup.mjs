@@ -7,6 +7,10 @@
  *   models/whisper/ggml-*.bin            speech-to-text models (--models)
  *   models/face/yunet.onnx               face detector for auto-reframe
  *   models/rnnoise/sh.rnnn               voice denoiser for FFmpeg arnndn
+ *   models/beats|objects|saliency/       neural beat tracker, person detector, saliency (ai-models.ts)
+ *   models/matte/*.onnx                  subject matting (AI background removal)
+ *   bin/llm/llama-server(.exe)           llama.cpp (Vulkan) for the local AI assistant
+ *   models/llm/*.gguf                    instruction model (--llm-model)
  *
  * Idempotent and resumable: re-running skips verified files and resumes partial downloads.
  * Every download is SHA-256 verified.
@@ -15,6 +19,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 import { checkFfmpeg, checkNode } from './lib/checks.ts'
+import { AI_MODELS } from './lib/ai-models.ts'
 import { download } from './lib/download.ts'
 import {
   DEFAULT_WHISPER_MODELS,
@@ -22,7 +27,9 @@ import {
   RNNOISE_MODEL,
   WHISPER_MODELS,
 } from './lib/manifest.ts'
+import { MATTE_MODELS } from './lib/matte.ts'
 import { formatBytes, formatTable } from './lib/progress.ts'
+import { DEFAULT_LLM_MODEL, installLlamaCpp, LLM_MODELS, setActiveModel } from './lib/llm.ts'
 import { installWhisper } from './lib/whisper.ts'
 
 const HELP = `Usage: pnpm bootstrap [-- options]
@@ -31,6 +38,8 @@ Options:
   --models <list>        Comma-separated whisper models (default: ${DEFAULT_WHISPER_MODELS.join(',')})
                          Available: ${WHISPER_MODELS.map((m) => m.id).join(', ')}
   --skip-models          Do not download any models
+  --llm-model <id>       AI assistant model (default: ${DEFAULT_LLM_MODEL}), or "none" to skip
+                         Available: ${LLM_MODELS.map((m) => m.id).join(', ')}
   --force                Re-download everything, ignoring verified local copies
   --cpu-only             Never pick a GPU build of whisper.cpp
   --whisper-build <b>    Force a whisper.cpp build: cpu | blas | cuda | vulkan
@@ -45,6 +54,7 @@ const { values: args } = parseArgs({
     force: { type: 'boolean', default: false },
     'cpu-only': { type: 'boolean', default: false },
     'whisper-build': { type: 'string' },
+    'llm-model': { type: 'string' },
     data: { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   },
@@ -80,6 +90,17 @@ const unknown = modelIds.filter((id) => !WHISPER_MODELS.some((m) => m.id === id)
 if (unknown.length) {
   process.stderr.write(
     `Unknown model(s): ${unknown.join(', ')}\nAvailable: ${WHISPER_MODELS.map((m) => m.id).join(', ')}\n`,
+  )
+  process.exit(2)
+}
+
+const llmModelId = args['llm-model'] ?? DEFAULT_LLM_MODEL
+const llmModel = LLM_MODELS.find((m) => m.id === llmModelId)
+if (llmModelId !== 'none' && !llmModel) {
+  process.stderr.write(
+    `Unknown --llm-model ${llmModelId}
+Available: ${LLM_MODELS.map((m) => m.id).join(', ')}, none
+`,
   )
   process.exit(2)
 }
@@ -166,6 +187,20 @@ try {
     }
     await step('face model (YuNet)', false, fetchPinned(FACE_MODEL))
     await step('RNNoise model', false, fetchPinned(RNNOISE_MODEL))
+    for (const m of AI_MODELS) await step(`${m.id} model`, false, fetchPinned(m))
+    for (const m of MATTE_MODELS) await step(`matting model ${m.id}`, false, fetchPinned(m))
+  }
+
+  // 4. Local AI assistant (optional: features fall back or explain what is missing).
+  if (llmModel && !args['skip-models']) {
+    await step('llama.cpp', false, () =>
+      installLlamaCpp({ dataDir, force: args.force, signal: controller.signal }),
+    )
+    await step(`AI model ${llmModel.id}`, false, async () => {
+      const r = await fetchPinned(llmModel)()
+      await setActiveModel(dataDir, llmModel)
+      return r
+    })
   }
 } catch (err) {
   log(`\nAborted: ${err instanceof Error ? err.message : String(err)}`)

@@ -176,6 +176,28 @@ export const ChromaKey = z.object({
 })
 export type ChromaKey = z.infer<typeof ChromaKey>
 
+/**
+ * AI background for a video/image clip, computed from the subject matte the `matte` job
+ * writes next to the asset. `keep` (or no matte yet) leaves the clip untouched.
+ * - `remove`: the background becomes transparent (shows lower tracks / the project
+ *   background), `blur`: the clip's own frame blurred behind the subject, `color`: a solid
+ *   colour, `image`: an image asset cover-fitted to the clip's frame.
+ */
+export const BackgroundMode = z.enum(['keep', 'remove', 'blur', 'color', 'image'])
+export type BackgroundMode = z.infer<typeof BackgroundMode>
+
+export const ClipBackground = z.object({
+  mode: BackgroundMode.default('keep'),
+  color: HexColor.default('#000000'),
+  /** Image asset for `image` mode. */
+  assetId: Id.optional(),
+  /** Background blur strength 0..100 (`blur` mode): σ = 0.4·blur canvas px. */
+  blur: z.number().min(0).max(100).default(50),
+  /** Edge softness 0..100: the matte is blurred with σ = 0.08·feather canvas px. */
+  feather: z.number().min(0).max(100).default(0),
+})
+export type ClipBackground = z.infer<typeof ClipBackground>
+
 /* ------------------------------------------------------------------ audio */
 
 export const AudioProps = z.object({
@@ -281,6 +303,8 @@ export const MediaClip = ClipBase.extend({
   filter: FilterRef.optional(),
   effects: z.array(EffectRef).default([]),
   chromaKey: ChromaKey.optional(),
+  /** AI background removal / replacement (needs the asset's matte). */
+  background: ClipBackground.optional(),
   /** Transition INTO this clip from the previous clip on the main track. */
   transitionIn: Transition.optional(),
   /** Audio embedded in the video. */
@@ -316,6 +340,11 @@ export const TextClip = ClipBase.extend({
   animationIn: TextAnimation.optional(),
   animationOut: TextAnimation.optional(),
   animationLoop: TextAnimation.optional(),
+  /**
+   * "Text behind subject": drawn above the video but below the main-track subject (from its
+   * matte), so people appear in front of the text. Plain text when no matte is available.
+   */
+  behindSubject: z.boolean().optional(),
 })
 export type TextClip = z.infer<typeof TextClip>
 
@@ -419,6 +448,51 @@ export type Project = z.infer<typeof Project>
 export const AssetKind = z.enum(['video', 'image', 'audio'])
 export type AssetKind = z.infer<typeof AssetKind>
 
+/** Cached subject matte of an asset (written by the `matte` job). */
+export const AssetMatte = z.object({
+  status: z.enum(['processing', 'ready', 'failed']),
+  /** Model id that produced it (`modnet`). */
+  model: z.string(),
+  /** Matte frame size and rate. */
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  fps: z.number().positive().optional(),
+  /** Bumped on every rebuild so clients refetch the mask proxy. */
+  version: z.number().int().nonnegative().default(0),
+})
+export type AssetMatte = z.infer<typeof AssetMatte>
+/**
+ * Where a music asset came from and how it may be used (set when a track is imported from
+ * the royalty-free library or generated on the host). `attribution` is the credit line to
+ * put in the post caption when the licence requires one.
+ */
+export const MusicMeta = z.object({
+  /** Library source id (`openverse`, `ccmixter`, `jamendo`, `generated`, …). */
+  source: z.string().max(40),
+  /** `<source>:<foreign id>` */
+  trackId: z.string().max(200),
+  title: z.string().max(300),
+  artist: z.string().max(300).default(''),
+  licence: z.object({
+    /** `cc0`, `pdm`, `by`, `generated`, … */
+    code: z.string().max(20),
+    name: z.string().max(100),
+    url: z.string().max(500).optional(),
+    attributionRequired: z.boolean().default(false),
+  }),
+  attribution: z.string().max(1000).optional(),
+  pageUrl: z.string().max(500).optional(),
+  bpm: z.number().min(0).max(400).optional(),
+  key: z.string().max(20).optional(),
+  /** 0..1 overall energy (loudness/onset density), from the host analysis. */
+  energy: z.number().min(0).max(1).optional(),
+  /** Most energetic section (chorus) in source time, from the host analysis. */
+  section: z.object({ start: Us, end: Us }).optional(),
+  /** Bar starts in source time (subset of `Asset.beats`). */
+  downbeats: z.array(Us).optional(),
+})
+export type MusicMeta = z.infer<typeof MusicMeta>
+
 /** Metadata about an uploaded media file. Owned by the server; read-only for the client. */
 export const Asset = z.object({
   id: Id,
@@ -448,7 +522,13 @@ export const Asset = z.object({
   /** Cached AI analysis */
   transcript: z.array(Word).optional(),
   beats: z.array(Us).optional(),
+  /** Bar starts (a subset of `beats`), from the same analysis. */
+  downbeats: z.array(Us).optional(),
   scenes: z.array(Us).optional(),
+  /** Subject matte from the `matte` job (files `matte.mkv` + `matte-proxy.mp4` next to it). */
+  matte: AssetMatte.optional(),
+  /** Library / generated music provenance and licence (music imports only). */
+  music: MusicMeta.optional(),
 })
 export type Asset = z.infer<typeof Asset>
 
@@ -468,6 +548,11 @@ export const ExportSettings = z.object({
   normalizeLoudness: z.boolean().default(true),
   /** Optional range export */
   range: z.object({ start: Us, end: Us }).optional(),
+  /**
+   * `none`: leave the music bed out (the creator adds a trending sound in Instagram);
+   * voice, video audio and sound effects stay. Absent = keep.
+   */
+  music: z.enum(['keep', 'none']).optional(),
 })
 export type ExportSettings = z.infer<typeof ExportSettings>
 
@@ -486,6 +571,12 @@ export const JobKind = z.enum([
   'reframe',
   'denoise',
   'preview',
+  'matte',
+  'music.suggest',
+  'trends',
+  'highlights',
+  'copywriter',
+  'emphasis',
 ])
 export type JobKind = z.infer<typeof JobKind>
 

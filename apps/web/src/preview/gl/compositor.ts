@@ -54,7 +54,31 @@ export interface LayerDraw {
   blend: number
   /** Temporal noise seed (changes per frame). */
   seed: number
+  /** AI background (BG_MODE); 0 = off. Needs `matte`. */
+  bgMode: number
+  /** Subject matte frame (pool key, image, version). */
+  readonly matte: TextureRef
+  /** Background image (`image` mode). */
+  readonly bgImage: TextureRef
+  /** Colour mode: linear 0..1 RGB. */
+  readonly bgColor: Float32Array
+  /** Blur mode σ in canvas px. */
+  bgBlurPx: number
+  /** Matte feather σ in canvas px. */
+  featherPx: number
+  /** Image mode: cover rect of the layer quad in image UV (u0, v0, u1, v1). */
+  readonly bgUV: Float32Array
 }
+
+/** A texture-able image with a cache key and a version (re-upload when either changes). */
+export interface TextureRef {
+  key: string
+  image: TexImageSource | null
+  version: number
+}
+
+/** `LayerDraw.bgMode` values (uBgMode in the layer shader). */
+export const BG_MODE = { off: 0, remove: 1, blur: 2, color: 3, image: 4 } as const
 
 export function createLayerDraw(): LayerDraw {
   return {
@@ -72,6 +96,13 @@ export function createLayerDraw(): LayerDraw {
     keyParams: new Float32Array(4),
     blend: 0,
     seed: 0,
+    bgMode: 0,
+    matte: { key: '', image: null, version: -1 },
+    bgImage: { key: '', image: null, version: -1 },
+    bgColor: new Float32Array(3),
+    bgBlurPx: 0,
+    featherPx: 0,
+    bgUV: new Float32Array([0, 0, 1, 1]),
   }
 }
 
@@ -164,6 +195,8 @@ export class Compositor {
     gl.uniform1i(this.#layer.u('uDst'), 2)
     gl.uniform1i(this.#layer.u('uLut'), 3)
     gl.uniform1i(this.#layer.u('uCurves'), 4)
+    gl.uniform1i(this.#layer.u('uMatte'), 5)
+    gl.uniform1i(this.#layer.u('uBg'), 6)
     gl.useProgram(this.#trans.program)
     gl.uniform1i(this.#trans.u('uA'), 0)
     gl.uniform1i(this.#trans.u('uB'), 1)
@@ -218,7 +251,7 @@ export class Compositor {
   }
 
   /** Upload (if changed) and return the texture for a layer's source. */
-  #sourceTexture(d: LayerDraw): SourceTexture | undefined {
+  #sourceTexture(d: TextureRef): SourceTexture | undefined {
     if (!d.image) return undefined
     const gl = this.gl
     let s = this.#sources.get(d.key)
@@ -262,6 +295,9 @@ export class Compositor {
       glow = this.#blur.run(src.tex, src.width, src.height, glowPlan, this.#blurSlot++)
       this.stats.blurPasses += glowPlan.levels * 2
     }
+    // blurs and texture uploads draw into pooled targets: do them before this layer's own
+    // target and program are bound
+    const bgp = this.#prepareBackground(d, src)
     const target = this.#target(name)
     if (d.blend !== 0) {
       // non-separable-from-GL blend: read the destination from a copy of the target
@@ -334,8 +370,54 @@ export class Compositor {
     const noise = (d.adjOn ? d.adj[2]! / 255 : 0) + fx.grain + fx.noise
     gl.uniform4f(P.u('uFx1'), noise, d.seed, glowPlan ? fx.glowStrength : 0, Math.max(2, 4 * scale))
     gl.uniform1i(P.u('uBlend'), d.blend)
+    this.#bindBackground(bgp, d, src, P)
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     this.stats.draws++
+  }
+
+  /** Textures an AI background needs, resolved before the layer's target is bound. */
+  #prepareBackground(
+    d: LayerDraw,
+    src: SourceTexture,
+  ): { mode: number; matte: SourceTexture | undefined; bg: WebGLTexture } {
+    const matte = d.bgMode !== 0 ? this.#sourceTexture(d.matte) : undefined
+    let bg: WebGLTexture = this.#dummy2d
+    let mode = matte ? d.bgMode : 0
+    if (mode === 2) {
+      const plan = kawasePlan(d.bgBlurPx * d.layer.texelsPerPx, Math.min(src.width, src.height))
+      bg = plan ? this.#blur.run(src.tex, src.width, src.height, plan, this.#blurSlot++) : src.tex
+      if (plan) this.stats.blurPasses += plan.levels * 2
+    } else if (mode === 4) {
+      const img = this.#sourceTexture(d.bgImage)
+      if (img) bg = img.tex
+      else mode = 3 // image still loading: show the colour meanwhile
+    }
+    return { mode, matte, bg }
+  }
+
+  /** AI background uniforms + textures (units 5 and 6); off when the matte is missing. */
+  #bindBackground(
+    prepared: { mode: number; matte: SourceTexture | undefined; bg: WebGLTexture },
+    d: LayerDraw,
+    src: SourceTexture,
+    P: Program,
+  ): void {
+    const gl = this.gl
+    const { mode, matte, bg } = prepared
+    gl.activeTexture(gl.TEXTURE5)
+    gl.bindTexture(gl.TEXTURE_2D, matte ? matte.tex : this.#dummy2d)
+    gl.activeTexture(gl.TEXTURE6)
+    gl.bindTexture(gl.TEXTURE_2D, bg)
+    gl.activeTexture(gl.TEXTURE0)
+    gl.uniform1i(P.u('uBgMode'), mode)
+    if (!matte) return
+    gl.uniform2f(P.u('uMatteTexel'), 1 / matte.width, 1 / matte.height)
+    // canvas px → matte texels (the matte spans the same picture as the source texture)
+    const k =
+      d.layer.texelsPerPx * (Math.min(matte.width, matte.height) / Math.min(src.width, src.height))
+    gl.uniform1f(P.u('uFeather'), d.featherPx * k)
+    gl.uniform3fv(P.u('uBgColor'), d.bgColor)
+    gl.uniform4fv(P.u('uBgUV'), d.bgUV)
   }
 
   /** Upload a curve table unless it is the one already on unit 4 (tables are cached per edit). */

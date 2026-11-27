@@ -152,7 +152,7 @@ export interface FrameStreamOptions {
   /** ffprobe binary: enables the GPU-resident sampling path on Windows. */
   ffprobe?: string
   file: string
-  /** Samples per second. */
+  /** Samples per second; 0 = every decoded frame (no resampling; the only way to read a still). */
   fps: number
   /** Output width in px (height follows the display aspect ratio, even). */
   width: number
@@ -205,7 +205,8 @@ export const streamFrames = async (o: FrameStreamOptions): Promise<number> => {
   const scale = `scale=${o.width}:-2:flags=area,format=rgb24`
   const head = ['-hide_banner', '-nostdin', '-nostats', '-loglevel', 'error', ...FF_PROGRESS]
   const tail = ['-map', '0:v:0', '-an', '-sn', '-dn', '-c:v', 'ppm', '-f', 'image2pipe', 'pipe:1']
-  const portable = [...head, ...FF_HWACCEL, '-i', o.file, '-vf', `fps=${o.fps},${scale}`, ...tail]
+  const sample = o.fps > 0 ? `fps=${o.fps},` : ''
+  const portable = [...head, ...FF_HWACCEL, '-i', o.file, '-vf', `${sample}${scale}`, ...tail]
   const rotation =
     process.platform === 'win32' && o.ffprobe
       ? await probeRotation(o.ffprobe, o.file, o.signal)
@@ -224,7 +225,7 @@ export const streamFrames = async (o: FrameStreamOptions): Promise<number> => {
           '-i',
           o.file,
           '-vf',
-          `fps=${o.fps},hwdownload,format=nv12|p010le,${rotate}${scale}`,
+          `${sample}hwdownload,format=nv12|p010le,${rotate}${scale}`,
           ...tail,
         ]
 

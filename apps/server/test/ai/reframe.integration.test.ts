@@ -79,7 +79,7 @@ describe.skipIf(skipBecause(skipReason))('reframe (FFmpeg → YuNet → camera)'
       makeAsset('noface', 'noface.mp4', { duration: 4_000_000, width: 1280, height: 720 }),
       file,
     )
-    const ctx = makeContext('reframe', { assetId: 'noface' }, paths, store)
+    const ctx = makeContext('reframe', { assetId: 'noface', mode: 'fast' }, paths, store)
     const r = (await reframeJob.handler(ctx)) as ReframeResult
     expect(r.facesFound).toBe(0)
     expect(r.path.length).toBeGreaterThan(0)

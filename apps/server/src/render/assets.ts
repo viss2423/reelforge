@@ -20,6 +20,9 @@ export function projectAssetIds(p: Project): Set<string> {
     for (const c of track.clips) {
       if (c.type === 'text') continue
       if (c.assetId) ids.add(c.assetId)
+      // AI background image (clip.background.mode = 'image').
+      if ((c.type === 'video' || c.type === 'image') && c.background?.assetId)
+        ids.add(c.background.assetId)
     }
   }
   return ids

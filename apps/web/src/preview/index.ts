@@ -22,6 +22,11 @@ export interface PreviewEngineOptions {
   resolveLut?: ((ref: string) => string | undefined) | undefined
   /** `<packId>/<stickerId>` → URL of the sticker image. */
   resolveSticker?: ((ref: string) => string | undefined) | undefined
+  /**
+   * Preview mask of an asset's AI matte (`/api/assets/:id/matte?v=<version>`). Without it
+   * AI backgrounds are not previewed (clips draw unmodified).
+   */
+  matteUrl?: ((assetId: string, version: number) => string) | undefined
   /** Custom byte reader for a media URL (dev harness: local files). Defaults to HTTP Range. */
   openMedia?: ((url: string) => ByteSource) | undefined
   /** Force a decode path (testing); default picks WebCodecs when available. */
@@ -78,8 +83,28 @@ export interface PreviewEngine {
   readonly duration?: Us
   /** Audio solo: when non-empty only these track ids are heard (track `muted` still applies). */
   setSolo?(trackIds: readonly string[]): void
+  /**
+   * Plays encoded audio (a trending sound's official preview) looped in sync with the
+   * timeline in place of the music bed; undefined restores the project's music.
+   */
+  setSoundPreview?(audio: ArrayBuffer | undefined): Promise<void>
   /** Live counters for overlays and e2e tests. */
   readonly stats?: Readonly<PreviewStats>
 }
 
 export { createPreviewEngine } from './engine.ts'
+
+/**
+ * Geometry query API (additive, pure): the layer maths the compositor uses, so editor
+ * overlays (on-canvas transform handles, hit testing) match the drawn frame exactly.
+ */
+export {
+  CANVAS_H,
+  CANVAS_W,
+  computeLayer,
+  createLayerState,
+  quadToCanvas,
+  type LayerState,
+  type Rotation,
+  type SourceInfo,
+} from './timeline/layers.ts'

@@ -31,6 +31,12 @@ import {
   type GhRelease,
   type HostInfo,
 } from '../../../../scripts/lib/whisper.ts'
+import {
+  LLAMA_BUILDS,
+  LLM_MODELS,
+  llamaBuildFor,
+  setActiveModel,
+} from '../../../../scripts/lib/llm.ts'
 import { DATA_DIR, makeTempDir, NO_FFMPEG, skipBecause } from './helpers.ts'
 
 const sha = (b: Uint8Array): string => createHash('sha256').update(b).digest('hex')
@@ -344,13 +350,16 @@ describe.skipIf(skipBecause(NO_FFMPEG))('setup.mjs (end to end)', () => {
     expect(err.stderr).toMatch(/Unknown model\(s\): nope/)
     const help = await run(process.execPath, [SETUP, '--help'])
     expect(help.stdout).toMatch(/--skip-models/)
+    expect(help.stdout).toMatch(/--llm-model/)
   })
 
   // Installs (or, when already installed, re-verifies) whisper.cpp and the default + fast
   // models into the real data dir — the AI integration tests depend on them.
   it('installs the default toolchain idempotently', { timeout: 1_800_000 }, async () => {
     const run = promisify(execFile)
-    const r = await run(process.execPath, [SETUP, '--data', DATA_DIR], { maxBuffer: 16 << 20 })
+    const r = await run(process.execPath, [SETUP, '--data', DATA_DIR, '--llm-model', 'none'], {
+      maxBuffer: 16 << 20,
+    })
     expect(r.stderr).toMatch(/Component\s+Status\s+Details/)
     expect(r.stderr).toMatch(/whisper model large-v3-turbo-q5_0\s+(cached|downloaded|resumed)/)
     expect(r.stderr).toMatch(/whisper model base\s+(cached|downloaded|resumed)/)
@@ -366,5 +375,31 @@ describe.skipIf(skipBecause(NO_FFMPEG))('setup.mjs (end to end)', () => {
         ),
       ),
     ).toBe(true)
+  })
+})
+
+describe('llm bootstrap manifest', () => {
+  it('pins every model and runtime build with a sha256, size and https URL', () => {
+    for (const m of LLM_MODELS) {
+      expect(m.sha256).toMatch(/^[a-f0-9]{64}$/)
+      expect(m.url).toMatch(/^https:\/\/huggingface\.co\/.+\/resolve\/[a-f0-9]{40}\//)
+      expect(m.dest).toMatch(/^models\/llm\/.+\.gguf$/)
+      expect(m.license).toBe('Apache-2.0')
+    }
+    expect(new Set(LLM_MODELS.map((m) => m.id)).size).toBe(LLM_MODELS.length)
+    for (const b of LLAMA_BUILDS) expect(b.sha256).toMatch(/^[a-f0-9]{64}$/)
+    expect(llamaBuildFor('win32', 'x64')?.backend).toBe('vulkan')
+    expect(llamaBuildFor('aix', 'x64')).toBeUndefined()
+  })
+
+  it('records the chosen model for the server', async () => {
+    const t = makeTempDir('llm-active')
+    await setActiveModel(t.dir, LLM_MODELS[1]!)
+    expect(
+      JSON.parse(readFileSync(path.join(t.dir, 'models', 'llm', 'default.json'), 'utf8')),
+    ).toEqual({
+      model: 'Qwen3.5-2B-Q4_K_M.gguf',
+    })
+    t.cleanup()
   })
 })

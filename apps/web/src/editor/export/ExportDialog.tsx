@@ -12,6 +12,9 @@ import { editorStore } from '@/state/editorStore.ts'
 import { useDuration, useFps, useProjectName } from '@/state/selectors.ts'
 import { flushProject } from '../session.ts'
 import { estimateExportBytes, loadExportSettings, saveExportSettings } from './estimate.ts'
+import { TrendingSounds } from '../panels/root/TrendingSounds.tsx'
+import { useSoundPreview } from '../soundPreview.ts'
+import { MusicCredits } from './MusicCredits.tsx'
 
 type Fps = NonNullable<ExportSettings['fps']>
 const FPS_OPTIONS: readonly Fps[] = [24, 25, 30, 50, 60]
@@ -31,6 +34,12 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
   const gpu = system.data?.hwEncoders?.[settings.codec]
   const estimate = estimateExportBytes(settings, fps, duration)
 
+  // After picking or previewing a trending sound the creator adds it in Instagram: "No music" is the
+  // default until they choose.
+  const soundPicked = useSoundPreview((s) => s.soundPicked)
+  const [musicChoice, setMusicChoice] = useState<NonNullable<ExportSettings['music']>>()
+  const music = musicChoice ?? (soundPicked ? 'none' : 'keep')
+
   const set = <K extends keyof ExportSettings>(k: K, v: ExportSettings[K]) =>
     setSettings((s) => ({ ...s, [k]: v }))
 
@@ -42,7 +51,7 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
       // The host renders what it has stored: make sure it has every edit first.
       await flushProject()
       saveExportSettings(settings)
-      const created = await start.mutateAsync({ projectId, settings })
+      const created = await start.mutateAsync({ projectId, settings: { ...settings, music } })
       setJobId(created.id)
     } catch (err) {
       toast.error('Could not start the export', err instanceof Error ? err.message : undefined)
@@ -164,14 +173,33 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
               onChange={(e) => set('normalizeLoudness', e.target.checked)}
             />
           </label>
+          <Field label="Music">
+            <SegmentedControl<NonNullable<ExportSettings['music']>>
+              label="Music"
+              value={music}
+              onChange={setMusicChoice}
+              options={[
+                { value: 'keep', label: 'Free track baked in' },
+                { value: 'none', label: 'No music' },
+              ]}
+            />
+            <p className="mt-1.5 text-xs text-muted" data-testid="export-music-hint">
+              {music === 'none'
+                ? 'No music — add the sound in Instagram when you post (voice and effects stay).'
+                : 'Your royalty-free music track is mixed into the video.'}
+            </p>
+          </Field>
           <p className="rounded-xl bg-surface-2 px-3 py-2 text-sm">
             Estimated size <b className="tabular-nums">~{formatBytes(estimate)}</b>
           </p>
+          <MusicCredits />
+          <TrendingSounds compact />
         </div>
       ) : job.status === 'done' ? (
         <div className="flex flex-col items-center gap-4" data-testid="export-done">
           <ExportPlayer job={job} className="max-h-[50vh] w-auto" />
           <ExportActions job={job} projectName={projectName} />
+          <MusicCredits />
         </div>
       ) : job.status === 'failed' ? (
         <p className="flex gap-2 text-danger" data-testid="export-failed">

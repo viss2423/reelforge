@@ -4,12 +4,18 @@
  *
  * - ruler / markers lane            → scrub (seek on press)
  * - clip trim handle                → trim
- * - clip body, mouse/pen            → move after a few px; tap selects (Shift/Ctrl/⌘ toggles)
+ * - clip body, mouse/pen            → move after a few px; tap selects (Shift/Ctrl/⌘ toggles);
+ *                                     Alt+drag slips the content (video/audio)
+ * - main-track cut, Alt or Roll mode → roll edit (moves the cut between both clips)
  * - clip body, touch                → pan; long-press lifts the clip (haptic) → drag moves it,
- *                                     release without moving toggles multi-selection
- * - empty lane                      → pan (touch flings); tap deselects, or seeks if nothing
+ *                                     release without moving toggles multi-selection; keep
+ *                                     holding (second haptic) → drag slips the content
+ * - empty lane, mouse               → marquee (box) selection; Shift/Ctrl/⌘ adds
+ * - empty lane, touch               → pan (flings); tap deselects, or seeks if nothing
  *                                     is selected
- * - second finger                   → pinch-zoom anchored between the fingers (+ pan)
+ * - second finger                   → pinch-zoom anchored between the fingers when their
+ *                                     distance changes first; a two-finger drag at constant
+ *                                     distance draws a selection box instead
  * - ctrl/⌘-wheel, trackpad pinch    → zoom at the pointer; wheel / shift-wheel pans
  *
  * Pointer moves never touch React: they update session state and the view paints in rAF.
@@ -22,7 +28,12 @@ import {
   DRAG_THRESHOLD_TOUCH,
   HAPTIC_LIFT,
   LONG_PRESS_MS,
+  PINCH_START_RATIO,
+  SLIP_PRESS_MS,
+  TWO_FINGER_MARQUEE_PX,
 } from './constants.ts'
+import { editPrefs } from '../editPrefs.ts'
+import { MarqueeSession, RollSession, SlipSession, canSlip, rollTarget } from './editSessions.ts'
 import { pinchZoom, wheelPixels, wheelZoomFactor } from './dragMath.ts'
 import { contentEnd, type Row } from './geometry.ts'
 import { hitTest, type Hit } from './hitTest.ts'
@@ -38,7 +49,8 @@ import {
 import type { TimelineView } from './view.ts'
 
 type ClipHit = Extract<Hit, { kind: 'clip' }>
-type DragSession = ScrubSession | MoveSession | TrimSession
+type DragSession =
+  ScrubSession | MoveSession | TrimSession | SlipSession | RollSession | MarqueeSession
 
 type State =
   | { kind: 'idle' }
@@ -51,10 +63,25 @@ type State =
       touch: boolean
       additive: boolean
       lifted: boolean
+      /** Held long enough (touch) to slip instead of move. */
+      slip: boolean
       timer: ReturnType<typeof setTimeout> | undefined
     }
   | { kind: 'pan'; id: number; x: number; y: number; touch: boolean }
   | { kind: 'pinch'; a: number; b: number; dist: number; zoom: number; anchorT: number }
+  /** Two fingers down, not yet a pinch or a two-finger box selection. */
+  | {
+      kind: 'two'
+      a: number
+      b: number
+      dist: number
+      cx: number
+      cy: number
+      zoom: number
+      anchorT: number
+    }
+  /** Two-finger box selection (the box follows the midpoint of the fingers). */
+  | { kind: 'marquee2'; a: number; b: number; session: MarqueeSession }
   | { kind: 'drag'; id: number; session: DragSession }
   /** Drag cancelled with Escape: ignore the pointer until it lifts. */
   | { kind: 'cancelled'; id: number }
@@ -154,6 +181,11 @@ export class TimelineGestures {
     return { pt, hit }
   }
 
+  #assetOf(hit: ClipHit) {
+    const c = hit.clip
+    return 'assetId' in c && c.assetId ? this.#deps.store.getState().assets[c.assetId] : undefined
+  }
+
   #startDrag(id: number, session: DragSession, pinned: readonly string[] = []): void {
     this.#deps.view.beginSession(session, pinned)
     this.#state = { kind: 'drag', id, session }
@@ -177,7 +209,13 @@ export class TimelineGestures {
     const st = this.#state
     if (st.kind !== 'press') return
     clearTimeout(st.timer)
-    if (st.hit.kind === 'clip') delete this.#deps.view.clipEls.get(st.hit.clip.id)?.dataset.lifted
+    if (st.hit.kind === 'clip') {
+      const el = this.#deps.view.clipEls.get(st.hit.clip.id)
+      if (el) {
+        delete el.dataset.lifted
+        delete el.dataset.slipReady
+      }
+    }
   }
 
   #startPan(id: number, x: number, y: number, touch: boolean): void {
@@ -193,15 +231,18 @@ export class TimelineGestures {
     const [a, b] = [...this.#pointers.entries()]
     if (!a || !b) return
     const { view } = this.#deps
-    const cx = (a[1].clientX + b[1].clientX) / 2 - this.#rect.left
+    const mx = (a[1].clientX + b[1].clientX) / 2
+    const my = (a[1].clientY + b[1].clientY) / 2
     this.#deps.view.setPanning(true)
     this.#state = {
-      kind: 'pinch',
+      kind: 'two',
       a: a[0],
       b: b[0],
       dist: Math.hypot(a[1].clientX - b[1].clientX, a[1].clientY - b[1].clientY),
+      cx: mx,
+      cy: my,
       zoom: view.zoom,
-      anchorT: view.timeAtViewportX(cx),
+      anchorT: view.timeAtViewportX(mx - this.#rect.left),
     }
   }
 
@@ -209,7 +250,7 @@ export class TimelineGestures {
   #abort(): void {
     const st = this.#state
     this.#clearPress()
-    if (st.kind === 'drag') {
+    if (st.kind === 'drag' || st.kind === 'marquee2') {
       st.session.cancel()
       this.#deps.view.endSession()
     }
@@ -253,17 +294,34 @@ export class TimelineGestures {
       return
     }
     if (trim && hit.kind === 'clip') {
+      const right = e.altKey || editPrefs.getState().roll ? rollTarget(hit) : null
+      if (right) {
+        const left = hit.track.clips[hit.track.clips.findIndex((c) => c.id === right) - 1]!
+        this.#startDrag(e.pointerId, new RollSession(this.#ctx(touch), hit, right, p), [
+          left.id,
+          right,
+        ])
+        return
+      }
+    }
+    if (
+      !touch &&
+      e.altKey &&
+      hit.kind === 'clip' &&
+      hit.zone === 'body' &&
+      !hit.track.locked &&
+      canSlip(hit.clip)
+    ) {
       this.#ensureSelected(hit)
-      this.#startDrag(
-        e.pointerId,
-        new TrimSession(
-          this.#ctx(touch),
-          hit,
-          p,
-          'assetId' in hit.clip && hit.clip.assetId ? s.assets[hit.clip.assetId] : undefined,
-        ),
-        [hit.clip.id],
-      )
+      const session = new SlipSession(this.#ctx(touch), hit, p, this.#assetOf(hit))
+      this.#startDrag(e.pointerId, session, [hit.clip.id])
+      return
+    }
+    if (trim && hit.kind === 'clip') {
+      this.#ensureSelected(hit)
+      this.#startDrag(e.pointerId, new TrimSession(this.#ctx(touch), hit, p, this.#assetOf(hit)), [
+        hit.clip.id,
+      ])
       return
     }
     const press: Extract<State, { kind: 'press' }> = {
@@ -275,6 +333,7 @@ export class TimelineGestures {
       touch,
       additive: e.shiftKey || e.ctrlKey || e.metaKey,
       lifted: false,
+      slip: false,
       timer: undefined,
     }
     if (touch && hit.kind === 'clip' && !hit.track.locked) {
@@ -284,6 +343,14 @@ export class TimelineGestures {
         haptic(HAPTIC_LIFT)
         const el = view.clipEls.get(hit.clip.id)
         if (el) el.dataset.lifted = 'true'
+        if (!canSlip(hit.clip)) return
+        // Keep holding still: the drag slips the content instead of moving the clip.
+        press.timer = setTimeout(() => {
+          if (this.#state !== press) return
+          press.slip = true
+          haptic([HAPTIC_LIFT, 40, HAPTIC_LIFT])
+          if (el) el.dataset.slipReady = 'true'
+        }, SLIP_PRESS_MS - LONG_PRESS_MS)
       }, LONG_PRESS_MS)
     }
     this.#state = press
@@ -302,14 +369,25 @@ export class TimelineGestures {
         const threshold = st.touch ? DRAG_THRESHOLD_TOUCH : DRAG_THRESHOLD_MOUSE
         if (Math.hypot(e.clientX - st.x, e.clientY - st.y) < threshold) return
         const hit = st.hit
+        const at = { clientX: e.clientX, clientY: e.clientY }
         if (hit.kind === 'clip' && !hit.track.locked && (!st.touch || st.lifted)) {
           this.#clearPress()
           this.#ensureSelected(hit)
-          const session = new MoveSession(this.#ctx(st.touch), hit, {
-            clientX: e.clientX,
-            clientY: e.clientY,
-          })
+          if (st.slip) {
+            const start = { clientX: st.x, clientY: st.y }
+            const session = new SlipSession(this.#ctx(true), hit, start, this.#assetOf(hit))
+            this.#startDrag(st.id, session, [hit.clip.id])
+            session.move(at)
+            return
+          }
+          const session = new MoveSession(this.#ctx(st.touch), hit, at)
           this.#startDrag(st.id, session, session.ids)
+          return
+        }
+        if (!st.touch && (hit.kind === 'track' || hit.kind === 'empty')) {
+          this.#clearPress()
+          const start = { clientX: st.x, clientY: st.y }
+          this.#startDrag(st.id, new MarqueeSession(this.#ctx(false), start, at, st.additive))
           return
         }
         this.#startPan(st.id, st.x, st.y, st.touch)
@@ -322,6 +400,41 @@ export class TimelineGestures {
         st.x = e.clientX
         st.y = e.clientY
         this.#velocity.add(e.timeStamp || performance.now(), e.clientX, e.clientY)
+        return
+      }
+      case 'two': {
+        const a = this.#pointers.get(st.a)
+        const b = this.#pointers.get(st.b)
+        if (!a || !b) return
+        const dist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+        const mx = (a.clientX + b.clientX) / 2
+        const my = (a.clientY + b.clientY) / 2
+        if (st.dist > 0 && Math.abs(dist / st.dist - 1) >= PINCH_START_RATIO) {
+          this.#state = { ...st, kind: 'pinch' }
+          this.#onMove(e)
+          return
+        }
+        if (Math.hypot(mx - st.cx, my - st.cy) >= TWO_FINGER_MARQUEE_PX) {
+          view.setPanning(false)
+          const session = new MarqueeSession(
+            this.#ctx(true),
+            { clientX: st.cx, clientY: st.cy },
+            { clientX: mx, clientY: my },
+            false,
+          )
+          view.beginSession(session)
+          this.#state = { kind: 'marquee2', a: st.a, b: st.b, session }
+        }
+        return
+      }
+      case 'marquee2': {
+        const a = this.#pointers.get(st.a)
+        const b = this.#pointers.get(st.b)
+        if (!a || !b) return
+        st.session.move({
+          clientX: (a.clientX + b.clientX) / 2,
+          clientY: (a.clientY + b.clientY) / 2,
+        })
         return
       }
       case 'pinch': {
@@ -362,6 +475,15 @@ export class TimelineGestures {
         view.setPanning(false)
         return
       }
+      case 'marquee2': {
+        // Lifting either finger ends the box; the other finger is ignored until it lifts.
+        view.endSession()
+        st.session.commit()
+        const rest = [...this.#pointers.keys()][0]
+        this.#state = rest === undefined ? { kind: 'idle' } : { kind: 'cancelled', id: rest }
+        return
+      }
+      case 'two':
       case 'pinch': {
         // Continue as a pan with the remaining finger (no jump).
         const rest = [...this.#pointers.entries()][0]
@@ -439,6 +561,12 @@ export class TimelineGestures {
       st.session.cancel()
       this.#deps.view.endSession()
       this.#state = { kind: 'cancelled', id: st.id }
+    } else if (st.kind === 'marquee2') {
+      e.preventDefault()
+      e.stopPropagation()
+      st.session.cancel()
+      this.#deps.view.endSession()
+      this.#state = { kind: 'cancelled', id: st.a }
     } else if (st.kind === 'press') {
       e.preventDefault()
       e.stopPropagation()

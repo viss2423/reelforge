@@ -12,6 +12,7 @@ import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import {
   buildAss,
+  hasBehindText,
   compileLoudnessAnalysis,
   compileRender,
   exportSize,
@@ -22,7 +23,9 @@ import {
   type Project,
 } from '@reelforge/core'
 import type { JobContext } from '../contracts.ts'
+import { readyMatte } from '../ai/matte/index.ts'
 import { flatFontsDir } from '../packs/fonts.ts'
+import { activeLocalDir, localPacksRoot } from '../packs/local.ts'
 import { collectAssets } from './assets.ts'
 import { cpuEncoder, pickEncoder, type EncoderPick } from './encoders.ts'
 import {
@@ -156,22 +159,34 @@ export async function renderProject(
         ffprobe: ctx.tools.ffprobe,
         signal: ctx.signal,
       }),
-      loadPackResolvers(ctx.paths.packs, projectRefs(project), ctx.log),
+      activeLocalDir(localPacksRoot(ctx.paths.root)).then((local) =>
+        loadPackResolvers(ctx.paths.packs, projectRefs(project), ctx.log, local ? [local] : []),
+      ),
     ])
     const baked = await bakeLuts(project, packs, path.join(ctx.paths.tmp, 'luts'))
     ctx.signal.throwIfAborted()
 
     let assPath: string | undefined
+    let assBehindPath: string | undefined
     // libass scans only one flat directory; pack fonts live in per-family folders.
     let fontsDir = ''
     if (hasText(project)) {
+      const resolveAnimation = (r: string): ReturnType<typeof packs.resolveAnimation> =>
+        packs.resolveAnimation(r)
+      // "Text behind subject" splits the text into two documents: the compiler burns the
+      // behind layer under the matte-cut subject (or as plain text without a matte).
+      const split = hasBehindText(project)
       assPath = path.join(work, 'text.ass')
+      if (split) assBehindPath = path.join(work, 'text-behind.ass')
       ;[fontsDir] = await Promise.all([
         flatFontsDir({ root: ctx.paths.root, packs: packs.root }),
         writeFile(
           assPath,
-          deps.buildAss(project, { resolveAnimation: (r) => packs.resolveAnimation(r) }),
+          deps.buildAss(project, { resolveAnimation, ...(split ? { layer: 'front' } : {}) }),
         ),
+        assBehindPath
+          ? writeFile(assBehindPath, deps.buildAss(project, { resolveAnimation, layer: 'behind' }))
+          : undefined,
       ])
     }
 
@@ -189,6 +204,8 @@ export async function renderProject(
       assets,
       settings,
       assPath,
+      ...(assBehindPath ? { assBehindPath } : {}),
+      resolveMatte: (id) => readyMatte(ctx.paths, ctx.store.getAsset(id)),
       fontsDir,
       resolveLut: (r) => packs.resolveLut(r),
       resolveLutMix: (r, k) => baked.get(`${r}@${quantizeIntensity(k)}`),

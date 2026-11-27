@@ -19,7 +19,14 @@ import { secs } from './expr.ts'
 import { Graph } from './graph.ts'
 import { renderLayout, renderDuration, renderWindow, type FrameSpan } from './layout.ts'
 import type { CompileContext, RenderPlan } from './types.ts'
-import { applyText, buildMainTrack, buildOverlays, finishVideo } from './video.ts'
+import {
+  applyBehindText,
+  applyText,
+  buildMainTrack,
+  buildOverlays,
+  finishVideo,
+  hasSubject,
+} from './video.ts'
 import { CANVAS_W, type VideoEnv } from './visual.ts'
 
 export type {
@@ -31,7 +38,7 @@ export type {
 } from './types.ts'
 export { CompileError } from './errors.ts'
 export { ADJUSTMENT_MAPPING, chromaCurve, lumaCurve, lutyuvFilter } from './adjustments.ts'
-export { AUTO_MOTION, STICKER_BOX } from './visual.ts'
+export { AUTO_MOTION, BACKGROUND_BLUR_SIGMA, MATTE_FEATHER_SIGMA, STICKER_BOX } from './visual.ts'
 export { LOUDNESS } from './audio.ts'
 
 /** Output size for an export resolution preset (always 9:16, even dimensions). */
@@ -95,6 +102,13 @@ export function compileRender(project: Project, ctx: CompileContext): RenderPlan
   }
   let video = buildMainTrack(env, project, layout, window)
   video = buildOverlays(env, project, video, window)
+  if (ctx.assBehindPath) {
+    const behind = { path: ctx.assBehindPath, fontsDir: ctx.fontsDir }
+    // Without a matte there is no subject to hide behind: the text is drawn normally.
+    video = hasSubject(env, project)
+      ? applyBehindText(env, project, video, layout, window, behind)
+      : applyText(env, video, window, behind)
+  }
   video = applyText(
     env,
     video,

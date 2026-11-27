@@ -1,0 +1,185 @@
+{
+  "feed": {
+    "title": "Top Songs",
+    "id": "https://rss.marketingtools.apple.com/api/v2/us/music/most-played/10/songs.json",
+    "author": { "name": "Apple", "url": "https://www.apple.com/" },
+    "links": [
+      { "self": "https://rss.marketingtools.apple.com/api/v2/us/music/most-played/10/songs.json" }
+    ],
+    "copyright": "Copyright © 2026 Apple Inc. All rights reserved.",
+    "country": "us",
+    "icon": "https://www.apple.com/favicon.ico",
+    "updated": "Fri, 20 Nov 2026 17:30:26 +0000",
+    "results": [
+      {
+        "artistName": "Ella Langley",
+        "id": "1844932150",
+        "name": "Choosin' Texas",
+        "releaseDate": "2025-10-17",
+        "kind": "songs",
+        "artistId": "1384373733",
+        "artistUrl": "https://music.apple.com/us/artist/ella-langley/1384373733",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e2/91/4d/e2914d0a-7f1d-f04c-fbf4-c50b38548838/196873638690.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "6", "name": "Country", "url": "https://itunes.apple.com/us/genre/id6" },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/choosin-texas/1844932149?i=1844932150"
+      },
+      {
+        "artistName": "Morgan Wallen",
+        "id": "6812477290",
+        "name": "Last Thing You Need",
+        "releaseDate": "2026-09-17",
+        "kind": "songs",
+        "artistId": "829142092",
+        "artistUrl": "https://music.apple.com/us/artist/morgan-wallen/829142092",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/5d/d3/1c/5dd31c9c-1e1c-0bbc-104f-4a42e2bb4c59/075679556424.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "6", "name": "Country", "url": "https://itunes.apple.com/us/genre/id6" },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/last-thing-you-need/6812476961?i=6812477290"
+      },
+      {
+        "artistName": "KAROL G, Judeline \u0026 rusowsky",
+        "id": "6796864754",
+        "name": "BbY WOW",
+        "releaseDate": "2026-08-05",
+        "kind": "songs",
+        "artistId": "290814601",
+        "artistUrl": "https://music.apple.com/us/artist/karol-g/290814601",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2b/66/b2/2b66b26c-ab23-faa1-c4ee-06fa2cce8f76/26UM1IM00558.rgb.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" },
+          { "genreId": "12", "name": "Latin", "url": "https://itunes.apple.com/us/genre/id12" }
+        ],
+        "url": "https://music.apple.com/us/album/bby-wow/6796864741?i=6796864754"
+      },
+      {
+        "artistName": "Tate McRae",
+        "id": "6822497774",
+        "name": "Housewife",
+        "releaseDate": "2026-10-15",
+        "kind": "songs",
+        "artistId": "1446365464",
+        "artistUrl": "https://music.apple.com/us/artist/tate-mcrae/1446365464",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/69/64/e4/6964e483-c02c-e389-14f4-c426e8c65f2c/196874840146.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "14", "name": "Pop", "url": "https://itunes.apple.com/us/genre/id14" },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/housewife/6822497770?i=6822497774"
+      },
+      {
+        "artistName": "Morgan Wallen",
+        "id": "6792676860",
+        "name": "Been By Now",
+        "releaseDate": "2026-07-24",
+        "kind": "songs",
+        "artistId": "829142092",
+        "artistUrl": "https://music.apple.com/us/artist/morgan-wallen/829142092",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/9f/8d/52/9f8d52a0-b6d9-d038-327b-4fe58bedce67/26UMGIM94572.rgb.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "6", "name": "Country", "url": "https://itunes.apple.com/us/genre/id6" },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/been-by-now/6792676858?i=6792676860"
+      },
+      {
+        "artistName": "Drake",
+        "id": "6769568596",
+        "name": "Janice STFU",
+        "releaseDate": "2026-05-15",
+        "kind": "songs",
+        "artistId": "271256",
+        "artistUrl": "https://music.apple.com/us/artist/drake/271256",
+        "contentAdvisoryRating": "Explict",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/35/b9/06/35b90629-a873-14f8-4789-ffc324960038/26UMGIM63614.rgb.jpg/100x100bb.jpg",
+        "genres": [
+          {
+            "genreId": "18",
+            "name": "Hip-Hop/Rap",
+            "url": "https://itunes.apple.com/us/genre/id18"
+          },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/janice-stfu/6769568449?i=6769568596"
+      },
+      {
+        "artistName": "Lil Baby",
+        "id": "1648587330",
+        "name": "In A Minute",
+        "releaseDate": "2022-04-08",
+        "kind": "songs",
+        "artistId": "1276656483",
+        "artistUrl": "https://music.apple.com/us/artist/lil-baby/1276656483",
+        "contentAdvisoryRating": "Explict",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/9f/c0/99/9fc09958-180d-e66a-bbf7-9462289435f6/22UM1IM13098.rgb.jpg/100x100bb.jpg",
+        "genres": [
+          {
+            "genreId": "18",
+            "name": "Hip-Hop/Rap",
+            "url": "https://itunes.apple.com/us/genre/id18"
+          },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/in-a-minute/1648587138?i=1648587330"
+      },
+      {
+        "artistName": "Justice, Tame Impala, SZA \u0026 King Gizzard \u0026 The Lizard Wizard",
+        "id": "6819802968",
+        "name": "Flower In A Hurricane [From GTAVI: Original Score]",
+        "releaseDate": "2026-10-15",
+        "kind": "songs",
+        "artistId": "145072812",
+        "artistUrl": "https://music.apple.com/us/artist/justice/145072812",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/af/23/54/af235448-23b3-a3bf-0738-87f6c44a4bbc/5056556187486_cover.jpg/100x100bb.jpg",
+        "genres": [
+          {
+            "genreId": "20",
+            "name": "Alternative",
+            "url": "https://itunes.apple.com/us/genre/id20"
+          },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/flower-in-a-hurricane-from-gtavi-original-score/6819802963?i=6819802968"
+      },
+      {
+        "artistName": "Mariah Carey",
+        "id": "585972803",
+        "name": "All I Want for Christmas Is You",
+        "releaseDate": "1994-10-28",
+        "kind": "songs",
+        "artistId": "91853",
+        "artistUrl": "https://music.apple.com/us/artist/mariah-carey/91853",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/c6/b7/27/c6b727f7-3a32-6b43-cee2-05bb71daf1cf/dj.itfmdeif.jpg/100x100bb.jpg",
+        "genres": [
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" },
+          { "genreId": "8", "name": "Holiday", "url": "https://itunes.apple.com/us/genre/id8" }
+        ],
+        "url": "https://music.apple.com/us/album/all-i-want-for-christmas-is-you/585972750?i=585972803"
+      },
+      {
+        "artistName": "Lil Baby",
+        "id": "1440929293",
+        "name": "Freestyle",
+        "releaseDate": "2017-12-01",
+        "kind": "songs",
+        "artistId": "1276656483",
+        "artistUrl": "https://music.apple.com/us/artist/lil-baby/1276656483",
+        "contentAdvisoryRating": "Explict",
+        "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/93/e7/aa/93e7aa59-da8b-15bc-2992-5803f70fe8fa/17UM1IM55478.rgb.jpg/100x100bb.jpg",
+        "genres": [
+          {
+            "genreId": "18",
+            "name": "Hip-Hop/Rap",
+            "url": "https://itunes.apple.com/us/genre/id18"
+          },
+          { "genreId": "34", "name": "Music", "url": "https://itunes.apple.com/us/genre/id34" }
+        ],
+        "url": "https://music.apple.com/us/album/freestyle/1440928174?i=1440929293"
+      }
+    ]
+  }
+}

@@ -270,3 +270,9 @@ export const filmstrip = (
   }
   return { slotWidth, bgWidth, bgHeight, slots }
 }
+
+/** Sprite index of an asset if it is already loaded (non-React readers such as drag ghosts). */
+export const peekThumbs = (assetId: string | undefined): ThumbsIndex | null => {
+  const e = assetId ? thumbsCache.get(assetId) : undefined
+  return e?.status === 'ready' ? e.value : null
+}

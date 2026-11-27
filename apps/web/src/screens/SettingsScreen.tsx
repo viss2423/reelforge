@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Share,
   Smartphone,
+  TrendingUp,
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
@@ -15,10 +16,14 @@ import {
   useDevices,
   useHealth,
   usePacks,
+  useRefreshTrends,
   useRevokeDevice,
   useSyncPacks,
   useSystem,
+  useTrendSettings,
+  useTrends,
 } from '@/api/queries.ts'
+import { sourceLabel } from '@/lib/trends.ts'
 import { promptInstall, useInstallState } from '@/app/install.ts'
 import { setThemePref, useThemePref, type ThemePref } from '@/app/theme.ts'
 import { Button } from '@/components/Button.tsx'
@@ -41,6 +46,7 @@ export function SettingsScreen() {
         <div>
           <Host />
           <Packs />
+          <TrendsSection />
           <Storage />
           <About />
         </div>
@@ -232,6 +238,11 @@ function Host() {
             <Row label="Speech models">
               {s?.whisper?.installed ? s.whisper.models.join(', ') || 'None' : 'Not installed'}
             </Row>
+            <Row label="AI language model">
+              {s?.llm?.installed
+                ? (s.llm.model ?? 'Installed').replace(/\.gguf$/i, '')
+                : 'Not installed (run pnpm bootstrap)'}
+            </Row>
             {s?.tailscale?.hostname && <Row label="Tailscale">{s.tailscale.hostname}</Row>}
             {s?.urls?.length ? (
               <Row label="Addresses">
@@ -277,6 +288,120 @@ function Packs() {
             Check for updates
           </Button>
         </div>
+      </Card>
+    </>
+  )
+}
+
+/** Trend engine: last refresh, per-source status, refresh now, auto-publish to GitHub. */
+function TrendsSection() {
+  const trends = useTrends()
+  const refresh = useRefreshTrends()
+  const settings = useTrendSettings()
+  const t = trends.data
+  const autoPublish = t?.settings.autoPublish ?? false
+  return (
+    <>
+      <SectionTitle>Trends</SectionTitle>
+      <Card>
+        {trends.isPending ? (
+          <div className="p-4">
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : trends.isError ? (
+          <p className="p-4 text-sm text-danger">{trends.error.message}</p>
+        ) : t ? (
+          <>
+            <Row label="Last refresh">
+              <TrendingUp size={14} className="mr-1 inline align-[-2px]" />
+              {t.running ? 'Running now…' : t.generatedAt ? formatRelative(t.generatedAt) : 'Never'}
+            </Row>
+            {t.nextRunAt && !t.running && <Row label="Next run">{formatRelative(t.nextRunAt)}</Row>}
+            {t.lastError && <Row label="Last error">{t.lastError}</Row>}
+            <Row label="Local AI">
+              {t.llm.used ? 'Writing new presets' : 'Ranking + beat remixes'}
+            </Row>
+            <div className="px-4 py-2.5" data-testid="trend-sources">
+              <p className="mb-1.5 text-sm text-muted">Sources</p>
+              <ul className="flex flex-col gap-1">
+                {t.sources.map((s) => (
+                  <li key={s.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="flex items-center gap-2">
+                      <span
+                        aria-hidden
+                        className={
+                          s.state === 'ok'
+                            ? 'size-2 rounded-full bg-success'
+                            : s.state === 'error'
+                              ? 'size-2 rounded-full bg-danger'
+                              : 'size-2 rounded-full bg-line'
+                        }
+                      />
+                      {sourceLabel(s.id)}
+                    </span>
+                    <span
+                      className="min-w-0 truncate text-right text-xs text-muted"
+                      title={s.error}
+                    >
+                      {s.state === 'ok'
+                        ? `${s.items} items`
+                        : s.state === 'disabled'
+                          ? (s.error ?? 'Off')
+                          : 'Unavailable'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex min-h-12 items-center justify-between gap-4 px-4 py-2.5">
+              <span className="text-sm">
+                Auto-publish to GitHub
+                {!t.publishAvailable && (
+                  <span className="block text-xs text-muted">
+                    Set PUBLISH_TRENDS=github on the host
+                  </span>
+                )}
+                {t.publish && (
+                  <span className="block text-xs text-muted">
+                    {t.publish.status} {formatRelative(t.publish.at)}
+                  </span>
+                )}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoPublish}
+                aria-label="Auto-publish trends"
+                disabled={!t.publishAvailable || settings.isPending}
+                onClick={() =>
+                  settings.mutate(
+                    { autoPublish: !autoPublish },
+                    { onError: (e) => toast.error('Could not save', e.message) },
+                  )
+                }
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40 ${autoPublish ? 'bg-accent' : 'bg-surface-3'}`}
+              >
+                <span
+                  className={`absolute top-0.5 size-6 rounded-full bg-white transition-[left] ${autoPublish ? 'left-[22px]' : 'left-0.5'}`}
+                />
+              </button>
+            </div>
+            <div className="p-3">
+              <Button
+                icon={<RefreshCw size={18} />}
+                loading={refresh.isPending || t.running}
+                onClick={() =>
+                  refresh.mutate(undefined, {
+                    onSuccess: () => toast.success('Refreshing trends…'),
+                    onError: (e) => toast.error('Could not refresh trends', e.message),
+                  })
+                }
+              >
+                Refresh now
+              </Button>
+            </div>
+          </>
+        ) : null}
       </Card>
     </>
   )

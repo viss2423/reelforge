@@ -10,6 +10,8 @@
 import type { PreviewEngine } from '@/preview/index.ts'
 import type { EditorStoreApi } from '@/state/editorStore.ts'
 import { timelineEnd } from '@/state/selectors.ts'
+import { soundPreviewStore } from '../soundPreview.ts'
+import { previewOverride, subscribePreviewOverride } from './previewOverride.ts'
 
 export interface BindOptions {
   /** Buffering state changes (spinner overlay). */
@@ -27,14 +29,29 @@ export const bindPreviewEngine = (
   if (s0.playing) engine.play()
 
   const unsubStore = store.subscribe((s, prev) => {
+    // While a gesture previews its result the override wins; the store project returns
+    // when the override is cleared.
     if (s.project && (s.project !== prev.project || s.assets !== prev.assets)) {
-      engine.setProject(s.project, s.assets)
+      engine.setProject(previewOverride() ?? s.project, s.assets)
     }
     if (s.playhead !== prev.playhead && s.playheadSource === 'user') engine.seek(s.playhead)
     if (s.playing !== prev.playing && s.playing !== engine.playing) {
       if (s.playing) engine.play()
       else engine.pause()
     }
+  })
+
+  const unsubOverride = subscribePreviewOverride((p) => {
+    const s = store.getState()
+    const project = p ?? s.project
+    if (project) engine.setProject(project, s.assets)
+  })
+
+  const applySound = (audio: ArrayBuffer | undefined) =>
+    void engine.setSoundPreview?.(audio).catch(() => soundPreviewStore.getState().stop())
+  if (soundPreviewStore.getState().audio) applySound(soundPreviewStore.getState().audio)
+  const unsubSound = soundPreviewStore.subscribe((s, prev) => {
+    if (s.audio !== prev.audio) applySound(s.audio)
   })
 
   const offs = [
@@ -53,6 +70,8 @@ export const bindPreviewEngine = (
 
   return () => {
     unsubStore()
+    unsubOverride()
+    unsubSound()
     for (const off of offs) off()
   }
 }

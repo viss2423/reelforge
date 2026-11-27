@@ -39,6 +39,10 @@ export interface ViewElements {
   guide: HTMLElement
   indicator: HTMLElement
   badge: HTMLElement
+  /** Marquee (box selection) rectangle, viewport coordinates. */
+  marquee?: HTMLElement | null
+  /** Slip ghost filmstrip (whole source around the slipped clip). */
+  ghost?: HTMLElement | null
 }
 
 /** A pointer drag in progress (move / trim / scrub); see sessions.ts. */

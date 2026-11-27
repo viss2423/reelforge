@@ -21,6 +21,7 @@ export const qk = {
   assets: ['assets'] as const,
   jobs: ['jobs'] as const,
   packs: ['packs'] as const,
+  trends: ['trends'] as const,
   system: ['system'] as const,
   devices: ['devices'] as const,
 }
@@ -57,6 +58,8 @@ export const applyServerEvent = (qc: QueryClient, e: ServerEvent): void => {
   switch (e.type) {
     case 'job':
       qc.setQueryData<Job[]>(qk.jobs, (l) => upsertById(l, e.job))
+      if (e.job.kind === 'trends' && e.job.status !== 'queued')
+        void qc.invalidateQueries({ queryKey: qk.trends })
       return
     case 'asset':
       qc.setQueryData<Asset[]>(qk.assets, (l) => upsertById(l, e.asset))
@@ -66,6 +69,7 @@ export const applyServerEvent = (qc: QueryClient, e: ServerEvent): void => {
       return
     case 'packs':
       void qc.invalidateQueries({ queryKey: qk.packs })
+      void qc.invalidateQueries({ queryKey: qk.trends })
       return
     case 'hello':
       return
@@ -117,6 +121,13 @@ export const usePacks = () =>
     queryKey: qk.packs,
     queryFn: ({ signal }) => api.packs(signal),
     staleTime: 10 * 60_000,
+  })
+
+export const useTrends = () =>
+  useQuery({
+    queryKey: qk.trends,
+    queryFn: ({ signal }) => api.trends(signal),
+    staleTime: 5 * 60_000,
   })
 
 export const useSystem = () =>
@@ -190,6 +201,25 @@ export const useRevokeDevice = () => {
   return useMutation({
     mutationFn: (id: string) => api.revokeDevice(id),
     onSuccess: () => void qc.invalidateQueries({ queryKey: qk.devices }),
+  })
+}
+
+export const useRefreshTrends = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.refreshTrends(),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.trends }),
+  })
+}
+
+export const useTrendIdea = () =>
+  useMutation({ mutationFn: (topic: string) => api.trendIdea(topic) })
+
+export const useTrendSettings = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (s: { autoPublish: boolean }) => api.setTrendSettings(s),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.trends }),
   })
 }
 

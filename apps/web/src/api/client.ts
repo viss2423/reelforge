@@ -8,7 +8,19 @@
  * - Errors: non-2xx → `ApiError` with status and parsed body; a 401 also notifies
  *   `onUnauthorized` so the app can return to pairing.
  */
-import { Asset, ExportSettings, Job, JobKind, Project } from '@reelforge/core'
+import {
+  Asset,
+  ExportSettings,
+  Job,
+  JobKind,
+  LibraryTrack,
+  MusicImportResult,
+  MusicSourceInfo,
+  MusicSuggestResult,
+  Project,
+  type MusicSearchQuery,
+  type MusicSuggestRequest,
+} from '@reelforge/core'
 import { z, type ZodType } from 'zod'
 import { auth } from './auth.ts'
 import {
@@ -19,8 +31,12 @@ import {
   PairResult,
   ProjectSummary,
   SaveResult,
+  ReelIdea,
+  SoundBeats,
+  SoundPreviewInfo,
   SystemWire,
   toSystemInfo,
+  Trends,
   type SystemInfo,
   UploadInit,
   UploadStatus,
@@ -90,6 +106,14 @@ export interface CreateProjectInput {
 }
 
 const enc = encodeURIComponent
+
+/** A trending sound as the host looks it up (title + artist). */
+export interface SoundRef {
+  title: string
+  artist?: string | undefined
+}
+const soundQuery = (s: SoundRef): string =>
+  new URLSearchParams({ title: s.title, ...(s.artist ? { artist: s.artist } : {}) }).toString()
 
 export class ApiClient {
   readonly baseUrl: string
@@ -340,10 +364,106 @@ export class ApiClient {
     return this.request('POST', '/api/packs/sync')
   }
 
+  /* ---------------------------------------------------------------- music library */
+
+  musicSources(signal?: AbortSignal): Promise<MusicSourceInfo[]> {
+    return this.request('GET', '/api/music/sources', {
+      schema: import.meta.env.DEV && z.array(MusicSourceInfo),
+      signal,
+    })
+  }
+  musicSearch(
+    query: Partial<MusicSearchQuery>,
+    signal?: AbortSignal,
+  ): Promise<{ tracks: LibraryTrack[]; warnings: string[] }> {
+    const q = new URLSearchParams()
+    for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== '') q.set(k, String(v))
+    return this.request('GET', `/api/music/search${q.size ? `?${q.toString()}` : ''}`, {
+      schema:
+        import.meta.env.DEV &&
+        z.object({ tracks: z.array(LibraryTrack), warnings: z.array(z.string()) }),
+      signal,
+    })
+  }
+  /** Ranked tracks for a reel (the host runs the `music.suggest` job and waits for it). */
+  musicSuggest(
+    req: MusicSuggestRequest & { projectId?: string },
+    signal?: AbortSignal,
+  ): Promise<MusicSuggestResult> {
+    return this.request('POST', '/api/music/suggest', {
+      body: req,
+      schema: import.meta.env.DEV && MusicSuggestResult,
+      signal,
+    })
+  }
+  /** Downloads + analyses a library track on the host and registers it as an asset. */
+  musicImport(trackId: string, length?: number, signal?: AbortSignal): Promise<MusicImportResult> {
+    return this.request('POST', '/api/music/import', {
+      body: { trackId, ...(length !== undefined ? { length } : {}) },
+      schema: import.meta.env.DEV && MusicImportResult,
+      signal,
+    })
+  }
+  musicPreviewUrl(trackId: string): string {
+    return this.url(`/api/music/tracks/${enc(trackId)}/preview`)
+  }
+
+  /* ---------------------------------------------------------------- trends */
+
+  trends(signal?: AbortSignal): Promise<Trends> {
+    return this.request('GET', '/api/trends', { schema: import.meta.env.DEV && Trends, signal })
+  }
+  /** Starts (or joins) a trend refresh job on the host. */
+  refreshTrends(): Promise<{ jobId: string }> {
+    return this.request('POST', '/api/trends/refresh')
+  }
+  /** Reel idea for a topic (cached on the host; written by the local LLM when installed). */
+  trendIdea(topic: string): Promise<ReelIdea> {
+    return this.request('POST', '/api/trends/ideas', {
+      body: { topic },
+      schema: import.meta.env.DEV && ReelIdea,
+    })
+  }
+  /** Whether a trending sound has an official 30 s preview (Deezer / Apple). */
+  soundPreviewInfo(sound: SoundRef, signal?: AbortSignal): Promise<SoundPreviewInfo> {
+    return this.request('GET', `/api/trends/sounds/preview-info?${soundQuery(sound)}`, {
+      schema: import.meta.env.DEV && SoundPreviewInfo,
+      signal,
+    })
+  }
+  /** The official preview audio, streamed through the host (playback only, never stored). */
+  async soundPreviewAudio(sound: SoundRef, signal?: AbortSignal): Promise<ArrayBuffer> {
+    const res = await this.fetchImpl()(
+      this.url(`/api/trends/sounds/preview?${soundQuery(sound)}`),
+      {
+        headers: this.authHeaders(),
+        credentials: 'include',
+        signal: signal ?? null,
+      },
+    )
+    if (!res.ok) throw new ApiError(res.status, 'This sound has no preview right now')
+    return res.arrayBuffer()
+  }
+  /** Beat grid of a trending sound's preview (or a grid at its BPM). */
+  soundBeats(sound: SoundRef & { bpm?: number }, signal?: AbortSignal): Promise<SoundBeats> {
+    return this.request('POST', '/api/trends/sounds/beats', {
+      body: sound,
+      schema: import.meta.env.DEV && SoundBeats,
+      signal,
+    })
+  }
+  setTrendSettings(settings: { autoPublish: boolean }): Promise<{ autoPublish: boolean }> {
+    return this.request('PUT', '/api/trends/settings', { body: settings })
+  }
+
   /* ---------------------------------------------------------------- URLs for media elements */
 
   mediaUrl(assetId: string, variant: 'proxy' | 'original'): string {
     return this.url(`/api/assets/${enc(assetId)}/${variant}`)
+  }
+  /** Preview mask of an asset's AI matte; `version` busts the immutable cache on rebuilds. */
+  matteUrl(assetId: string, version: number): string {
+    return this.url(`/api/assets/${enc(assetId)}/matte?v=${version}`)
   }
   posterUrl(assetId: string): string {
     return this.url(`/api/assets/${enc(assetId)}/poster.jpg`)

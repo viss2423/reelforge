@@ -6,6 +6,7 @@
 import type { AddressInfo } from 'node:net'
 import type { Server as HttpsServer } from 'node:https'
 import type { FastifyInstance } from 'fastify'
+import { sharedLlm, shutdownLlms } from './ai/llm/index.ts'
 import { AuthService } from './auth/index.ts'
 import { type Config, dataPaths, ensureDataPaths } from './config.ts'
 import type { DataPaths } from './contracts.ts'
@@ -19,11 +20,14 @@ import type { AppLogger } from './logger.ts'
 import { Uploads } from './media/uploads.ts'
 import { CertManager, hostSans } from './net/certs.ts'
 import { hostAddresses, hostName, httpsUrls, primaryLanAddress } from './net/interfaces.ts'
+import { configureMusic } from './music/index.ts'
 import { buildLandingApp } from './net/landing.ts'
 import { MDNS_NAME, startMdns } from './net/mdns.ts'
 import { detectTailscale } from './net/tailscale.ts'
 import { PacksService } from './packs/service.ts'
 import { detectToolchain, type EncoderCache, type PlatformToolchain } from './toolchain.ts'
+import type { LlmPort } from './trends/llm-port.ts'
+import { TrendsService, trendsJob, type TrendsSettings } from './trends/service.ts'
 
 const ENCODER_CACHE_KEY = 'toolchain.encoders'
 const MAINTENANCE_INTERVAL_MS = 3_600_000
@@ -36,6 +40,7 @@ export interface ServerHandle {
   store: SqliteStore
   queue: JobQueue
   packs: PacksService
+  trends: TrendsService
   auth: AuthService
   app: FastifyInstance
   landing: FastifyInstance
@@ -53,7 +58,13 @@ export interface StartOptions {
   log: AppLogger
   /** Skip the startup pack sync (tests, offline). */
   syncPacks?: boolean
+  /** Local LLM for the trend engine (default: the shared llama.cpp instance; ranking/remix only when no model is installed). */
+  llm?: LlmPort
+  /** Don't schedule trend refreshes (tests). Manual refreshes still work. */
+  scheduleTrends?: boolean
 }
+
+const TRENDS_SETTINGS_KEY = 'trends.settings'
 
 /** Boots the whole server. Throws (after cleaning up) when a step fails. */
 export const startServer = async (config: Config, opts: StartOptions): Promise<ServerHandle> => {
@@ -105,6 +116,31 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       return packs.idle()
     })
 
+    const trends = new TrendsService({
+      dataRoot: paths.root,
+      packs,
+      config: config.trends,
+      llm: opts.llm ?? sharedLlm(paths, log),
+      log,
+      ffmpeg: tools.ffmpeg,
+      userAgent: `ReelForge/${config.version} (self-hosted trend engine; +https://github.com/viss2423/reelforge)`,
+      settings: {
+        get: () => store.getSetting<TrendsSettings>(TRENDS_SETTINGS_KEY),
+        set: (v) => store.setSetting(TRENDS_SETTINGS_KEY, v),
+      },
+    })
+    await trends.init()
+    configureMusic({
+      online: config.musicOnline,
+      jamendoClientId: config.jamendoClientId,
+      log,
+      trendSounds: () => trends.soundProfiles(),
+    })
+    cleanup.push(() => {
+      trends.stop()
+      return trends.idle()
+    })
+
     const queue = new JobQueue({
       store,
       bus,
@@ -112,14 +148,17 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       paths: () => ({ ...paths, packs: packs.dir ?? paths.packs }),
       tools,
       log,
-      definitions: allJobDefinitions(),
+      definitions: [...allJobDefinitions(), trendsJob(() => trends)],
       concurrency: { 'gpu-encode': config.gpuEncodeConcurrency },
     })
     const recovered = queue.recover()
     if (recovered.queued + recovered.requeued + recovered.failed > 0)
       log.info(recovered, 'recovered jobs from previous run')
     queue.start()
+    // Reverse order: the queue stops (aborting LLM jobs) before the model process is killed.
+    cleanup.push(() => shutdownLlms())
     cleanup.push(() => queue.stop())
+    trends.start(queue, { schedule: opts.scheduleTrends !== false })
 
     const maintain = (): void => {
       runMaintenance({
@@ -179,6 +218,7 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       uploads,
       auth,
       packs,
+      trends,
       log,
       urls,
       tailscale: () => detectTailscale(),
@@ -219,6 +259,7 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       store,
       queue,
       packs,
+      trends,
       auth,
       app,
       landing,

@@ -56,7 +56,7 @@ export function splitClip(p: Project, clipId: string, t: Us): [Clip, Clip] {
  * when `assetDuration` is known, source end ≤ asset duration). Content anchored to clip time
  * (keyframes, ramp, windowed effects) moves with the head extension.
  */
-function extendClip(c: Clip, head: Us, tail: Us, assetDuration: Us | undefined): void {
+export function extendClip(c: Clip, head: Us, tail: Us, assetDuration: Us | undefined): void {
   const timed = c.type === 'video' || c.type === 'audio'
   const reversed = c.type === 'video' && c.reverse
   if (head > 0) {
@@ -95,12 +95,16 @@ function extendClip(c: Clip, head: Us, tail: Us, assetDuration: Us | undefined):
  * Move a clip's edges to playback times `start`/`end` (either may extend or shrink).
  * Non-main clips are clamped to their neighbours; main-track edits ripple. Extensions are
  * limited by the available source: pass `opts.asset` to also bound the source end.
+ *
+ * With `opts.ripple` a non-main clip trims like a main-track clip: it keeps its start (a
+ * head trim cuts or reveals content at the head) and every later clip on its track shifts
+ * by the change in duration, so neighbours never limit the trim and gaps are preserved.
  */
 export function trimClip(
   p: Project,
   clipId: string,
   edges: { start?: Us; end?: Us },
-  opts?: { asset?: Pick<Asset, 'duration'> },
+  opts?: { asset?: Pick<Asset, 'duration'>; ripple?: boolean },
 ): void {
   const { track, clip } = getClip(p, clipId)
   assertUnlocked(track)
@@ -108,7 +112,8 @@ export function trimClip(
   const end = start + clip.duration
   let newStart = edges.start ?? start
   let newEnd = edges.end ?? end
-  if (track.kind !== 'main') {
+  const ripple = opts?.ripple === true && track.kind !== 'main'
+  if (track.kind !== 'main' && !ripple) {
     let lo = 0
     let hi = Infinity
     for (const c of track.clips) {
@@ -133,8 +138,20 @@ export function trimClip(
       opts?.asset?.duration,
     )
   }
-  if (track.kind === 'main') editMain(p, apply)
-  else apply()
+  if (track.kind === 'main') {
+    editMain(p, apply)
+    return
+  }
+  if (!ripple) {
+    apply()
+    return
+  }
+  const later = track.clips.filter((c) => c.id !== clip.id && c.start >= end)
+  const before = clip.duration
+  apply()
+  clip.start = start
+  const shift = clip.duration - before
+  for (const c of later) c.start += shift
 }
 
 /**

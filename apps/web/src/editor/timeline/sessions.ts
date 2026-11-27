@@ -9,6 +9,7 @@ import {
   fromFrame,
   minClipDuration,
   moveClip,
+  moveClips,
   snapToFrame,
   trimClip,
   type Asset,
@@ -16,6 +17,7 @@ import {
   type Track,
 } from '@reelforge/core'
 import { haptic } from '@/lib/haptics.ts'
+import { editPrefs } from '../editPrefs.ts'
 import { locateClip, mainTrackOf, type EditorStoreApi } from '@/state/index.ts'
 import { runEdit, trackAccepts } from './commands.ts'
 import {
@@ -60,7 +62,7 @@ export interface SessionContext {
 type ClipHit = Extract<Hit, { kind: 'clip' }>
 
 /** Shared plumbing: pointer tracking, snapping threshold, haptic tick on new snaps. */
-abstract class BaseSession implements Session {
+export abstract class BaseSession implements Session {
   protected readonly ctx: SessionContext
   protected readonly project: Project
   protected readonly fps: number
@@ -170,7 +172,7 @@ interface MoveItem {
 }
 
 /** Elements this session styled, so cleanup touches exactly those. */
-class Touched {
+export class Touched {
   readonly #els = new Set<HTMLElement>()
 
   transform(el: HTMLElement, value: string, attr?: string): void {
@@ -190,6 +192,7 @@ class Touched {
       delete el.dataset.shifting
       delete el.dataset.lifted
       delete el.dataset.invalid
+      delete el.dataset.slipping
     }
     this.#els.clear()
   }
@@ -210,6 +213,8 @@ export class MoveSession extends BaseSession {
   readonly #main: Track | undefined
   readonly #touched = new Touched()
   #target: Track
+  /** Per-item target track of a group move (cross-track group moves). */
+  #itemTargets: Track[] = []
   #delta = 0
   #reorder = -1
   #layoutKey = ''
@@ -274,6 +279,7 @@ export class MoveSession extends BaseSession {
         target = row.track
     }
     this.#target = target
+    this.#itemTargets = this.#items.length > 1 ? this.#groupTargets(pt.y) : []
     if (target.kind === 'main') {
       this.setSnap(null)
       this.#reorder = reorderIndex(
@@ -293,13 +299,49 @@ export class MoveSession extends BaseSession {
       hi = Math.max(hi, i.start + i.duration)
     }
     const raw = pt.t - this.#grab - this.#primary.start
-    const hit = this.#index.snapEdges([lo + raw, hi + raw], this.threshold)
+    // Magnetic for groups: any member's start or end may snap, not just the group bounds.
+    const edges: number[] = []
+    for (const i of this.#items) edges.push(i.start + raw, i.start + i.duration + raw)
+    const hit = this.#index.snapEdges(edges, this.threshold)
     this.setSnap(hit?.target ?? null)
     const delta = clampGroupDelta(starts, raw + (hit?.delta ?? 0))
     // Frame-accurate: the primary clip's new start lands on the frame grid.
     const primaryStart = this.#primary.start
     this.#delta = snapToFrame(primaryStart + delta, this.fps) - primaryStart
     this.ctx.view.extraEndUs = hi + this.#delta
+  }
+
+  /**
+   * Group moves across tracks: every member shifts by the same number of track rows as the
+   * pointer, provided each lands on an unlocked track that accepts it; otherwise the group
+   * stays on its own tracks.
+   */
+  #groupTargets(y: number): Track[] {
+    const trackRows = this.ctx.rows.filter(
+      (r): r is Extract<Row, { type: 'track' }> => r.type === 'track',
+    )
+    const rowOf = (id: string) => trackRows.findIndex((r) => r.track.id === id)
+    const under = this.ctx.rows[rowAt(this.ctx.rows, y, true)]
+    const from = rowOf(this.#primary.track.id)
+    const to = under?.type === 'track' ? rowOf(under.track.id) : from
+    const shift = from === -1 || to === -1 ? 0 : to - from
+    const own = this.#items.map((i) => i.track)
+    if (shift === 0) return own
+    const targets: Track[] = []
+    for (const item of this.#items) {
+      const row = trackRows[rowOf(item.track.id) + shift]
+      const clip = locateClip(this.project, item.id)?.clip
+      if (
+        !row ||
+        !clip ||
+        row.track.locked ||
+        row.track.kind === 'main' ||
+        !trackAccepts(row.track.kind, clip.type)
+      )
+        return own
+      targets.push(row.track)
+    }
+    return targets
   }
 
   /** Main-track preview starts (by original index) for the current reorder state. */
@@ -340,11 +382,14 @@ export class MoveSession extends BaseSession {
     touched.reset()
     const targetRow = rows.find((r) => r.type === 'track' && r.track.id === this.#target.id)
     const dy = targetRow && this.#sourceRow ? targetRow.y - this.#sourceRow.y : 0
-    for (const item of this.#items) {
+    const rowY = (id: string) => rows.find((r) => r.type === 'track' && r.track.id === id)?.y ?? 0
+    this.#items.forEach((item, k) => {
       const el = view.clipEls.get(item.id)
-      if (!el) continue
-      touched.transform(el, `translate3d(${this.#delta * ppu}px,${dy}px,0)`, 'dragging')
-    }
+      if (!el) return
+      const to = this.#itemTargets[k]
+      const ddy = to ? rowY(to.id) - rowY(item.track.id) : dy
+      touched.transform(el, `translate3d(${this.#delta * ppu}px,${ddy}px,0)`, 'dragging')
+    })
     // Ripple the main track around the dragged clip.
     const preview = this.#mainPreview()
     const main = this.#main
@@ -377,6 +422,7 @@ export class MoveSession extends BaseSession {
     if (this.#target.kind === 'main') {
       return p.track.kind !== 'main' || this.#reorder !== p.index
     }
+    if (this.#itemTargets.some((t, k) => t.id !== this.#items[k]!.track.id)) return true
     return this.#target.id !== p.track.id || this.#delta !== 0
   }
 
@@ -404,14 +450,17 @@ export class MoveSession extends BaseSession {
       )
       return
     }
-    // Group: move in the direction of travel first so clips never pass through each other.
+    // Group: one atomic move (members never collide with each other's old slots).
     const delta = this.#delta
-    const order = this.#items.toSorted((a, b) =>
-      delta > 0 ? b.start - a.start : a.start - b.start,
-    )
-    runEdit(store, `Move ${order.length} clips`, (d) => {
-      for (const it of order) moveClip(d, it.id, { start: Math.max(0, it.start + delta) })
+    const moves = this.#items.map((it, k) => {
+      const to = this.#itemTargets[k]
+      return {
+        clipId: it.id,
+        start: Math.max(0, it.start + delta),
+        ...(to && to.id !== it.track.id ? { trackId: to.id } : {}),
+      }
     })
+    runEdit(store, `Move ${moves.length} clips`, (d) => moveClips(d, moves))
   }
 
   cancel(): void {
@@ -439,6 +488,8 @@ export class TrimSession extends BaseSession {
   readonly #grab: number
   readonly #touched = new Touched()
   readonly #asset: Asset | undefined
+  /** Ripple trim of a free-track clip (the edit-mode toggle). */
+  readonly #ripple: boolean
   #value: number
 
   constructor(ctx: SessionContext, hit: ClipHit, p: PointerPos, asset: Asset | undefined) {
@@ -446,7 +497,8 @@ export class TrimSession extends BaseSession {
     this.#hit = hit
     this.#asset = asset
     this.#edge = hit.zone === 'trim-start' ? 'start' : 'end'
-    const main = hit.track.kind === 'main'
+    this.#ripple = hit.track.kind !== 'main' && editPrefs.getState().ripple
+    const main = hit.track.kind === 'main' || this.#ripple
     const nb = main
       ? { lo: -Infinity, hi: Infinity }
       : freeNeighbours(trackSpans(hit.track), hit.index)
@@ -499,7 +551,8 @@ export class TrimSession extends BaseSession {
     const { start, end } = this.span
     this.#touched.reset()
     const el = view.clipEls.get(hit.clip.id)
-    const main = hit.track.kind === 'main'
+    // Main track and ripple mode keep the clip's slot and shift the later clips.
+    const main = hit.track.kind === 'main' || this.#ripple
     if (el) {
       const headCut = (start - hit.start) * ppu
       // Free tracks move the left edge; the magnetic main track keeps the slot (ripple).
@@ -552,8 +605,10 @@ export class TrimSession extends BaseSession {
     const edges = this.#edge === 'start' ? { start: this.#value } : { end: this.#value }
     const asset = this.#asset
     // Core re-checks the extension against the asset's duration (the authoritative bound).
-    runEdit(this.ctx.store, 'Trim clip', (d) =>
-      asset ? trimClip(d, id, edges, { asset }) : trimClip(d, id, edges),
+    const ripple = this.#ripple
+    const opts = { ...(asset ? { asset } : {}), ...(ripple ? { ripple } : {}) }
+    runEdit(this.ctx.store, ripple ? 'Ripple trim' : 'Trim clip', (d) =>
+      asset || ripple ? trimClip(d, id, edges, opts) : trimClip(d, id, edges),
     )
   }
 

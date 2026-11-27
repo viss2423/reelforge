@@ -40,6 +40,12 @@ export const routes: RouteObject[] = [
             }),
           },
           {
+            path: '/trending',
+            lazy: async () => ({
+              Component: (await import('@/screens/TrendingScreen.tsx')).TrendingScreen,
+            }),
+          },
+          {
             path: '/exports',
             lazy: async () => ({
               Component: (await import('@/screens/ExportsScreen.tsx')).ExportsScreen,

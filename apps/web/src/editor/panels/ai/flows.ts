@@ -6,6 +6,7 @@
  */
 import {
   applyReframe,
+  assembleAutoEdit,
   buildCaptions,
   newId,
   OpError,
@@ -26,7 +27,15 @@ import type { EditorStoreApi } from '@/state/editorStore.ts'
 import { allClips, hasAudio, isAudioClip, isVideo, locate, mainMediaClips } from '../model/draft.ts'
 import { clipRanges, fillerRanges, mergeRanges, overlapLength } from '../model/ranges.ts'
 import { runJobs, type JobDeps, type JobInput } from './jobs.ts'
-import { readBeats, readReframe, readScenes, readSilence, readTranscript } from './results.ts'
+import {
+  readBeats,
+  readHighlights,
+  readReframe,
+  readScenes,
+  readSilence,
+  readTranscript,
+  type HighlightMoment,
+} from './results.ts'
 
 export interface FlowContext {
   store: EditorStoreApi
@@ -54,7 +63,7 @@ export interface CutStats {
 
 /* ------------------------------------------------------------------ sources */
 
-const projectOf = (store: EditorStoreApi): Project => {
+export const projectOf = (store: EditorStoreApi): Project => {
   const p = store.getState().project
   if (!p) throw new OpError('no_project', 'No project open')
   return p
@@ -68,7 +77,7 @@ const mainSpeechClips = (p: Project, store: EditorStoreApi): MediaClip[] =>
   mainMediaClips(p).filter((c) => isVideo(c) && audible(store, c.assetId))
 
 /** Clips whose speech becomes captions: main + overlay video, and voiceovers. */
-const speechClips = (p: Project, store: EditorStoreApi): Array<MediaClip | AudioClip> => {
+export const speechClips = (p: Project, store: EditorStoreApi): Array<MediaClip | AudioClip> => {
   const out: Array<MediaClip | AudioClip> = []
   for (const t of p.tracks) {
     if (t.muted) continue
@@ -81,7 +90,7 @@ const speechClips = (p: Project, store: EditorStoreApi): Array<MediaClip | Audio
   return out
 }
 
-const distinct = (clips: readonly { assetId: string }[]): string[] => [
+export const distinct = (clips: readonly { assetId: string }[]): string[] => [
   ...new Set(clips.map((c) => c.assetId)),
 ]
 
@@ -110,7 +119,7 @@ interface Analysis<T> {
  * Runs one job kind for each asset, skipping assets whose cached analysis `cached` returns.
  * Progress maps onto [from, to] of the flow's bar.
  */
-const analyze = async <T>(
+export const analyze = async <T>(
   ctx: FlowContext,
   assetIds: readonly string[],
   job: (assetId: string) => JobInput,
@@ -150,7 +159,7 @@ const transcribeJob =
 const cachedTranscript = (language: string) => (a: Asset | undefined) =>
   language === 'auto' && a?.transcript ? a.transcript : undefined
 
-const transcribe = (
+export const transcribe = (
   ctx: FlowContext,
   assetIds: string[],
   language: string,
@@ -284,7 +293,7 @@ const captionOpts = (o: CaptionOptions) => ({
   ...(o.styleRef ? { styleRef: o.styleRef } : {}),
 })
 
-const ensureSameProject = <R>(ctx: FlowContext, projectId: string, fn: () => R): R => {
+export const ensureSameProject = <R>(ctx: FlowContext, projectId: string, fn: () => R): R => {
   if (ctx.signal.aborted) throw ctx.signal.reason as Error
   if (ctx.store.getState().project?.id !== projectId)
     throw new OpError('project_changed', 'The project was closed before the result arrived')
@@ -303,26 +312,37 @@ export const timelineBeats = (clip: AudioClip, beats: readonly Us[]): Us[] => {
   return [...new Set(out)].sort((a, b) => a - b)
 }
 
-/** Replaces beat markers and re-times main-track cuts to the beats (call inside a recipe). */
-const applyBeats = (
-  d: Project,
-  musicClipId: string,
-  beats: readonly Us[],
-  every: 1 | 2 | 4,
-): number => {
-  const clip = locate(d, musicClipId)?.clip
-  if (!isAudioClip(clip)) throw new OpError('no_music', 'The music clip was removed')
-  const times = timelineBeats(clip, beats)
-  if (!times.length) throw new OpError('no_beats', 'No beats fall inside the music clip')
-  d.markers = [
-    ...d.markers.filter((m) => m.kind !== 'beat'),
-    ...times.map((t) => ({ id: newId('m'), t, kind: 'beat' as const })),
-  ]
-  syncToBeats(d, times, { every })
-  return times.length
+/** Where beat sync cuts: every beat, every 2nd beat, every bar or every 2nd bar. */
+export type BeatCut = 'beat' | 'beat2' | 'bar' | 'bar2'
+
+/** Core sync options for a {@link BeatCut}. */
+export const beatCutOptions = (cut: BeatCut): { unit: 'beat' | 'bar'; every: 1 | 2 } => ({
+  unit: cut.startsWith('bar') ? 'bar' : 'beat',
+  every: cut.endsWith('2') ? 2 : 1,
+})
+
+/** Beat analysis of one music asset (source time). */
+export interface BeatTimes {
+  beats: Us[]
+  downbeats: Us[]
 }
 
-const beatsJob =
+/** Replaces beat markers and re-times main-track cuts to the beats (call inside a recipe). */
+const applyBeats = (d: Project, musicClipId: string, times: BeatTimes, cut: BeatCut): number => {
+  const clip = locate(d, musicClipId)?.clip
+  if (!isAudioClip(clip)) throw new OpError('no_music', 'The music clip was removed')
+  const beats = timelineBeats(clip, times.beats)
+  if (!beats.length) throw new OpError('no_beats', 'No beats fall inside the music clip')
+  const downbeats = timelineBeats(clip, times.downbeats)
+  d.markers = [
+    ...d.markers.filter((m) => m.kind !== 'beat'),
+    ...beats.map((t) => ({ id: newId('m'), t, kind: 'beat' as const })),
+  ]
+  syncToBeats(d, beats, { ...beatCutOptions(cut), downbeats })
+  return beats.length
+}
+
+export const beatsJob =
   (projectId: string) =>
   (assetId: string): JobInput => ({
     kind: 'beats',
@@ -331,7 +351,13 @@ const beatsJob =
     payload: { assetId },
   })
 
-const cachedBeats = (a: Asset | undefined) => (a?.beats?.length ? a.beats : undefined)
+export const cachedBeats = (a: Asset | undefined): BeatTimes | undefined =>
+  a?.beats?.length ? { beats: a.beats, downbeats: a.downbeats ?? [] } : undefined
+
+export const readBeatTimes = (r: unknown): BeatTimes => {
+  const { beats, downbeats } = readBeats(r)
+  return { beats, downbeats }
+}
 
 /** Music clips (audio clips with the music role), longest first. */
 export const musicClips = (p: Project): AudioClip[] =>
@@ -343,7 +369,7 @@ export const musicClips = (p: Project): AudioClip[] =>
 /** Detects the beats of a music clip and cuts the main track on them. Returns beats used. */
 export const beatSync = async (
   ctx: FlowContext,
-  o: { musicClipId: string; every: 1 | 2 | 4 },
+  o: { musicClipId: string; cut: BeatCut },
 ): Promise<number> => {
   const p = projectOf(ctx.store)
   const clip = locate(p, o.musicClipId)?.clip
@@ -352,14 +378,14 @@ export const beatSync = async (
     ctx,
     [clip.assetId],
     beatsJob(p.id),
-    (r) => readBeats(r).beats,
+    readBeatTimes,
     cachedBeats,
     'Detecting beats',
     [0, 0.95],
   )
-  const beats = results[clip.assetId] ?? []
+  const beats = results[clip.assetId] ?? { beats: [], downbeats: [] }
   return ensureSameProject(ctx, p.id, () =>
-    ctx.store.getState().dispatch('Beat sync', (d) => applyBeats(d, o.musicClipId, beats, o.every)),
+    ctx.store.getState().dispatch('Beat sync', (d) => applyBeats(d, o.musicClipId, beats, o.cut)),
   )
 }
 
@@ -423,6 +449,8 @@ export const landscapeClips = (p: Project, assets: Readonly<Record<string, Asset
 export const autoReframe = async (
   ctx: FlowContext,
   clipIds?: readonly string[],
+  /** Camera tracking strength: 0 calm ... 1 tight (host default 0.5). */
+  strength?: number,
 ): Promise<number> => {
   const p = projectOf(ctx.store)
   const clips = landscapeClips(p, ctx.store.getState().assets).filter(
@@ -432,7 +460,12 @@ export const autoReframe = async (
   const { results } = await analyze(
     ctx,
     distinct(clips),
-    (assetId) => ({ kind: 'reframe', assetId, projectId: p.id, payload: { assetId } }),
+    (assetId) => ({
+      kind: 'reframe',
+      assetId,
+      projectId: p.id,
+      payload: { assetId, ...(strength !== undefined ? { strength } : {}) },
+    }),
     readReframe,
     () => undefined,
     'Tracking the subject',
@@ -456,8 +489,13 @@ export const autoReframe = async (
 /* ------------------------------------------------------------------ magic edit */
 
 export interface MagicOptions extends CaptionOptions {
-  /** Beat-sync density used when a music clip is present. */
-  every?: 1 | 2 | 4
+  /** Beat-sync density used when a music clip is present (default every 2nd beat). */
+  cut?: BeatCut
+  /**
+   * With the language model on the host: first cut long footage down to its best moments
+   * (applies when the main track is longer than 1.5 × the target).
+   */
+  highlights?: { targetSeconds: number }
 }
 
 export interface MagicSummary {
@@ -466,6 +504,8 @@ export interface MagicSummary {
   removed: Us
   captionWords: number
   beatSynced: boolean
+  /** Moments kept when Magic edit also cut to the highlights. */
+  moments?: number
 }
 
 /**
@@ -495,16 +535,33 @@ export const magicEdit = async (ctx: FlowContext, o: MagicOptions): Promise<Magi
     analyze(sub(0), silenceAssets, silenceJob(p.id, {}), readSilence, () => undefined, label),
     transcribe(sub(1), speechAssets, o.language),
     music
-      ? analyze(
-          sub(2),
-          [music.assetId],
-          beatsJob(p.id),
-          (r) => readBeats(r).beats,
-          cachedBeats,
-          label,
-        )
+      ? analyze(sub(2), [music.assetId], beatsJob(p.id), readBeatTimes, cachedBeats, label)
       : Promise.resolve(undefined),
   ])
+  let moments: HighlightMoment[] | undefined
+  const mainLength = mainMediaClips(p).reduce((n, c) => n + c.duration, 0)
+  if (o.highlights && mainLength > o.highlights.targetSeconds * 1_500_000) {
+    ctx.report(0.9, 'Choosing the best moments')
+    const [job] = await runJobs(
+      ctx.jobs,
+      [
+        {
+          kind: 'highlights',
+          projectId: p.id,
+          payload: {
+            sources: mainMediaClips(p).map((c) =>
+              c.type === 'image'
+                ? { assetId: c.assetId }
+                : { assetId: c.assetId, start: c.in, end: c.in + Math.round(c.duration * c.speed) },
+            ),
+            target: o.highlights.targetSeconds * 1_000_000,
+          },
+        },
+      ],
+      { signal: ctx.signal },
+    )
+    moments = readHighlights(job!.result).variants[0]?.moments
+  }
   ctx.report(0.97, 'Editing')
   const silenceRanges: CutRanges = {}
   for (const [id, r] of Object.entries(silence.results)) silenceRanges[id] = mergeRanges(r)
@@ -514,7 +571,13 @@ export const magicEdit = async (ctx: FlowContext, o: MagicOptions): Promise<Magi
   const silencePlan: CutPlan = { ranges: silenceRanges, scope: 'main' }
 
   return ensureSameProject(ctx, p.id, () => {
-    const now = projectOf(ctx.store)
+    let now = projectOf(ctx.store)
+    if (moments?.length) {
+      // Stats are measured on the highlight cut the edit will start from.
+      const scratch = structuredClone(now)
+      assembleAutoEdit(scratch, { moments }, ctx.store.getState().assets)
+      now = scratch
+    }
     const s1 = cutStats(now, ctx.store, silencePlan)
     // Fillers inside an already-cut silence would be double counted: count on the union.
     const union: CutPlan = { ranges: {}, scope: 'speech' }
@@ -526,12 +589,13 @@ export const magicEdit = async (ctx: FlowContext, o: MagicOptions): Promise<Magi
     const sAll = cutStats(now, ctx.store, union)
     let beatSynced = false
     const captionWords = ctx.store.getState().dispatch('Magic edit', (d) => {
+      if (moments?.length) assembleAutoEdit(d, { moments }, ctx.store.getState().assets)
       applyCuts(d, ctx.store, silencePlan)
       applyCuts(d, ctx.store, fillerPlan)
       if (music && beats) {
-        const b = beats.results[music.assetId] ?? []
-        if (b.length && isAudioClip(locate(d, music.id)?.clip)) {
-          applyBeats(d, music.id, b, o.every ?? 2)
+        const b = beats.results[music.assetId]
+        if (b?.beats.length && isAudioClip(locate(d, music.id)?.clip)) {
+          applyBeats(d, music.id, b, o.cut ?? 'beat2')
           beatSynced = true
         }
       }
@@ -545,6 +609,7 @@ export const magicEdit = async (ctx: FlowContext, o: MagicOptions): Promise<Magi
       removed: sAll.removed,
       captionWords,
       beatSynced,
+      ...(moments?.length ? { moments: moments.length } : {}),
     }
   })
 }

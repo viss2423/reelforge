@@ -66,18 +66,52 @@ function simplify(points: Keyframe[], tolerance: number): Keyframe[] {
   return points.filter((_, k) => keep[k] === 1)
 }
 
-/** Linear interpolation of the subject path at source time s (path sorted by t). */
-function pathAt(path: ReadonlyArray<{ t: Us; x: number }>, s: number): number {
+/** One subject-path sample: source time, subject centre and optional visible width. */
+export interface ReframePoint {
+  /** Source time (µs). */
+  t: Us
+  /** Subject (or group) centre as a 0..1 fraction of the source width. */
+  x: number
+  /**
+   * Width that must stay visible, as a 0..1 fraction of the source width. When it exceeds
+   * what the 9:16 frame shows, the clip is scaled down (zoom out) to fit; omitted = no zoom.
+   */
+  w?: number
+}
+
+/** Linear interpolation of a path field at source time s (path sorted by t). */
+function pathAt(
+  path: readonly ReframePoint[],
+  s: number,
+  get: (p: ReframePoint) => number,
+): number {
   const first = path[0]!
-  if (s <= first.t) return first.x
+  if (s <= first.t) return get(first)
   for (let i = 1; i < path.length; i++) {
     const b = path[i]!
     if (s <= b.t) {
       const a = path[i - 1]!
-      return b.t === a.t ? b.x : a.x + ((b.x - a.x) * (s - a.t)) / (b.t - a.t)
+      return b.t === a.t ? get(b) : get(a) + ((get(b) - get(a)) * (s - a.t)) / (b.t - a.t)
     }
   }
-  return path[path.length - 1]!.x
+  return get(path[path.length - 1]!)
+}
+
+/** Never zoom out below this fraction of the clip's own scale. */
+const MIN_ZOOM = 0.5
+
+/** Keyframes for one animated property, or a constant when they are all equal. */
+function toAnimatable(raw: Map<Us, number>, tolerance: number) {
+  const keyframes = simplify(
+    [...raw.entries()]
+      .toSorted((a, b) => a[0] - b[0])
+      .map(([t, value]): Keyframe => ({ t, value, easing: 'linear' })),
+    tolerance,
+  )
+  const first = keyframes[0]!
+  return keyframes.length === 1 || keyframes.every((k) => k.value === first.value)
+    ? { value: first.value, keyframes: [] }
+    : { value: first.value, keyframes }
 }
 
 /**
@@ -90,7 +124,7 @@ function pathAt(path: ReadonlyArray<{ t: Us; x: number }>, s: number): number {
 export function applyReframe(
   p: Project,
   clipId: string,
-  path: ReadonlyArray<{ t: Us; x: number }>,
+  path: readonly ReframePoint[],
   source?: SourceGeometry,
 ): void {
   const { track, clip } = getClip(p, clipId)
@@ -104,23 +138,51 @@ export function applyReframe(
   if (pts.length === 0) throw new OpError('empty_path', 'reframe path is empty')
   const geometry = source ?? DEFAULT_SOURCE
   const prof = speedProfile(clip)
-  const { left, right } = clip.crop
-  const cropW = Math.max(1e-6, 1 - left - right)
+  const cropW = Math.max(1e-6, 1 - clip.crop.left - clip.crop.right)
 
-  const xAt = (tau: number, subjectX: number): number => {
-    const width = displayedWidth(clip, geometry, evaluate(clip.transform.scale, tau))
-    let u = clamp((subjectX - left) / cropW, 0, 1)
+  const zooms = pts.some((pt) => pt.w !== undefined && Number.isFinite(pt.w))
+  const crop = clip.crop
+
+  /** Scale at clip time tau that keeps `visible` (fraction of the source width) in frame. */
+  const scaleAt = (tau: number, visible: number | undefined): number => {
+    const base = evaluate(clip.transform.scale, tau)
+    if (visible === undefined || !(visible > 0)) return base
+    // Fraction of the (cropped) source the canvas shows at the clip's own scale.
+    const shown = CANVAS_W / displayedWidth(clip, geometry, base) / cropW
+    const want = visible / cropW
+    return want > shown ? base * Math.max(MIN_ZOOM, shown / want) : base
+  }
+
+  const xAt = (scale: number, subjectX: number): number => {
+    const width = displayedWidth(clip, geometry, scale)
+    let u = clamp((subjectX - crop.left) / cropW, 0, 1)
     if (clip.transform.flipH) u = 1 - u
     const x = CANVAS_W / 2 - (u - 0.5) * width
     if (clip.fit !== 'cover' || width < CANVAS_W) return x
     return clamp(x, CANVAS_W - width / 2, width / 2)
   }
 
-  const raw = new Map<Us, number>()
+  const rawX = new Map<Us, number>()
+  const rawScale = new Map<Us, number>()
   const add = (tau: number) => {
     const t = Math.round(clamp(tau, 0, clip.duration))
     const s = clip.type === 'image' ? clip.in + t : clipTimeToSourceExact(clip, t, prof)
-    raw.set(t, Math.round(xAt(t, pathAt(pts, s)) * 100) / 100)
+    const scale = zooms
+      ? scaleAt(
+          t,
+          pathAt(pts, s, (p) => p.w ?? 0),
+        )
+      : evaluate(clip.transform.scale, t)
+    rawX.set(
+      t,
+      Math.round(
+        xAt(
+          scale,
+          pathAt(pts, s, (p) => p.x),
+        ) * 100,
+      ) / 100,
+    )
+    if (zooms) rawScale.set(t, Math.round(scale * 10_000) / 10_000)
   }
   add(0)
   add(clip.duration)
@@ -128,15 +190,7 @@ export function applyReframe(
     const tau = clip.type === 'image' ? pt.t - clip.in : sourceToClipTimeExact(clip, pt.t, prof)
     if (tau !== undefined && tau >= 0 && tau <= clip.duration) add(tau)
   }
-  const keyframes = simplify(
-    [...raw.entries()]
-      .toSorted((a, b) => a[0] - b[0])
-      .map(([t, value]): Keyframe => ({ t, value, easing: 'linear' })),
-    SIMPLIFY_TOLERANCE_PX,
-  )
-  const first = keyframes[0]!
-  clip.transform.x =
-    keyframes.length === 1 || keyframes.every((k) => k.value === first.value)
-      ? { value: first.value, keyframes: [] }
-      : { value: first.value, keyframes }
+  clip.transform.x = toAnimatable(rawX, SIMPLIFY_TOLERANCE_PX)
+  // 0.1 % of scale ≈ 1 px of the 1080 px frame.
+  if (zooms) clip.transform.scale = toAnimatable(rawScale, 0.001)
 }

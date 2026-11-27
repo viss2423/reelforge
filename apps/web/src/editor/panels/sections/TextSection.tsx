@@ -12,7 +12,13 @@ import type { Packs } from '@/api/schemas.ts'
 import { usePacksData } from '../hooks.ts'
 import { catalog, fontFamilies, type CatalogItem } from '../model/catalog.ts'
 import { edit, gesture } from '../model/commands.ts'
-import { applyTextPreset, setOverlayDuration, setText, setTextStyle } from '../model/edits.ts'
+import {
+  applyTextPreset,
+  setBehindSubject,
+  setOverlayDuration,
+  setText,
+  setTextStyle,
+} from '../model/edits.ts'
 import { FALLBACK_FAMILIES, registerPackFonts, textPreviewStyle } from '../textPreview.ts'
 import { Gallery, PackThumb, SecondsSlider, Section, Tile, Toggle } from '../ui.tsx'
 
@@ -330,6 +336,12 @@ export function TextContent({ clip }: { clip: TextClip }) {
         max={Math.max(clip.duration, 30_000_000)}
         step={0.1}
         handlers={gesture<number>('Text duration', (d, v) => setOverlayDuration(d, clip.id, v))}
+      />
+      <Toggle
+        label="Behind subject"
+        description="People in the main video appear in front of the text (uses Background → subject separation)."
+        checked={!!clip.behindSubject}
+        onChange={(on) => edit('Text behind subject', (d) => setBehindSubject(d, clip.id, on))}
       />
     </Section>
   )

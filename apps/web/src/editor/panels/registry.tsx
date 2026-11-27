@@ -16,6 +16,7 @@ import { TemplatesPanel } from './root/TemplatesPanel.tsx'
 import { TextPanel } from './root/TextPanel.tsx'
 import { AnimationSection } from './sections/AnimationSection.tsx'
 import { AudioSection } from './sections/AudioSection.tsx'
+import { BackgroundSection } from './sections/BackgroundSection.tsx'
 import { CanvasSection } from './sections/CanvasSection.tsx'
 import { ChromaSection } from './sections/ChromaSection.tsx'
 import { AdjustSection, EffectsSection, FilterSection } from './sections/LookSections.tsx'
@@ -55,6 +56,7 @@ export const clipPanelApplies = (
     case CLIP_PANEL.filter:
     case CLIP_PANEL.effects:
     case CLIP_PANEL.chroma:
+    case CLIP_PANEL.background:
       return isMedia(clip)
     case CLIP_PANEL.transform:
       return isVisual(clip)
@@ -111,6 +113,8 @@ function ClipPanelContent({
       ) : null
     case CLIP_PANEL.chroma:
       return isMedia(clip) ? <ChromaSection clip={clip} /> : null
+    case CLIP_PANEL.background:
+      return isMedia(clip) ? <BackgroundSection clip={clip} /> : null
     case CLIP_PANEL.replace:
       return isMedia(clip) || clip.type === 'audio' ? <ReplaceSection clip={clip} /> : null
     case CLIP_PANEL.transition:
@@ -160,6 +164,7 @@ export const PANELS: Readonly<Record<PanelId, PanelDef>> = {
   [CLIP_PANEL.effects]: clipPanel(CLIP_PANEL.effects, 'Effects', TALL),
   [CLIP_PANEL.transform]: clipPanel(CLIP_PANEL.transform, 'Transform & crop', TALL),
   [CLIP_PANEL.chroma]: clipPanel(CLIP_PANEL.chroma, 'Chroma key', TALL),
+  [CLIP_PANEL.background]: clipPanel(CLIP_PANEL.background, 'Background', TALL),
   [CLIP_PANEL.replace]: clipPanel(CLIP_PANEL.replace, 'Replace', TALL),
   [CLIP_PANEL.transition]: clipPanel(CLIP_PANEL.transition, 'Transition', TALL),
 }

@@ -52,7 +52,11 @@ const RESULTS: Partial<Record<Job['kind'], (assetId: string) => unknown>> = {
       word('world', sec(1.5), sec(1.9)),
     ],
   }),
-  beats: () => ({ beats: [0, sec(1), sec(2), sec(3), sec(4)], bpm: 60 }),
+  beats: () => ({
+    beats: [0, sec(1), sec(2), sec(3), sec(4)],
+    downbeats: [sec(2), sec(4)],
+    bpm: 60,
+  }),
   scenes: () => ({ scenes: [sec(1)] }),
 }
 
@@ -133,12 +137,19 @@ describe('panel flows on real core ops', () => {
   })
 
   it('beat sync: writes beat markers and snaps main-track cuts onto beats', async () => {
-    const n = await beatSync(ctx(), { musicClipId: 'mus', every: 1 })
+    const n = await beatSync(ctx(), { musicClipId: 'mus', cut: 'beat' })
     expect(n).toBeGreaterThan(0)
     expect(project().markers.filter((m) => m.kind === 'beat').length).toBe(n)
     const beats = new Set([0, sec(1), sec(2), sec(3), sec(4)])
     // Every cut between main clips lands on a beat.
     for (const c of mainClips().slice(1)) expect(beats.has(c.start)).toBe(true)
+    valid()
+  })
+
+  it('beat sync on the bar cuts only on downbeats', async () => {
+    await beatSync(ctx(), { musicClipId: 'mus', cut: 'bar' })
+    const downs = new Set([0, sec(2), sec(4)])
+    for (const c of mainClips().slice(1)) expect(downs.has(c.start)).toBe(true)
     valid()
   })
 

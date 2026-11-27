@@ -59,3 +59,10 @@ export const FOLLOW_PAUSE_MS = 1500
 /** Haptic pulse length (ms) for snaps and long-press lift. */
 export const HAPTIC_SNAP = 5
 export const HAPTIC_LIFT = 10
+
+/** Touch hold (from press) after which a still finger slips the clip content. */
+export const SLIP_PRESS_MS = 900
+/** Two fingers: relative distance change that makes the gesture a pinch-zoom. */
+export const PINCH_START_RATIO = 0.06
+/** Two fingers: midpoint travel (px) at constant distance that starts a box selection. */
+export const TWO_FINGER_MARQUEE_PX = 24

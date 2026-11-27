@@ -71,7 +71,7 @@ export {
   silenceToKeepRanges,
 } from './ranges.ts'
 export { buildCaptions, isKeyword } from './captions.ts'
-export { syncToBeats } from './beats.ts'
+export { beatGrid, syncToBeats, type BeatSyncOptions } from './beats.ts'
 export {
   applyTemplate,
   parseRef,
@@ -79,4 +79,32 @@ export {
   resolvePackItem,
   type PackSection,
 } from './template.ts'
-export { applyReframe, type SourceGeometry } from './reframe.ts'
+export { applyReframe, type ReframePoint, type SourceGeometry } from './reframe.ts'
+export { rollEdit, rollLimits, slipClip, slipLimits, type AssetDurations } from './slip.ts'
+export {
+  copyClips,
+  moveClips,
+  pasteClips,
+  type ClipMove,
+  type ClipboardData,
+  type ClipboardEntry,
+} from './clipboard.ts'
+export {
+  MUSIC_DEFAULT_LENGTH,
+  MUSIC_FADE_IN,
+  MUSIC_FADE_OUT_MAX,
+  insertMusicClip,
+  musicCredits,
+  reelLength,
+  withoutMusic,
+  type InsertMusicArgs,
+} from './music.ts'
+export {
+  assembleAutoEdit,
+  hasClearDownbeats,
+  musicSyncOptions,
+  type AutoEditMoment,
+  type AutoEditPlan,
+  type AutoEditStats,
+} from './autoedit.ts'
+export { applyCaptionEmphasis, type CaptionMark } from './emphasis.ts'

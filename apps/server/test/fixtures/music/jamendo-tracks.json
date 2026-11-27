@@ -1,0 +1,74 @@
+{
+  "headers": {
+    "status": "success",
+    "code": 0,
+    "error_message": "",
+    "warnings": "",
+    "results_count": 3
+  },
+  "results": [
+    {
+      "id": "1670486",
+      "name": "Upbeat Corporate",
+      "duration": 100,
+      "artist_id": "520047",
+      "artist_name": "Soundrider/Dope",
+      "album_name": "Inspirational Music",
+      "license_ccurl": "http://creativecommons.org/licenses/by/3.0/",
+      "position": 1,
+      "releasedate": "2019-05-21",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1670486&format=mp31",
+      "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1670486/mp32/",
+      "audiodownload_allowed": true,
+      "shareurl": "https://www.jamendo.com/track/1670486",
+      "musicinfo": {
+        "vocalinstrumental": "instrumental",
+        "lang": "",
+        "gender": "",
+        "acousticelectric": "electric",
+        "speed": "high",
+        "tags": {
+          "genres": ["corporate", "indie"],
+          "instruments": ["piano", "drums"],
+          "vartags": ["happy", "commercial", "upbeat"]
+        }
+      }
+    },
+    {
+      "id": "1599999",
+      "name": "Night Lights",
+      "duration": 182,
+      "artist_id": "1",
+      "artist_name": "Example Artist",
+      "album_name": "Nights",
+      "license_ccurl": "http://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1599999&format=mp31",
+      "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1599999/mp32/",
+      "audiodownload_allowed": true,
+      "shareurl": "https://www.jamendo.com/track/1599999",
+      "musicinfo": {
+        "vocalinstrumental": "vocal",
+        "speed": "medium",
+        "tags": { "genres": ["pop"], "instruments": [], "vartags": [] }
+      }
+    },
+    {
+      "id": "1700001",
+      "name": "Sunrise Walk",
+      "duration": 95,
+      "artist_id": "2",
+      "artist_name": "Another Artist",
+      "album_name": "Mornings",
+      "license_ccurl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1700001&format=mp31",
+      "audiodownload": "",
+      "audiodownload_allowed": false,
+      "shareurl": "https://www.jamendo.com/track/1700001",
+      "musicinfo": {
+        "vocalinstrumental": "instrumental",
+        "speed": "low",
+        "tags": { "genres": ["acoustic"], "instruments": ["guitar"], "vartags": ["calm"] }
+      }
+    }
+  ]
+}

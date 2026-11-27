@@ -4,11 +4,12 @@
  * snapping guides — is painted imperatively by `TimelineView` in requestAnimationFrame,
  * driven by `TimelineGestures`. Edits are committed as single store dispatches.
  */
-import { Maximize2, ZoomIn, ZoomOut } from 'lucide-react'
+import { ArrowRightLeft, Maximize2, WrapText, ZoomIn, ZoomOut } from 'lucide-react'
 import { useLayoutEffect, useRef, useState, type DragEvent } from 'react'
 import { cn } from '@/lib/cn.ts'
 import { useIsDesktop } from '@/lib/useMediaQuery.ts'
 import { editorStore, useEditor, useFps, useTracks, useZoom } from '@/state/index.ts'
+import { setEditPref, useEditPref } from '../editPrefs.ts'
 import { ASSET_DRAG_MIME } from '../media/MediaLibrary.tsx'
 import { ZOOM_STEP } from '../shortcuts.ts'
 import { dropAsset, trackAccepts } from './commands.ts'
@@ -63,6 +64,8 @@ export function Timeline() {
   const guideRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
   const badgeRef = useRef<HTMLDivElement>(null)
+  const marqueeRef = useRef<HTMLDivElement>(null)
+  const ghostRef = useRef<HTMLDivElement>(null)
   const rowsRef = useRef<readonly Row[]>(layout.rows)
 
   useLayoutEffect(() => {
@@ -76,6 +79,8 @@ export function Timeline() {
         guide: guideRef.current!,
         indicator: indicatorRef.current!,
         badge: badgeRef.current!,
+        marquee: marqueeRef.current,
+        ghost: ghostRef.current,
       },
       { rowsHeight: layout.height + ADD_TRACK_SPACE, endUs, fps },
     )
@@ -214,6 +219,20 @@ export function Timeline() {
               )}
             />
             <div
+              ref={ghostRef}
+              hidden
+              aria-hidden
+              data-testid="slip-ghost"
+              className="pointer-events-none absolute top-0 left-0 z-20 overflow-hidden rounded-md opacity-90 ring-2 ring-warning data-[kind=audio]:bg-emerald-600/40 data-[kind=video]:bg-violet-600/40"
+            />
+            <div
+              ref={marqueeRef}
+              hidden
+              aria-hidden
+              data-testid="timeline-marquee"
+              className="pointer-events-none absolute top-0 left-0 z-30 rounded-sm border border-accent bg-accent/15"
+            />
+            <div
               ref={badgeRef}
               hidden
               aria-hidden
@@ -229,7 +248,7 @@ export function Timeline() {
               <div className="absolute inset-y-0 -left-px w-0.5 bg-fg shadow-[0_0_2px_rgb(0_0_0/0.6)]" />
               <div className="absolute top-0 -left-[6px] h-3.5 w-3 rounded-b-sm bg-fg [clip-path:polygon(0_0,100%_0,100%_60%,50%_100%,0_60%)]" />
             </div>
-            {desktop && <ZoomControls view={view} />}
+            <TimelineTools view={view} zoom={desktop} />
             {empty && (
               <p className="pointer-events-none absolute right-3 bottom-2 text-[11px] text-subtle">
                 Add media to start editing
@@ -242,14 +261,53 @@ export function Timeline() {
   )
 }
 
-function ZoomControls({ view }: { view: TimelineView }) {
+/** Edit-mode toggles (ripple trim, roll) and, on desktop, zoom buttons. */
+function TimelineTools({ view, zoom }: { view: TimelineView; zoom: boolean }) {
+  const ripple = useEditPref('ripple')
+  const roll = useEditPref('roll')
   const btn =
     'flex size-7 items-center justify-center rounded-md text-muted hover:bg-surface-3 hover:text-fg'
+  // Phones get 36 px buttons (the bar sits over the lanes, away from the thumbs).
+  const toggle = cn(
+    btn,
+    'max-lg:size-9 aria-pressed:bg-accent aria-pressed:text-accent-fg aria-pressed:hover:bg-accent',
+  )
   return (
     <div
       data-tl-ignore
       className="absolute right-2 bottom-2 z-30 flex items-center gap-0.5 rounded-lg border border-line bg-surface/90 p-0.5 shadow backdrop-blur"
     >
+      <button
+        type="button"
+        aria-label="Ripple trim"
+        aria-pressed={ripple}
+        title="Ripple trim: trimming a clip moves the clips after it on its track"
+        data-testid="ripple-toggle"
+        className={toggle}
+        onClick={() => setEditPref('ripple', !ripple)}
+      >
+        <WrapText size={14} />
+      </button>
+      <button
+        type="button"
+        aria-label="Roll edit"
+        aria-pressed={roll}
+        title="Roll edit: dragging a cut on the main track trims both clips (Alt+drag also rolls)"
+        data-testid="roll-toggle"
+        className={toggle}
+        onClick={() => setEditPref('roll', !roll)}
+      >
+        <ArrowRightLeft size={14} />
+      </button>
+      {zoom && <ZoomButtons view={view} btn={btn} />}
+    </div>
+  )
+}
+
+function ZoomButtons({ view, btn }: { view: TimelineView; btn: string }) {
+  return (
+    <>
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-line" />
       <button
         type="button"
         aria-label="Zoom out"
@@ -280,6 +338,6 @@ function ZoomControls({ view }: { view: TimelineView }) {
       >
         <Maximize2 size={14} />
       </button>
-    </div>
+    </>
   )
 }

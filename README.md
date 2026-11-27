@@ -14,9 +14,24 @@ phone, tablet and laptop get the same installable app and edit in sync.
   snapping, pinch-zoom, undo/redo; edits autosave and sync live between devices
 - **Auto captions** with word-level timing (whisper.cpp on the host, nothing leaves your
   network), karaoke/keyword styles from trend packs, editable transcript
-- **One-tap AI**: remove silences and filler words (with a review step), beat-sync cuts to
-  your music, split at scene changes, auto-reframe landscape clips to 9:16 (face tracking),
+- **Auto Edit**: raw clips → finished reel in one tap (15/30/60 s, vibe, topic): the local
+  LLM (Qwen3.5 4B on llama.cpp/Vulkan) picks the hook and best moments and writes the hook
+  text, caption and hashtags; today's trend-pack look, trend-matched royalty-free music, cuts
+  on the beat (on bars when the track has clear downbeats), captions, 2–3 switchable
+  variants, one undo step — also without speech or without the LLM
+- **Trending Now**: a free local trend engine (Google Trends, Wikipedia, Apple Music and
+  Deezer charts) generates fresh caption styles, hooks and templates daily with the local
+  LLM; "Make this reel" opens Auto Edit with the topic and vibe
+- **Music that follows the trends, never AI-generated**: royalty-free tracks (Openverse,
+  ccMixter, Jamendo) ranked by similarity to today's trending sounds; "Trending sounds today"
+  with copy-the-name, one-tap similar free track and match cuts; export with "No music — add
+  the sound in Instagram"
+- **One-tap AI**: remove silences and filler words (with a review step), neural beat-sync
+  cuts to your music (Beat This!, on beats or bars), split at scene changes, auto-reframe landscape clips to 9:16 (people, active speaker and group tracking),
+  **remove / blur / replace the background** (AI subject matting) and put text **behind the subject**,
   voice enhance and noise reduction, and **Magic edit** that chains them in one undo step
+- **Pro editing**: on-canvas move/scale/rotate/crop with snapping and Reels safe zones,
+  slip, roll and ripple edits, box select, copy/paste
 - **Look**: text presets and animations, transitions, LUT filters, adjustments, effects,
   chroma key, stickers, templates
 - **Preview** that matches the export: WebGL2 compositor over host-made 540p proxies and the
@@ -57,7 +72,10 @@ reference host. On other systems install the same tools with your package manage
    `pnpm bootstrap` checks Node and FFmpeg (filters and GPU encoders), then downloads into
    the data directory (`%USERPROFILE%\.reelforge`, or `REELFORGE_DATA`): the fastest
    whisper.cpp build for your machine, the `large-v3-turbo-q5_0` and `base` speech models
-   (~700 MB), the YuNet face model and the RNNoise voice model. Every file is SHA-256
+   (~700 MB), the YuNet face model, the RNNoise voice model, the neural beat, person-detection,
+   saliency and MODNet matting models (~80 MB) and llama.cpp with the Qwen3.5 4B language
+   model (~2.7 GB; `--llm-model qwen3.5-2b|9b|none`) — about **3.5 GB** in total. Every
+   model, its source and licence is listed in [MODELS.md](MODELS.md). Every file is SHA-256
    verified; re-running resumes and skips what is already there. `pnpm bootstrap -- --help`
    lists the options (other models, CPU-only, custom data dir).
 
@@ -116,18 +134,21 @@ internet.
 
 Environment variables (all optional):
 
-| Variable                                       | Default                   | Meaning                                                 |
-| ---------------------------------------------- | ------------------------- | ------------------------------------------------------- |
-| `REELFORGE_DATA`                               | `~/.reelforge`            | Projects, media, exports, models, certificates          |
-| `REELFORGE_HTTPS_PORT` / `REELFORGE_HTTP_PORT` | `8443` / `8080`           | Ports                                                   |
-| `HOST`                                         | `0.0.0.0`                 | Bind address                                            |
-| `FFMPEG_PATH`                                  | auto                      | FFmpeg binary or directory                              |
-| `MDNS`                                         | off                       | Answer `reelforge.local` on the LAN                     |
-| `MAX_UPLOAD_SIZE`                              | `20GB`                    | Largest single upload                                   |
-| `GPU_ENCODE_CONCURRENCY`                       | `1`                       | Parallel GPU encodes                                    |
-| `EXPORT_RETENTION` / `JOB_RETENTION`           | `30d` / `7d`              | Pruning of finished exports / jobs                      |
-| `REELFORGE_PACKS_SYNC` / `PACKS_SYNC_INTERVAL` | on / `6h`                 | Trend-pack updates from GitHub (`off` serves `./packs`) |
-| `LOG_LEVEL` / `LOG_PRETTY`                     | `info` / on in a terminal | Logging                                                 |
+| Variable                                                 | Default                   | Meaning                                                                              |
+| -------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
+| `REELFORGE_DATA`                                         | `~/.reelforge`            | Projects, media, exports, models, certificates                                       |
+| `REELFORGE_HTTPS_PORT` / `REELFORGE_HTTP_PORT`           | `8443` / `8080`           | Ports                                                                                |
+| `HOST`                                                   | `0.0.0.0`                 | Bind address                                                                         |
+| `FFMPEG_PATH`                                            | auto                      | FFmpeg binary or directory                                                           |
+| `MDNS`                                                   | off                       | Answer `reelforge.local` on the LAN                                                  |
+| `MAX_UPLOAD_SIZE`                                        | `20GB`                    | Largest single upload                                                                |
+| `GPU_ENCODE_CONCURRENCY`                                 | `1`                       | Parallel GPU encodes                                                                 |
+| `EXPORT_RETENTION` / `JOB_RETENTION`                     | `30d` / `7d`              | Pruning of finished exports / jobs                                                   |
+| `REELFORGE_PACKS_SYNC` / `PACKS_SYNC_INTERVAL`           | on / `6h`                 | Trend-pack updates from GitHub (`off` serves `./packs`)                              |
+| `LOG_LEVEL` / `LOG_PRETTY`                               | `info` / on in a terminal | Logging                                                                              |
+| `TRENDS` / `TRENDS_REGION` / `TRENDS_HOUR`               | on / `US` / `4`           | Daily trend refresh (see `apps/server/src/trends/README.md`)                         |
+| `TRENDS_SOUND_PREVIEW`                                   | off                       | Synced Deezer previews of trending sounds (terms: `apps/server/src/music/README.md`) |
+| `REELFORGE_MUSIC_ONLINE` / `REELFORGE_JAMENDO_CLIENT_ID` | on / unset                | Royalty-free music search                                                            |
 
 ## Performance
 

@@ -1,9 +1,9 @@
 import type { Asset } from '@reelforge/core'
-import { Check, Flame, ImagePlus, LayoutTemplate, Music } from 'lucide-react'
+import { Check, Flame, ImagePlus, LayoutTemplate, Music, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { api } from '@/api/index.ts'
-import { useAssets, useCreateProject, usePacks } from '@/api/queries.ts'
+import { useAssets, useCreateProject, usePacks, useTrends } from '@/api/queries.ts'
 import { Button } from '@/components/Button.tsx'
 import { AdaptiveModal } from '@/components/Dialog.tsx'
 import { FileButton } from '@/components/FileButton.tsx'
@@ -19,7 +19,8 @@ import { SectionTitle } from '../AppFrame.tsx'
 /** Horizontally scrolling, trend-sorted template cards. Hidden when no pack has templates. */
 export function TemplateCarousel() {
   const packs = usePacks()
-  const templates = useMemo(() => listTemplates(packs.data), [packs.data])
+  const trends = useTrends()
+  const templates = useMemo(() => listTemplates(packs.data, trends.data), [packs.data, trends.data])
   const [chosen, setChosen] = useState<TemplateEntry | null>(null)
 
   if (packs.isPending) {
@@ -39,7 +40,10 @@ export function TemplateCarousel() {
   return (
     <>
       <SectionTitle>Trending templates</SectionTitle>
-      <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
+      <ul
+        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1"
+        data-testid="template-carousel"
+      >
         {templates.map((t) => (
           <li key={t.ref} className="w-32 shrink-0 snap-start sm:w-36">
             <button
@@ -60,16 +64,23 @@ export function TemplateCarousel() {
                 ) : (
                   <LayoutTemplate className="absolute inset-0 m-auto text-white/80" size={32} />
                 )}
-                {t.template.trendScore >= 80 && (
-                  <span className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                    <Flame size={12} className="text-warning" /> Hot
+                {t.fresh ? (
+                  <span className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-accent-fg">
+                    <Sparkles size={12} /> New today
                   </span>
+                ) : (
+                  t.template.trendScore >= 80 && (
+                    <span className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                      <Flame size={12} className="text-warning" /> Hot
+                    </span>
+                  )
                 )}
                 <span className="absolute right-2 bottom-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white tabular-nums">
                   {t.template.slots.length} clips · {formatDuration(t.duration)}
                 </span>
               </div>
               <p className="mt-1.5 truncate text-sm font-semibold">{t.template.name}</p>
+              {t.trend && <p className="truncate text-xs text-muted">from “{t.trend}”</p>}
             </button>
           </li>
         ))}

@@ -39,6 +39,7 @@ import { useProjectSession } from './session.ts'
 import { useEditorShortcuts } from './shortcuts.ts'
 import { Timeline } from './timeline/index.tsx'
 import { TopBar } from './TopBar.tsx'
+import { useAutoEditLauncher } from './panels/ai/autoedit/session.ts'
 import { useAutoInsertUploads } from './useAutoInsertUploads.ts'
 import { PreviewArea } from './viewer/PreviewArea.tsx'
 
@@ -46,6 +47,7 @@ export function EditorScreen() {
   const { projectId = '' } = useParams()
   const session = useProjectSession(projectId)
   useAutoInsertUploads(projectId)
+  useAutoEditLauncher(projectId)
 
   if (session.status === 'error') return <SessionError error={session.error} />
   if (session.status === 'loading') return <Splash />

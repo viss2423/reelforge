@@ -5,6 +5,7 @@
 import type { JobDefinition } from '../contracts.ts'
 import { aiJobs } from '../ai/index.ts'
 import { platformJobs } from '../media/jobs.ts'
+import { musicJobs } from '../music/index.ts'
 import { renderJobs } from '../render/index.ts'
 
 /** Merges definition lists, rejecting duplicate kinds (a wiring bug, caught at boot). */
@@ -23,4 +24,4 @@ export const mergeDefinitions = (
 
 /** Every job definition the server can run. */
 export const allJobDefinitions = (): JobDefinition[] =>
-  mergeDefinitions(platformJobs, renderJobs, aiJobs)
+  mergeDefinitions(platformJobs, renderJobs, aiJobs, musicJobs)

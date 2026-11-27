@@ -70,6 +70,7 @@ describe('toolsFor', () => {
       'effects',
       'transform',
       'reverse',
+      'background',
       'chroma',
       'replace',
       'transition',

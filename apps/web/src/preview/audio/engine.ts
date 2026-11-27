@@ -11,6 +11,9 @@
  * `preservePitch` is approximated (pitch shifts with speed in the preview; the export uses
  * rubberband). Speed ramps use the clip's base speed for audio.
  *
+ * Overlay sound: one extra looping buffer (a trending sound's official preview) can play
+ * through the master bus, phase-locked to the timeline (timeline t ↔ t mod clip length).
+ *
  * iOS: an AudioContext starts suspended until a user gesture; {@link AudioEngine.unlock}
  * resumes it (and plays a 1-sample buffer, which WebKit requires) on the first gesture.
  */
@@ -61,6 +64,8 @@ export class AudioEngine {
   #anchor: AudioAnchor | undefined
   #playing = false
   #unlockCleanup: (() => void) | undefined
+  #overlay: { buffer: AudioBuffer; gain: GainNode } | undefined
+  #overlaySrc: AudioBufferSourceNode | undefined
 
   constructor(opts: AudioEngineOptions) {
     this.#opts = opts
@@ -136,6 +141,7 @@ export class AudioEngine {
       this.#stopSources(false)
       this.#anchor = { t, ctxTime: this.ctx.currentTime + START_LEAD_S }
       this.schedule(t)
+      this.#startOverlay(this.#anchor)
     }
   }
 
@@ -168,7 +174,56 @@ export class AudioEngine {
     this.#master.gain.setValueAtTime(1, this.ctx.currentTime)
     this.#anchor = { t, ctxTime: this.ctx.currentTime + START_LEAD_S }
     this.schedule(t)
+    this.#startOverlay(this.#anchor)
     return this.#anchor.ctxTime
+  }
+
+  /**
+   * Plays `buffer` looped under the mix, aligned so timeline t hears buffer time
+   * t mod duration (undefined removes it). Takes effect immediately while playing.
+   */
+  setOverlay(buffer: AudioBuffer | undefined): void {
+    this.#stopOverlay()
+    this.#overlay?.gain.disconnect()
+    this.#overlay = undefined
+    if (buffer) {
+      const gain = this.ctx.createGain()
+      gain.connect(this.#master)
+      this.#overlay = { buffer, gain }
+    }
+    if (this.#playing && this.#anchor && this.running) {
+      const t = this.#nowTimeline()
+      this.#startOverlay({ t, ctxTime: this.ctx.currentTime + START_LEAD_S })
+    }
+  }
+
+  get hasOverlay(): boolean {
+    return this.#overlay !== undefined
+  }
+
+  #startOverlay(a: AudioAnchor): void {
+    const o = this.#overlay
+    if (!o || o.buffer.duration <= 0) return
+    const src = this.ctx.createBufferSource()
+    src.buffer = o.buffer
+    src.loop = true
+    src.connect(o.gain)
+    const late = Math.max(0, this.ctx.currentTime - a.ctxTime)
+    src.start(a.ctxTime + late, (a.t / 1e6 + late) % o.buffer.duration)
+    this.#overlaySrc = src
+  }
+
+  #stopOverlay(at = 0): void {
+    const src = this.#overlaySrc
+    if (!src) return
+    this.#overlaySrc = undefined
+    try {
+      src.stop(at)
+    } catch {
+      // already stopped
+    }
+    if (at > 0) setTimeout(() => src.disconnect(), STOP_FADE_S * 1000 + 50)
+    else src.disconnect()
   }
 
   stop(): void {
@@ -281,6 +336,7 @@ export class AudioEngine {
       }
     }
     this.#sources.clear()
+    this.#stopOverlay(fade ? now + STOP_FADE_S : 0)
     for (const n of this.#nodes.values()) {
       n.gain.gain.cancelScheduledValues(now)
       const node = n.gain
@@ -293,6 +349,8 @@ export class AudioEngine {
 
   destroy(): void {
     this.stop()
+    this.#overlay?.gain.disconnect()
+    this.#overlay = undefined
     this.#unlockCleanup?.()
     this.#segments.clear()
     void this.ctx.close().catch(() => undefined)

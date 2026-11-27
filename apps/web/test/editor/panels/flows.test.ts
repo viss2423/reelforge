@@ -199,7 +199,12 @@ describe('results readers', () => {
         ],
       }),
     ).toEqual([{ start: 1, end: 3 }])
-    expect(readBeats({ beats: [3, 1, -1, 'x'] })).toEqual({ beats: [1, 3], bpm: 0 })
+    expect(readBeats({ beats: [3, 1, -1, 'x'] })).toEqual({ beats: [1, 3], downbeats: [], bpm: 0 })
+    expect(readBeats({ beats: [1, 3], downbeats: [3, 1], bpm: 90 })).toEqual({
+      beats: [1, 3],
+      downbeats: [1, 3],
+      bpm: 90,
+    })
     expect(readScenes({ scenes: [2, 1] })).toEqual([1, 2])
     expect(() => readScenes({})).toThrow(/unexpected scenes/)
     expect(
@@ -210,6 +215,17 @@ describe('results readers', () => {
         ],
       }),
     ).toEqual([{ t: 0, x: 1 }])
+    expect(
+      readReframe({
+        path: [
+          { t: 0, x: 0.5, w: 0.4 },
+          { t: 1, x: 0.5, w: -1 },
+        ],
+      }),
+    ).toEqual([
+      { t: 0, x: 0.5, w: 0.4 },
+      { t: 1, x: 0.5 },
+    ])
   })
 })
 
@@ -317,7 +333,7 @@ describe('captions', () => {
 
 describe('beats', () => {
   it('maps beats through the music clip, writes markers and syncs cuts', async () => {
-    const n = await beatSync(ctx(), { musicClipId: 'mus', every: 2 })
+    const n = await beatSync(ctx(), { musicClipId: 'mus', cut: 'beat2' })
     // 40 s is past the 5 s clip.
     expect(n).toBe(3)
     expect(
@@ -325,16 +341,25 @@ describe('beats', () => {
         .project!.markers.filter((m) => m.kind === 'beat')
         .map((m) => m.t),
     ).toEqual([0, sec(1), sec(2)])
-    expect(args(fake.syncToBeats)).toEqual([[[0, sec(1), sec(2)], { every: 2 }]])
+    expect(args(fake.syncToBeats)).toEqual([
+      [[0, sec(1), sec(2)], { unit: 'beat', every: 2, downbeats: [] }],
+    ])
     s().undo()
     expect(s().project!.markers).toEqual([])
   })
 
   it('reuses cached beats and validates the music clip', async () => {
-    s().upsertAsset(makeAsset({ id: 'music', kind: 'audio', beats: [sec(0.5)] }))
-    expect(await beatSync(ctx(), { musicClipId: 'mus', every: 1 })).toBe(1)
+    s().upsertAsset(
+      makeAsset({ id: 'music', kind: 'audio', beats: [sec(0.5)], downbeats: [sec(0.5)] }),
+    )
+    expect(await beatSync(ctx(), { musicClipId: 'mus', cut: 'bar' })).toBe(1)
     expect(host.inputs).toEqual([])
-    await expect(beatSync(ctx(), { musicClipId: 'v1', every: 1 })).rejects.toThrow(/music clip/)
+    expect(args(fake.syncToBeats).at(-1)?.[1]).toEqual({
+      unit: 'bar',
+      every: 1,
+      downbeats: [sec(0.5)],
+    })
+    await expect(beatSync(ctx(), { musicClipId: 'v1', cut: 'beat' })).rejects.toThrow(/music clip/)
   })
 
   it('lists music clips longest first and maps beats uniquely', () => {
@@ -374,6 +399,12 @@ describe('scenes & reframe', () => {
       ],
     ])
     await expect(autoReframe(ctx(), ['v1'])).rejects.toThrow(/no landscape clips/)
+  })
+
+  it('passes the camera strength to the host', async () => {
+    host.inputs.length = 0
+    await autoReframe(ctx(), undefined, 0.85)
+    expect(host.inputs.at(-1)?.payload).toEqual({ assetId: 'a3', strength: 0.85 })
   })
 })
 
@@ -537,7 +568,7 @@ describe('launchers (singleton store)', () => {
 
   it('captions, beat sync, scenes, reframe and magic produce friendly messages', async () => {
     startCaptions({ style, language: 'auto' }, tasks)
-    startBeatSync({ musicClipId: 'mus', every: 4 }, tasks)
+    startBeatSync({ musicClipId: 'mus', cut: 'beat' }, tasks)
     await vi.waitFor(() => expect(toasts.plain).toHaveBeenCalledTimes(2))
     const messages = () => toasts.plain.mock.calls.map((c) => c[0])
     expect(messages()).toEqual(

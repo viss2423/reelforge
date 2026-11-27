@@ -1,0 +1,314 @@
+[
+  {
+    "upload_id": 33338,
+    "upload_name": "Vox Vs. Uke",
+    "upload_extra": {
+      "usertags": "bass,drums,easy_breezy,experimental,feel_good,female_vocals,instrumental,light,ukelele,ukulele,upbeat",
+      "ccud": "tubed_by_you,media,acappella,acapella,trackback,in_video,bpm_080_085",
+      "systags": "attribution,audio,mp3,44k,stereo,CBR,archive,zip",
+      "featuring": "",
+      "nsfw": false,
+      "bpm": 80,
+      "relative_dir": "content/mindmapthat",
+      "last_op": "add",
+      "num_reviews": 8,
+      "ccplus": true
+    },
+    "user_name": "mindmapthat",
+    "upload_tags": ",tubed_by_you,media,acappella,acapella,trackback,in_video,bpm_080_085,attribution,audio,mp3,44k,stereo,CBR,archive,zip,bass,drums,easy_breezy,experimental,feel_good,female_vocals,instrumental,light,ukelele,ukulele,upbeat,",
+    "upload_num_scores": 30,
+    "file_page_url": "https://ccmixter.org/files/mindmapthat/33338",
+    "user_real_name": "Kara Square",
+    "artist_page_url": "https://ccmixter.org/people/mindmapthat",
+    "license_logo_url": "https://ccmixter.org/ccskins/shared/images/lics/small-by-3.png",
+    "license_url": "http://creativecommons.org/licenses/by/3.0/",
+    "license_name": "Attribution (3.0)",
+    "upload_date_format": "Sun, Sep 4, 2011 @ 11:35 AM",
+    "qrank": 132,
+    "files": [
+      {
+        "file_id": 43365,
+        "file_upload": 33338,
+        "file_name": "mindmapthat_-_Vox_Vs._Uke.mp3",
+        "file_nicname": "mp3",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-mp3-mp3",
+          "default-ext": "mp3",
+          "mime_type": "audio/mpeg",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "2:00",
+          "br": "CBR"
+        },
+        "file_extra": {
+          "sha1": "LM6FUAH6XEJWQ6QATDYCRUGOMT4HLJWJ",
+          "ccud": "tubed_by_you,media,acappella,acapella",
+          "type": "tubedbyyoupells"
+        },
+        "file_filesize": " (4.58MB)",
+        "file_order": 0,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/mindmapthat/mindmapthat_-_Vox_Vs._Uke.mp3",
+        "file_rawsize": 4805531
+      },
+      {
+        "file_id": 43367,
+        "file_upload": 33338,
+        "file_name": "mindmapthat_-_Vox_Vs._Uke.zip",
+        "file_nicname": "Vox and Uke",
+        "file_format_info": {
+          "media-type": "archive",
+          "format-name": "archive-zip-",
+          "default-ext": "zip",
+          "mime_type": "application/zip",
+          "zipdir": {
+            "files": [
+              "/Stems/._1melody1.wav  (82)",
+              "/Stems/._1melody2.wav  (82)",
+              "/Stems/._1uke.wav  (82)",
+              "/Stems/._1voxBASS.wav  (82)",
+              "/Stems/._1voxDRUMS.wav  (82)",
+              "/Stems/._1voxSHAKER.wav  (82)",
+              "/Stems/._1whistle.wav  (82)",
+              "/Stems/.DS_Store  (6.00KB)",
+              "/Stems/melody1.wav  (9.88MB)",
+              "/Stems/melody2.wav  (9.88MB)",
+              "/Stems/uke.wav  (9.88MB)",
+              "/Stems/voxBASS.wav  (9.88MB)",
+              "/Stems/voxDRUMS.wav  (9.88MB)",
+              "/Stems/voxSHAKER.wav  (9.88MB)",
+              "/Stems/whistle.wav  (9.88MB)"
+            ]
+          }
+        },
+        "file_extra": {
+          "ccud": "tubed_by_you,media,acappella,acapella",
+          "type": "tubedbyyoupells",
+          "sha1": "DSVS2CM7T7KOUCM42BNVSLPRIZVF5LYN"
+        },
+        "file_filesize": " (34.61MB)",
+        "file_order": 1,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/mindmapthat/mindmapthat_-_Vox_Vs._Uke.zip",
+        "file_rawsize": 36292485
+      }
+    ]
+  },
+  {
+    "upload_id": 31120,
+    "upload_name": "Little Penguin",
+    "upload_extra": {
+      "usertags": "childrens,debbizo,electronica,instrumental,minimal,music_for_film,novelty,upbeat",
+      "ccud": "media,secret_mixter,remix,spring_2011,trackback,in_video",
+      "systags": "attribution,audio,mp3,44k,stereo,VBR",
+      "featuring": "Debbizo",
+      "nsfw": false,
+      "bpm": "",
+      "relative_dir": "content/gurdonark",
+      "num_reviews": 7,
+      "ccplus": true
+    },
+    "user_name": "gurdonark",
+    "upload_tags": ",media,secret_mixter,remix,spring_2011,trackback,in_video,attribution,audio,mp3,44k,stereo,VBR,childrens,debbizo,electronica,instrumental,minimal,music_for_film,novelty,upbeat,",
+    "upload_num_scores": 23,
+    "file_page_url": "https://ccmixter.org/files/gurdonark/31120",
+    "user_real_name": "gurdonark",
+    "artist_page_url": "https://ccmixter.org/people/gurdonark",
+    "license_logo_url": "https://ccmixter.org/ccskins/shared/images/lics/small-by-3.png",
+    "license_url": "http://creativecommons.org/licenses/by/3.0/",
+    "license_name": "Attribution (3.0)",
+    "upload_date_format": "Sun, Mar 27, 2011 @ 5:18 AM",
+    "qrank": 106,
+    "files": [
+      {
+        "file_id": 39229,
+        "file_upload": 31120,
+        "file_name": "gurdonark_-_Little_Penguin.mp3",
+        "file_nicname": "mp3",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-mp3-mp3",
+          "default-ext": "mp3",
+          "mime_type": "audio/mpeg",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "3:02",
+          "br": "VBR"
+        },
+        "file_extra": {
+          "sha1": "KU3QIR32GPU66GNJL62GOEWG6RUWG34F"
+        },
+        "file_filesize": " (2.99MB)",
+        "file_order": 0,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/gurdonark/gurdonark_-_Little_Penguin.mp3",
+        "file_rawsize": 3136639
+      }
+    ]
+  },
+  {
+    "upload_id": 60675,
+    "upload_name": "Blue Sky Blues",
+    "upload_extra": {
+      "usertags": "instrumental,blues,harmonica,harp,ukulele,guitar,electric,organ,drums,electric_guitar,telecaster,bass,music_for_film,ukelele,background,positive,upbeat,happy",
+      "ccud": "media,secret_mixter,remix,fall_2019,bpm_130_135,ccplus",
+      "systags": "attribution,audio,mp3,44k,stereo,CBR,audio,flac,44k,stereo,VBR,audio,flac,44k,stereo,VBR",
+      "nsfw": false,
+      "ccplus": true,
+      "bpm": 130,
+      "relative_dir": "content/mindmapthat",
+      "featuring": "Admiral Bob",
+      "last_op": "add",
+      "num_reviews": 14
+    },
+    "user_name": "mindmapthat",
+    "upload_tags": ",media,secret_mixter,remix,fall_2019,bpm_130_135,ccplus,alternate,attribution,audio,mp3,44k,stereo,CBR,flac,VBR,instrumental,blues,harmonica,harp,ukulele,guitar,electric,organ,drums,electric_guitar,telecaster,bass,music_for_film,ukelele,background,positive,upbeat,happy,",
+    "upload_num_scores": 24,
+    "file_page_url": "https://ccmixter.org/files/mindmapthat/60675",
+    "user_real_name": "Kara Square",
+    "artist_page_url": "https://ccmixter.org/people/mindmapthat",
+    "license_logo_url": "https://ccmixter.org/ccskins/shared/images/lics/small-by-3.png",
+    "license_url": "http://creativecommons.org/licenses/by/3.0/",
+    "license_name": "Attribution (3.0)",
+    "upload_date_format": "Sun, Nov 24, 2019 @ 7:20 AM",
+    "qrank": 100,
+    "files": [
+      {
+        "file_id": 100938,
+        "file_upload": 60675,
+        "file_name": "mindmapthat_-_Blue_Sky_Blues_1.mp3",
+        "file_nicname": "mp3",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-mp3-mp3",
+          "default-ext": "mp3",
+          "mime_type": "audio/mpeg",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "3:04",
+          "br": "CBR"
+        },
+        "file_extra": {
+          "sha1": "ZC2ZTE4RHCPKMHTX4EGXGEJBQUFKG4GJ"
+        },
+        "file_filesize": " (4.21MB)",
+        "file_order": 0,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/mindmapthat/mindmapthat_-_Blue_Sky_Blues_1.mp3",
+        "file_rawsize": 4414110
+      },
+      {
+        "file_id": 100939,
+        "file_upload": 60675,
+        "file_name": "mindmapthat_-_Blue_Sky_Blues_2.flac",
+        "file_nicname": "FLAC",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-flac-flac",
+          "default-ext": "flac",
+          "mime_type": "audio/x-flac",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "3:04",
+          "br": "VBR"
+        },
+        "file_extra": {
+          "ccud": "alternate",
+          "type": "alternate",
+          "sha1": "6F42TB65VE34YWSJGIWDVVBN6MUIHVQ7"
+        },
+        "file_filesize": " (35.41MB)",
+        "file_order": 1,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/mindmapthat/mindmapthat_-_Blue_Sky_Blues_2.flac",
+        "file_rawsize": 37133752
+      },
+      {
+        "file_id": 109702,
+        "file_upload": 60675,
+        "file_name": "mindmapthat_-_Blue_Sky_Blues.flac",
+        "file_nicname": "No Lead Guitar Mix",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-flac-flac",
+          "default-ext": "flac",
+          "mime_type": "audio/x-flac",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "3:04",
+          "br": "VBR"
+        },
+        "file_extra": {
+          "ccud": "alternate",
+          "type": "alternate",
+          "sha1": "5T32YT5QXPJWI6NERRWVSVWU3G42AS4B"
+        },
+        "file_filesize": " (34.72MB)",
+        "file_order": 2,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/mindmapthat/mindmapthat_-_Blue_Sky_Blues.flac",
+        "file_rawsize": 36406656
+      }
+    ]
+  },
+  {
+    "upload_id": 32198,
+    "upload_name": "Daisy",
+    "upload_extra": {
+      "usertags": "carnival,childrens,circus,instrumental,music_for_film,quirky,upbeat,weirdbient",
+      "ccud": "media,remix",
+      "systags": "attribution,audio,mp3,44k,stereo,CBR",
+      "featuring": "",
+      "nsfw": false,
+      "bpm": "",
+      "relative_dir": "content/gurdonark",
+      "num_reviews": 3,
+      "ccplus": true
+    },
+    "user_name": "gurdonark",
+    "upload_tags": "media,remix,carnival,childrens,circus,instrumental,music_for_film,quirky,upbeat,weirdbient,attribution,audio,mp3,44k,stereo,CBR",
+    "upload_num_scores": 14,
+    "file_page_url": "https://ccmixter.org/files/gurdonark/32198",
+    "user_real_name": "gurdonark",
+    "artist_page_url": "https://ccmixter.org/people/gurdonark",
+    "license_logo_url": "https://ccmixter.org/ccskins/shared/images/lics/small-by-3.png",
+    "license_url": "http://creativecommons.org/licenses/by/3.0/",
+    "license_name": "Attribution (3.0)",
+    "upload_date_format": "Sun, Jun 12, 2011 @ 2:32 PM",
+    "qrank": 56,
+    "files": [
+      {
+        "file_id": 41131,
+        "file_upload": 32198,
+        "file_name": "gurdonark_-_Daisy.mp3",
+        "file_nicname": "mp3",
+        "file_format_info": {
+          "media-type": "audio",
+          "format-name": "audio-mp3-mp3",
+          "default-ext": "mp3",
+          "mime_type": "audio/mpeg",
+          "sr": "44k",
+          "ch": "stereo",
+          "ps": "3:20",
+          "br": "CBR"
+        },
+        "file_extra": {
+          "sha1": "WWEAUJEVYMEXU7NC5CDHH53U7CEYO5GA"
+        },
+        "file_filesize": " (7.63MB)",
+        "file_order": 0,
+        "file_is_remote": 0,
+        "file_num_download": 0,
+        "download_url": "https://ccmixter.org/content/gurdonark/gurdonark_-_Daisy.mp3",
+        "file_rawsize": 7999783
+      }
+    ]
+  }
+]

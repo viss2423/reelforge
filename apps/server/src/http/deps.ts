@@ -11,6 +11,7 @@ import type { Uploads } from '../media/uploads.ts'
 import type { TailscaleStatus } from '../net/tailscale.ts'
 import type { PacksService } from '../packs/service.ts'
 import type { PlatformToolchain } from '../toolchain.ts'
+import type { TrendsService } from '../trends/service.ts'
 import { HttpError } from './errors.ts'
 
 export interface AppDeps {
@@ -25,6 +26,8 @@ export interface AppDeps {
   uploads: Uploads
   auth: AuthService
   packs: PacksService
+  /** Local trend engine; absent in minimal test apps. */
+  trends?: TrendsService
   log: AppLogger
   /** Reachable base URLs of the HTTPS server (LAN first). */
   urls: () => string[]

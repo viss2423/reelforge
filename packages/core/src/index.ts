@@ -1,5 +1,6 @@
 export * from './schema.ts'
 export * from './packs.ts'
+export * from './music.ts'
 export * from './time.ts'
 export * from './ids.ts'
 export * from './animation.ts'
@@ -7,4 +8,6 @@ export * from './builtins.ts'
 export * from './ops/index.ts'
 export * from './validate.ts'
 export * from './ass.ts'
+/** Text block measurement shared by the ASS generator and on-canvas editing (hit boxes). */
+export { fontSpec, measureText, wrapText, type FontSpec } from './ass/layout.ts'
 export * from './compile/index.ts'

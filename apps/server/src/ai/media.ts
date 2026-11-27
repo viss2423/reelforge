@@ -81,7 +81,16 @@ export interface PcmStreamOptions {
    * output options + target, inserted before the PCM pipe output.
    */
   extraOutputs?: readonly string[]
+  /**
+   * Source channel count. When known and > 1, channels are averaged (`pan`) instead of
+   * FFmpeg's `-ac 1` downmix, which preserves energy and comes out √2 louder for stereo.
+   */
+  channels?: number
 }
+
+/** `pan` filter that averages `n` channels into one (the arithmetic-mean downmix). */
+export const meanDownmix = (n: number): string =>
+  `pan=mono|c0=${Array.from({ length: n }, (_, i) => `${1 / n}*c${i}`).join('+')}`
 
 /**
  * Decode the first audio stream to mono float32 PCM at `sampleRate`, streamed through a
@@ -101,6 +110,7 @@ export const streamPcm = async (opts: PcmStreamOptions): Promise<number> => {
     '-vn',
     '-sn',
     '-dn',
+    ...(opts.channels && opts.channels > 1 ? ['-af', meanDownmix(opts.channels)] : []),
     '-ac',
     '1',
     '-ar',

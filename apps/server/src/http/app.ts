@@ -14,9 +14,11 @@ import { authRoutes } from './routes/auth.ts'
 import { eventRoutes } from './routes/events.ts'
 import { jobRoutes } from './routes/jobs.ts'
 import { mediaRoutes } from './routes/media.ts'
+import { musicRoutes } from './routes/music.ts'
 import { packRoutes } from './routes/packs.ts'
 import { projectRoutes } from './routes/projects.ts'
 import { systemRoutes } from './routes/system.ts'
+import { trendRoutes } from './routes/trends.ts'
 import { webRoutes } from './routes/web.ts'
 import { securityHeaders } from './security.ts'
 
@@ -96,6 +98,8 @@ export const buildApp = async (deps: AppDeps): Promise<FastifyInstance> => {
   mediaRoutes(app, deps)
   jobRoutes(app, deps)
   packRoutes(app, deps)
+  musicRoutes(app, deps)
+  trendRoutes(app, deps)
   // WebSocket routes must be registered after @fastify/websocket is ready.
   await app.register(async (scope) => eventRoutes(scope, deps))
   webRoutes(app, deps)

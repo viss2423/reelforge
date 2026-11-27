@@ -139,6 +139,7 @@ export interface SilencePayload {
 }
 export interface BeatsPayload {
   assetId: string
+  engine?: 'auto' | 'neural' | 'dsp'
 }
 export interface ScenesPayload {
   assetId: string
@@ -146,4 +147,7 @@ export interface ScenesPayload {
 }
 export interface ReframePayload {
   assetId: string
+  mode?: 'smart' | 'fast'
+  /** Camera tracking strength 0 (calm) to 1 (tight). */
+  strength?: number
 }

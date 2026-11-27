@@ -1,5 +1,5 @@
 /**
- * UI-only Playwright run: specs that mock the whole API with `page.route` (timeline.spec)
+ * UI-only Playwright run: specs that mock the whole API with `page.route` (timeline, editing)
  * against the production web build served by `vite preview` — no ReelForge server, data dir
  * or media fixtures needed. `pnpm --filter @reelforge/web test:e2e:ui`.
  */
@@ -12,7 +12,15 @@ const PORT = Number(process.env.RF_E2E_UI_PORT ?? 4174)
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['timeline.spec.ts'],
+  testMatch: [
+    'timeline.spec.ts',
+    'editing.spec.ts',
+    'ai-beats.spec.ts',
+    'background.spec.ts',
+    'music.spec.ts',
+    'trending.spec.ts',
+    'autoedit.spec.ts',
+  ],
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,

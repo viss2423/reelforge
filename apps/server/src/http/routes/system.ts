@@ -3,6 +3,7 @@ import { statfs } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import type { FastifyInstance } from 'fastify'
+import { llmStatus } from '../../ai/llm/index.ts'
 import type { AppDeps } from '../deps.ts'
 
 export const systemRoutes = (app: FastifyInstance, deps: AppDeps): void => {
@@ -33,6 +34,7 @@ export const systemRoutes = (app: FastifyInstance, deps: AppDeps): void => {
         hwDecode: tools.hwDecode ?? null,
         whisper: tools.whisper ?? null,
         whisperModels: tools.whisperModels.map((m) => path.basename(m)),
+        llm: llmStatus(paths),
       },
       jobs: { kinds: queue.kinds, classes: queue.stats() },
       packs: { version: packs.version ?? null, source: packs.snapshot.source },

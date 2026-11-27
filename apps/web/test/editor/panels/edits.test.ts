@@ -31,6 +31,8 @@ import {
   setAudio,
   setAudioClipProps,
   setCanvas,
+  setBackground,
+  setBehindSubject,
   setChroma,
   setCrop,
   setFilter,
@@ -213,6 +215,38 @@ describe('look', () => {
       similarity: 0.3,
       blend: 0.1,
     })
+  })
+})
+
+describe('AI background', () => {
+  it('sets a background with schema defaults and patches it as one step', () => {
+    oneStep(() => run('Background', (d) => setBackground(d, 'ov1', { mode: 'blur' })))
+    expect(clipIn<MediaClip>(store, 'ov1').background).toEqual({
+      mode: 'blur',
+      color: '#000000',
+      blur: 50,
+      feather: 0,
+    })
+    oneStep(() =>
+      run('Colour', (d) => setBackground(d, 'ov1', { mode: 'color', color: '#112233' })),
+    )
+    expect(clipIn<MediaClip>(store, 'ov1').background).toMatchObject({
+      mode: 'color',
+      color: '#112233',
+      blur: 50,
+    })
+  })
+
+  it('leaves non-media clips untouched (the edit is rejected)', () => {
+    run('x', (d) => setBackground(d, 'txt', { mode: 'remove' }))
+    expect('background' in clipIn<TextClip>(store, 'txt')).toBe(false)
+  })
+
+  it('toggles text behind subject by adding and removing the flag', () => {
+    oneStep(() => run('Behind', (d) => setBehindSubject(d, 'txt', true)))
+    expect(clipIn<TextClip>(store, 'txt').behindSubject).toBe(true)
+    run('Behind', (d) => setBehindSubject(d, 'txt', false))
+    expect('behindSubject' in clipIn<TextClip>(store, 'txt')).toBe(false)
   })
 })
 

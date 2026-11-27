@@ -194,7 +194,7 @@ export const ClipView = memo(function ClipView(props: ClipViewProps) {
       )}
       style={{ left, width, height }}
     >
-      <div data-clip-media className="absolute inset-0">
+      <div data-clip-media className="absolute inset-0 data-slipping:opacity-0">
         {media}
       </div>
       {width > 28 && <ClipLabel clip={clip} name={name} locked={locked} />}

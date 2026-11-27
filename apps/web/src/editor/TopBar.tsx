@@ -28,6 +28,12 @@ const JOB_LABEL: Record<Job['kind'], string> = {
   reframe: 'Auto-reframing',
   denoise: 'Cleaning audio',
   preview: 'Rendering preview',
+  matte: 'Separating subject',
+  'music.suggest': 'Finding music',
+  trends: 'Refreshing trends',
+  highlights: 'Choosing best moments',
+  copywriter: 'Writing copy',
+  emphasis: 'Styling captions',
 }
 
 /** Editable project name; commits on blur/Enter as one undo step. */

@@ -7,10 +7,18 @@ import { filter } from './escape.ts'
 import { num } from './expr.ts'
 import { clipWindow, frameSpan, usToFrame, type FrameSpan, type MainLayout } from './layout.ts'
 import { planTransition } from './transitions.ts'
-import { ffColor, renderMainClip, renderOverlayClip, type VideoEnv } from './visual.ts'
+import {
+  activeBackground,
+  ffColor,
+  renderMainClip,
+  renderOverlayClip,
+  transparent,
+  type VideoEnv,
+} from './visual.ts'
 
-/** Solid background frames (missing media or an empty main track). */
+/** Solid background frames (missing media or an empty main track); clear in the subject pass. */
 function solid(env: VideoEnv, color: string, frames: number): string {
+  if (env.subject) return transparent(env, frames)
   return env.g.source([
     filter('color', { c: ffColor(color), s: `${env.W}x${env.H}`, r: env.fps }),
     'format=yuv420p',
@@ -80,7 +88,11 @@ export function buildMainTrack(
   if (acc === undefined) return solid(env, bg, total)
   if (accFrames < total) {
     acc = g.chain(acc, [
-      filter('tpad', { stop_mode: 'add', stop: total - accFrames, color: ffColor(bg) }),
+      filter('tpad', {
+        stop_mode: 'add',
+        stop: total - accFrames,
+        color: env.subject ? 'black@0' : ffColor(bg),
+      }),
     ])
   }
   return acc
@@ -132,6 +144,35 @@ export function applyText(
     }),
     shift > 0 ? 'setpts=PTS-STARTPTS' : undefined,
   ])
+}
+
+/** True when some visible main-track clip has a matte, so a subject pass can be built. */
+export function hasSubject(env: VideoEnv, project: Project): boolean {
+  const main = project.tracks.find((t) => t.kind === 'main')
+  if (!main || main.hidden) return false
+  return main.clips.some(
+    (c) => (c.type === 'video' || c.type === 'image') && !!activeBackground(env.ctx, c, true),
+  )
+}
+
+/**
+ * Text behind subject: `behind` text is burned into the composite, then the main track's
+ * matte-cut subject (rendered by the same pipeline in the subject pass) is laid over it.
+ */
+export function applyBehindText(
+  env: VideoEnv,
+  project: Project,
+  comp: string,
+  layout: MainLayout,
+  window: FrameSpan,
+  ass: { path: string; fontsDir: string },
+): string {
+  const subject = buildMainTrack({ ...env, subject: true }, project, layout, window)
+  const behind = applyText(env, comp, window, ass)
+  return env.g.add(
+    [behind, subject],
+    [filter('overlay', { format: 'yuv420', eof_action: 'pass' }), 'format=yuv420p'],
+  )[0]!
 }
 
 /** Final pixel format + BT.709 limited-range tags on every frame (read by the encoders). */

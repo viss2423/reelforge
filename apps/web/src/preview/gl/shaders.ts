@@ -115,6 +115,13 @@ uniform vec4 uFx1;          // noise amplitude, seed, glow strength, scanline pe
 uniform sampler2D uGlow;
 uniform int uBlend;
 uniform sampler2D uDst;
+uniform int uBgMode;        // AI background: 0 off, 1 remove, 2 blur, 3 colour, 4 image
+uniform sampler2D uMatte;   // subject matte (display orientation, R = alpha)
+uniform vec2 uMatteTexel;   // 1 / matte size
+uniform float uFeather;     // matte blur sigma in matte texels
+uniform sampler2D uBg;      // blurred source (blur) or background image (image)
+uniform vec3 uBgColor;
+uniform vec4 uBgUV;         // image: cover rect of the layer quad in image UV
 
 const vec3 K709 = vec3(0.2126, 0.7152, 0.0722);
 
@@ -206,6 +213,25 @@ vec3 lut(vec3 c) {
   return w0 * c000 + wa * ca + wb * cb + w1 * c111;
 }
 
+// matte alpha, optionally feathered with a 3x3 Gaussian at sigma spacing (export: gblur)
+float matteAt(vec2 d) {
+  if (uFeather < 0.3) return texture(uMatte, d).r;
+  vec2 o = uMatteTexel * uFeather;
+  float s = texture(uMatte, d).r * 4.0;
+  s += (texture(uMatte, d + vec2(o.x, 0.0)).r + texture(uMatte, d - vec2(o.x, 0.0)).r
+      + texture(uMatte, d + vec2(0.0, o.y)).r + texture(uMatte, d - vec2(0.0, o.y)).r) * 2.0;
+  s += texture(uMatte, d + o).r + texture(uMatte, d - o).r
+     + texture(uMatte, d + vec2(o.x, -o.y)).r + texture(uMatte, d - vec2(o.x, -o.y)).r;
+  return s / 16.0;
+}
+
+// the clip's static look (curves + LUT) for background pixels taken from the clip itself
+vec3 lookOf(vec3 c) {
+  if (uAdjOn && uAdj.w > 0.5) c = adjust(c);
+  if (uLutMix > 0.0) c = mix(c, lut(c), uLutMix);
+  return c;
+}
+
 float hash(vec2 p, float seed) {
   vec3 q = fract(vec3(p.xyx) * 0.1031 + seed);
   q += dot(q, q.yzx + 33.33);
@@ -238,6 +264,19 @@ void main() {
     if (uAdj.w > 0.5) c = adjust(c);
   }
   if (uLutMix > 0.0) c = mix(c, lut(c), uLutMix);
+  if (uBgMode > 0) {
+    // the export composites in the clip's frame space: subject (alpha = matte) over the
+    // background, before geometry and pixel effects
+    float m = matteAt(mix(uUV.xy, uUV.zw, q));
+    if (uBgMode == 1) {
+      a *= m;
+    } else {
+      vec3 b = uBgMode == 2 ? lookOf(texture(uBg, uv).rgb)
+             : uBgMode == 3 ? uBgColor
+             : texture(uBg, mix(uBgUV.xy, uBgUV.zw, q)).rgb;
+      c = mix(b, c, m);
+    }
+  }
   if (uFx1.z > 0.0) c = min(c + texture(uGlow, uv).rgb * uFx1.z, 1.0);
   if (uFx0.z > 0.0) c = mix(c, vec3(luma(c)), uFx0.z);
   if (uFx0.y > 0.0) c = mix(c, vec3(1.0), uFx0.y);

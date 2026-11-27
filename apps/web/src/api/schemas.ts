@@ -52,6 +52,8 @@ export const SystemInfo = z.looseObject({
   ffmpegVersion: z.string().optional(),
   hwEncoders: Encoders.optional(),
   whisper: z.looseObject({ installed: z.boolean(), models: z.array(z.string()) }).optional(),
+  /** Local language model (AI hooks, best moments, captions emphasis). */
+  llm: z.looseObject({ installed: z.boolean(), model: z.string().nullish() }).optional(),
   disk: z.looseObject({ free: z.number(), total: z.number() }).optional(),
   urls: z.array(z.string()).optional(),
   tailscale: z
@@ -74,6 +76,7 @@ export const SystemWire = z.looseObject({
       hwEncoders: Encoders.optional(),
       whisper: z.string().nullish(),
       whisperModels: z.array(z.string()).optional(),
+      llm: z.looseObject({ installed: z.boolean(), model: z.string().nullish() }).optional(),
     })
     .optional(),
   urls: z.array(z.string()).optional(),
@@ -106,6 +109,7 @@ export const toSystemInfo = (w: SystemWire): SystemInfo => {
     ...(t && {
       whisper: { installed: !!t.whisper, models: (t.whisperModels ?? []).map(modelName) },
     }),
+    ...(t?.llm && { llm: t.llm }),
     ...(w.urls && { urls: w.urls }),
     ...(ts && {
       tailscale: {
@@ -142,3 +146,101 @@ export interface Packs {
   index: PackIndex
   manifests: PackManifest[]
 }
+
+/* ------------------------------------------------------------------ trends */
+
+const TrendSignalWire = z.looseObject({
+  text: z.string(),
+  weight: z.number(),
+  sources: z.array(z.string()),
+})
+export type TrendSignalWire = z.infer<typeof TrendSignalWire>
+
+export const ReelIdea = z.looseObject({
+  topic: z.string(),
+  title: z.string(),
+  hooks: z.array(z.string()),
+  shots: z.array(z.string()),
+  caption: z.string(),
+  hashtags: z.array(z.string()),
+  /** `<packId>/<templateId>` or '' */
+  template: z.string(),
+})
+export type ReelIdea = z.infer<typeof ReelIdea>
+
+/** `GET /api/trends`: the trend engine's latest results (Trending Now, Settings → Trends). */
+export const Trends = z.looseObject({
+  enabled: z.boolean(),
+  generatedAt: z.string().nullable(),
+  lastError: z.string().nullable(),
+  stale: z.boolean(),
+  running: z.boolean(),
+  nextRunAt: z.string().nullable(),
+  sources: z.array(
+    z.looseObject({
+      id: z.string(),
+      name: z.string(),
+      state: z.enum(['ok', 'error', 'disabled']),
+      items: z.number(),
+      error: z.string().optional(),
+    }),
+  ),
+  topics: z.array(TrendSignalWire),
+  hashtags: z.array(z.string()),
+  formats: z.array(TrendSignalWire),
+  aesthetics: z.array(TrendSignalWire),
+  sounds: z.array(
+    z.looseObject({
+      title: z.string(),
+      artist: z.string().optional(),
+      bpm: z.number(),
+      measured: z.boolean(),
+      sources: z.array(z.string()),
+      link: z.string(),
+      genre: z.string().optional(),
+      mood: z.string().optional(),
+      energy: z.number().optional(),
+      firstSeen: z.string().optional(),
+      fresh: z.boolean().optional(),
+    }),
+  ),
+  items: z.array(
+    z.looseObject({
+      ref: z.string(),
+      collection: z.string(),
+      name: z.string(),
+      trend: z.string(),
+      createdAt: z.string(),
+      fresh: z.boolean(),
+    }),
+  ),
+  ideas: z.array(ReelIdea),
+  llm: z.looseObject({ used: z.boolean() }),
+  settings: z.looseObject({ autoPublish: z.boolean() }),
+  publishAvailable: z.boolean(),
+  /** Synced trending-sound previews are enabled on the host (TRENDS_SOUND_PREVIEW=1). */
+  soundPreview: z.boolean().optional(),
+  publish: z
+    .looseObject({ at: z.string(), status: z.string(), url: z.string().optional() })
+    .nullable(),
+})
+export type Trends = z.infer<typeof Trends>
+
+/** `GET /api/trends/sounds/preview-info` */
+export const SoundPreviewInfo = z.looseObject({
+  available: z.boolean(),
+  source: z.string().optional(),
+  duration: z.number().optional(),
+  link: z.string().optional(),
+})
+export type SoundPreviewInfo = z.infer<typeof SoundPreviewInfo>
+
+/** `POST /api/trends/sounds/beats` */
+export const SoundBeats = z.looseObject({
+  bpm: z.number(),
+  beats: z.array(z.number()),
+  downbeats: z.array(z.number()),
+  duration: z.number(),
+  engine: z.string(),
+})
+export type SoundBeats = z.infer<typeof SoundBeats>

@@ -34,7 +34,11 @@ export const SilencePayloadSchema = z.object({
   padding: UsValue.max(2_000_000).optional(),
 })
 
-export const BeatsPayloadSchema = z.object({ assetId: AssetId })
+export const BeatsPayloadSchema = z.object({
+  assetId: AssetId,
+  /** 'auto' (default): the neural model when installed, else the DSP tracker. */
+  engine: z.enum(['auto', 'neural', 'dsp']).optional(),
+})
 
 export const ScenesPayloadSchema = z.object({
   assetId: AssetId,
@@ -45,9 +49,23 @@ export const ScenesPayloadSchema = z.object({
 export const ReframePayloadSchema = z.object({
   assetId: AssetId,
   /** Sampling rate of the detector in frames per second. */
-  fps: z.number().min(1).max(15).optional(),
+  fps: z.number().min(0.5).max(15).optional(),
   /** ONNX execution provider (default: fastest measured for this platform). */
   provider: z.enum(['auto', 'cpu', 'dml']).optional(),
+  /** 'smart' (people, speaker, group framing; default when installed) or 'fast' (faces only). */
+  mode: z.enum(['smart', 'fast']).optional(),
+  /** Camera tracking strength: 0 calm to 1 tight (default 0.5). */
+  strength: z.number().min(0).max(1).optional(),
+})
+
+export const MattePayloadSchema = z.object({
+  assetId: AssetId,
+  /** Matting model (`modnet`; BiRefNet was measured too slow for this host). */
+  model: z.enum(['modnet']).optional(),
+  /** ONNX execution provider (default: DirectML on Windows when it loads, else CPU). */
+  provider: z.enum(['auto', 'cpu', 'dml']).optional(),
+  /** Recompute even if a matte from the same model is cached. */
+  force: z.boolean().optional(),
 })
 
 /** Parse a payload, turning zod issues into one readable error message. */

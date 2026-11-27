@@ -9,6 +9,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { DataPaths } from './contracts.ts'
+import type { TrendsConfig } from './trends/service.ts'
 import pkg from '../package.json' with { type: 'json' }
 
 /** Server version reported by /api/health, the WebSocket hello and the startup banner. */
@@ -61,6 +62,12 @@ export interface Config {
    * (end-to-end runs). Never set in production.
    */
   testPairCode: string | undefined
+  /** Search royalty-free music catalogues online (REELFORGE_MUSIC_ONLINE, default on). */
+  musicOnline: boolean
+  /** Optional free Jamendo API client id (REELFORGE_JAMENDO_CLIENT_ID). */
+  jamendoClientId: string | undefined
+  /** Local trend engine (src/trends). */
+  trends: TrendsConfig
 }
 
 const DURATION = /^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d)?$/i
@@ -120,15 +127,16 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     throw new Error(`invalid REELFORGE_TEST_PAIR_CODE (6 digits): ${testPairCode}`)
   if (testPairCode !== undefined && production)
     throw new Error('REELFORGE_TEST_PAIR_CODE must not be set in production')
+  const packsUrl = (
+    env.PACKS_URL || 'https://raw.githubusercontent.com/viss2423/reelforge/main/packs'
+  ).replace(/\/+$/, '')
   return Object.freeze({
     version: SERVER_VERSION,
     dataDir,
     httpPort: port(pick(env, 'HTTP_PORT'), 8080, 'HTTP_PORT'),
     httpsPort: port(pick(env, 'HTTPS_PORT'), 8443, 'HTTPS_PORT'),
     host: env.HOST || '0.0.0.0',
-    packsUrl: (
-      env.PACKS_URL || 'https://raw.githubusercontent.com/viss2423/reelforge/main/packs'
-    ).replace(/\/+$/, ''),
+    packsUrl,
     packsSyncIntervalMs: parseDuration(env.PACKS_SYNC_INTERVAL || '6h'),
     logLevel: env.LOG_LEVEL || 'info',
     prettyLogs: bool(env.LOG_PRETTY, !production && process.stdout.isTTY === true),
@@ -144,7 +152,37 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     ffmpegPath: env.FFMPEG_PATH || undefined,
     packsSync: bool(pick(env, 'PACKS_SYNC'), true),
     testPairCode,
+    musicOnline: bool(pick(env, 'MUSIC_ONLINE'), true),
+    jamendoClientId: pick(env, 'JAMENDO_CLIENT_ID'),
+    trends: trendsConfig(env, packsUrl),
   })
+}
+
+/** `TRENDS*`, `PUBLISH_TRENDS*` and the optional free source keys. */
+export const trendsConfig = (env: NodeJS.ProcessEnv, packsUrl: string): TrendsConfig => {
+  const hour = Number(pick(env, 'TRENDS_HOUR') ?? 4)
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23)
+    throw new Error(`invalid TRENDS_HOUR (0-23): ${pick(env, 'TRENDS_HOUR')}`)
+  const publish = pick(env, 'PUBLISH_TRENDS')
+  if (publish !== undefined && publish !== 'github' && publish !== 'off')
+    throw new Error(`invalid PUBLISH_TRENDS (github|off): ${publish}`)
+  const mode = pick(env, 'PUBLISH_TRENDS_MODE') ?? 'pr'
+  if (mode !== 'pr' && mode !== 'main')
+    throw new Error(`invalid PUBLISH_TRENDS_MODE (pr|main): ${mode}`)
+  // Same repository the packs are pulled from, unless told otherwise.
+  const fromPacks = /raw\.githubusercontent\.com\/([^/]+\/[^/]+)\//.exec(packsUrl)?.[1]
+  return {
+    enabled: bool(pick(env, 'TRENDS'), true),
+    region: (pick(env, 'TRENDS_REGION') ?? 'US').toUpperCase().slice(0, 2),
+    hour,
+    youtubeKey: pick(env, 'YOUTUBE_API_KEY'),
+    redditId: pick(env, 'REDDIT_CLIENT_ID'),
+    redditSecret: pick(env, 'REDDIT_CLIENT_SECRET'),
+    publish: publish === 'github' ? 'github' : undefined,
+    publishMode: mode,
+    publishRepo: pick(env, 'PUBLISH_TRENDS_REPO') ?? fromPacks,
+    soundPreview: bool(pick(env, 'TRENDS_SOUND_PREVIEW'), false),
+  }
 }
 
 /** Canonical data-directory layout (see contracts.ts DataPaths). */

@@ -7,8 +7,8 @@ import type { Page } from '@playwright/test'
  * Pointer input that works the same in every engine: real mouse events on desktop, and
  * synthetic touch PointerEvents on phones (Playwright has no multi-touch drag API).
  */
-export const pointer = (page: Page, touch: boolean) => {
-  const vp = page.getByTestId('timeline-viewport')
+export const pointer = (page: Page, touch: boolean, testId = 'timeline-viewport') => {
+  const vp = page.getByTestId(testId)
   const fire = (type: string, x: number, y: number, id = 1) =>
     vp.dispatchEvent(type, {
       pointerId: id,
@@ -30,7 +30,7 @@ export const pointer = (page: Page, touch: boolean) => {
       touch ? fire('pointerup', x, y, id) : page.mouse.move(x, y).then(() => page.mouse.up()),
     /** Drag in small steps (touch moves are interpolated by hand). */
     drag: async (from: [number, number], to: [number, number], opts: { hold?: number } = {}) => {
-      const p = pointer(page, touch)
+      const p = pointer(page, touch, testId)
       await p.down(...from)
       if (opts.hold) await page.waitForTimeout(opts.hold)
       const steps = 10
@@ -43,7 +43,7 @@ export const pointer = (page: Page, touch: boolean) => {
       await p.up(...to)
     },
     tap: async (x: number, y: number) => {
-      const p = pointer(page, touch)
+      const p = pointer(page, touch, testId)
       await p.down(x, y)
       await p.up(x, y)
     },

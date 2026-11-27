@@ -1,0 +1,29 @@
+{
+  "kind": "Listing",
+  "_note": "Synthetic sample in the documented Reddit listing shape (anonymous access is blocked; the live source needs a free app id).",
+  "data": {
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "title": "Photo dump reels with whip transitions are blowing up again",
+          "selftext": "beat sync every 2 beats #photodump",
+          "score": 1840
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "title": "Are word by word captions still worth it?",
+          "selftext": "karaoke style vs lowercase",
+          "score": 312
+        }
+      },
+      {
+        "kind": "t3",
+        "data": { "title": "My first storytime got 1M views", "selftext": "", "score": 95 }
+      },
+      { "kind": "t3", "data": { "selftext": "post without a title is ignored", "score": 5 } }
+    ]
+  }
+}

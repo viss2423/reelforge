@@ -1,4 +1,4 @@
-import { Clapperboard, Film, Settings } from 'lucide-react'
+import { Clapperboard, Film, Settings, TrendingUp } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { cn } from '@/lib/cn.ts'
@@ -6,6 +6,7 @@ import { Logo } from './Logo.tsx'
 
 const NAV = [
   { to: '/', label: 'Projects', icon: Clapperboard, end: true },
+  { to: '/trending', label: 'Trending', icon: TrendingUp, end: false },
   { to: '/exports', label: 'Exports', icon: Film, end: false },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },
 ] as const
@@ -56,7 +57,7 @@ export function AppFrame({ title, actions, children }: AppFrameProps) {
       </main>
       <nav
         aria-label="Main"
-        className="grid shrink-0 grid-cols-3 border-t border-line bg-surface pb-safe md:hidden"
+        className="grid shrink-0 grid-cols-4 border-t border-line bg-surface pb-safe md:hidden"
       >
         {NAV.map(({ to, label, icon: Icon, end }) => (
           <NavLink

@@ -12,6 +12,7 @@ import {
   autoCaptions,
   autoReframe,
   beatSync,
+  type BeatCut,
   cutStats,
   magicEdit,
   planFillers,
@@ -106,12 +107,13 @@ export const startCaptions = (
   })
 
 export const startBeatSync = (
-  o: { musicClipId: string; every: 1 | 2 | 4 },
+  o: { musicClipId: string; cut: BeatCut },
   tasks: AiTasks = aiTasks,
 ): void =>
   tasks.start('beats', 'Beat sync', async (ctx) => {
     const n = await beatSync(ctx, o)
-    return { kind: 'done', message: `Synced cuts to ${plural(n, 'beat')}` }
+    const bars = o.cut.startsWith('bar') ? ' on the bar' : ''
+    return { kind: 'done', message: `Synced cuts to ${plural(n, 'beat')}${bars}` }
   })
 
 export const startScenes = (tasks: AiTasks = aiTasks): void =>
@@ -122,14 +124,23 @@ export const startScenes = (tasks: AiTasks = aiTasks): void =>
       : { kind: 'done', message: 'No scene changes found', undoable: false }
   })
 
-export const startReframe = (clipIds?: readonly string[], tasks: AiTasks = aiTasks): void =>
+export const startReframe = (
+  clipIds?: readonly string[],
+  tasks: AiTasks = aiTasks,
+  strength?: number,
+): void =>
   tasks.start('reframe', 'Auto reframe', async (ctx) => {
-    const n = await autoReframe(ctx, clipIds)
+    const n = await autoReframe(ctx, clipIds, strength)
     return { kind: 'done', message: `Reframed ${plural(n, 'clip')} to follow the subject` }
   })
 
 export const startMagic = (
-  o: { style: CaptionStyle; styleRef?: string; language: string },
+  o: {
+    style: CaptionStyle
+    styleRef?: string
+    language: string
+    highlights?: { targetSeconds: number }
+  },
   tasks: AiTasks = aiTasks,
 ): void =>
   tasks.start('magic', 'Magic edit', async (ctx) => {
@@ -141,8 +152,10 @@ export const startMagic = (
     const cut = parts.length
       ? `Cut ${parts.join(' & ')} (${seconds(s.removed)})`
       : 'No pauses to cut'
-    const extra = [s.beatSynced && 'synced to the beat', s.captionWords > 0 && 'captioned'].filter(
-      Boolean,
-    )
+    const extra = [
+      s.moments && `kept the ${s.moments} best moments`,
+      s.beatSynced && 'synced to the beat',
+      s.captionWords > 0 && 'captioned',
+    ].filter(Boolean)
     return { kind: 'done', message: extra.length ? `${cut}, ${extra.join(' and ')}` : cut }
   })

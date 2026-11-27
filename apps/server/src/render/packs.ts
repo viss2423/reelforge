@@ -115,8 +115,11 @@ export async function loadPackResolvers(
   packsDir: string,
   refs: Iterable<string>,
   log?: Logger,
+  /** Further trees searched for packs missing from `packsDir` (locally generated packs). */
+  extraRoots: readonly string[] = [],
 ): Promise<PackResolvers> {
   const root = await resolvePacksRoot(packsDir)
+  const dirs = new Map<string, string>()
   const packIds = new Set<string>()
   for (const r of refs) {
     const parsed = parseRef(r)
@@ -125,19 +128,25 @@ export async function loadPackResolvers(
   const manifests = new Map<string, PackManifest>()
   await Promise.all(
     [...packIds].map(async (id) => {
-      try {
-        const raw = await readFile(path.join(root, id, 'pack.json'), 'utf8')
-        manifests.set(id, PackManifest.parse(JSON.parse(raw)))
-      } catch (err) {
-        log?.warn({ pack: id, err }, 'pack unavailable; its refs are ignored')
+      let lastErr: unknown
+      for (const base of [root, ...extraRoots]) {
+        try {
+          const raw = await readFile(path.join(base, id, 'pack.json'), 'utf8')
+          manifests.set(id, PackManifest.parse(JSON.parse(raw)))
+          dirs.set(id, path.join(base, id))
+          return
+        } catch (err) {
+          lastErr = err
+        }
       }
+      log?.warn({ pack: id, err: lastErr }, 'pack unavailable; its refs are ignored')
     }),
   )
   const lookup = (ref: string): { m: PackManifest; itemId: string; dir: string } | undefined => {
     const parsed = parseRef(ref)
     const m = parsed && manifests.get(parsed.packId)
     return m && parsed
-      ? { m, itemId: parsed.itemId, dir: path.join(root, parsed.packId) }
+      ? { m, itemId: parsed.itemId, dir: dirs.get(parsed.packId) ?? path.join(root, parsed.packId) }
       : undefined
   }
   return {

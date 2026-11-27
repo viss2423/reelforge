@@ -9,13 +9,27 @@
  * While paused the loop only runs until every visible source shows its exact frame, so an
  * idle editor costs nothing.
  */
-import { buildAss, type Asset, type Project, type Us } from '@reelforge/core'
+import {
+  BACKGROUND_BLUR_SIGMA,
+  buildAss,
+  MATTE_FEATHER_SIGMA,
+  type Asset,
+  type MediaClip,
+  type Project,
+  type Us,
+} from '@reelforge/core'
 import { AudioEngine } from './audio/engine.ts'
 import { collectVoices } from './audio/voices.ts'
 import { audioOutputTime, PlaybackClock } from './clock.ts'
 import { BLEND_ID } from './color/keying.ts'
 import { adjustUniforms, chromaKeyUniforms, hexToRgb } from './color/uniforms.ts'
-import { Compositor, createLayerDraw, type LayerDraw, type TargetName } from './gl/compositor.ts'
+import {
+  BG_MODE,
+  Compositor,
+  createLayerDraw,
+  type LayerDraw,
+  type TargetName,
+} from './gl/compositor.ts'
 import { GlError } from './gl/context.ts'
 import { LutStore } from './gl/lut.ts'
 import { TRANSITION_ID } from './gl/transitions.ts'
@@ -77,9 +91,14 @@ class Engine implements PreviewEngine {
   #luts: LutStore | undefined
   readonly #text: TextLayer | undefined
   readonly #audio: AudioEngine
+  #overlayToken = 0
   readonly #files: MediaFiles
   readonly #images: ImageCache
   readonly #pool: SourcePool
+  /** Subject mattes (AI background), one decoder per clip like `#pool`. */
+  readonly #mattes: SourcePool
+  /** Background images (`image` mode) by URL. */
+  readonly #bgImages = new Map<string, ImageSource>()
   readonly #mediaStats = createMediaStats()
   readonly #clock = new PlaybackClock()
   readonly #quality = new AdaptiveQuality()
@@ -140,6 +159,11 @@ class Engine implements PreviewEngine {
     this.#pool = new SourcePool(
       (clip, prev) => this.#openSource(clip, prev),
       this.#useWebCodecs ? budget.decoders : budget.elementDecoders,
+    )
+    // mattes are small gray proxies: half the decoder budget is plenty
+    this.#mattes = new SourcePool(
+      (clip, prev) => this.#openMatte(clip, prev),
+      Math.max(2, (this.#useWebCodecs ? budget.decoders : budget.elementDecoders) >> 1),
     )
     this.#layerCtx = { resolveEffect: opts.resolveEffect, resolveAnimation: opts.resolveAnimation }
     this.#audio = new AudioEngine({
@@ -232,6 +256,38 @@ class Engine implements PreviewEngine {
     return new WebCodecsSource(this.#files.open(url), this.#mediaStats)
   }
 
+  /** Preview mask URL of a clip's matte when its AI background applies, else undefined. */
+  #matteUrl(clip: VisualClip): string | undefined {
+    if (clip.type === 'sticker' || !this.#opts.matteUrl) return undefined
+    const bg = clip.background
+    if (!bg || bg.mode === 'keep') return undefined
+    const m = this.#assets[clip.assetId]?.matte
+    if (m?.status !== 'ready') return undefined
+    return this.#opts.matteUrl(clip.assetId, m.version)
+  }
+
+  #openMatte(clip: VisualClip, previous: PixelSource | undefined): PixelSource | null {
+    const url = this.#matteUrl(clip)
+    if (!url) return null
+    const asset = clip.type === 'sticker' ? undefined : this.#assets[clip.assetId]
+    if (clip.type !== 'video' || asset?.kind === 'image')
+      return previous ? null : new ImageSource(url, this.#images)
+    if (previous?.kind === 'element') return null
+    if (previous || !this.#useWebCodecs) return new ElementSource(url, this.#mediaStats)
+    return new WebCodecsSource(this.#files.open(url), this.#mediaStats)
+  }
+
+  #bgImage(assetId: string | undefined): ImageSource | undefined {
+    const url = assetId ? this.#assetUrl(assetId) : undefined
+    if (!url) return undefined
+    let s = this.#bgImages.get(url)
+    if (!s) {
+      s = new ImageSource(url, this.#images)
+      this.#bgImages.set(url, s)
+    }
+    return s
+  }
+
   setProject(p: Project, assets: Readonly<Record<string, Asset>>): void {
     const prev = this.#project
     const assetsChanged = assets !== this.#assets
@@ -252,6 +308,8 @@ class Engine implements PreviewEngine {
         this.#pool.closeAll()
         this.#sourceUrls.clear()
       }
+      // a new or rebuilt matte (version in the URL): reopen the mask decoders
+      this.#mattes.closeAll()
       const urls = new Set<string>()
       for (const id of Object.keys(assets)) {
         const u = this.#assetUrl(id)
@@ -272,9 +330,26 @@ class Engine implements PreviewEngine {
 
   #rebuildVoices(): void {
     if (!this.#project || !this.#index) return
-    this.#audio.setVoices(
-      collectVoices(this.#project, this.#index.layout, this.#assets, { solo: this.#solo }),
-    )
+    let voices = collectVoices(this.#project, this.#index.layout, this.#assets, {
+      solo: this.#solo,
+    })
+    // A previewed trending sound replaces the music bed (voices and effects stay).
+    if (this.#audio.hasOverlay) {
+      const music = new Set<string>()
+      for (const t of this.#project.tracks)
+        for (const c of t.clips) if (c.type === 'audio' && c.role === 'music') music.add(c.id)
+      voices = voices.filter((v) => !music.has(v.clipId))
+    }
+    this.#audio.setVoices(voices)
+  }
+
+  async setSoundPreview(audio: ArrayBuffer | undefined): Promise<void> {
+    const token = ++this.#overlayToken
+    // decodeAudioData detaches its input: decode a copy so the caller keeps the bytes.
+    const buffer = audio ? await this.#audio.ctx.decodeAudioData(audio.slice(0)) : undefined
+    if (token !== this.#overlayToken) return
+    this.#audio.setOverlay(buffer)
+    this.#rebuildVoices()
   }
 
   setSolo(trackIds: readonly string[]): void {
@@ -552,6 +627,7 @@ class Engine implements PreviewEngine {
         d.lut = undefined
         d.keyOn = false
         d.blend = 0
+        d.bgMode = BG_MODE.off
         comp.layer(target, d)
       }
     }
@@ -598,14 +674,60 @@ class Engine implements PreviewEngine {
       d.keyOn = !!m.chromaKey?.enabled
       if (m.chromaKey?.enabled) d.keyParams.set(chromaKeyUniforms(m.chromaKey))
       d.blend = BLEND_ID[m.blendMode]
+      this.#background(d, m, srcT)
     } else {
       d.adjOn = false
       d.blurPx = 0
       d.lut = undefined
       d.keyOn = false
       d.blend = 0
+      d.bgMode = BG_MODE.off
     }
     this.#comp!.layer(target, d)
+  }
+
+  /**
+   * AI background of a media layer: the matte frame at the same source time plus the
+   * background parameters (core's BACKGROUND_BLUR_SIGMA / MATTE_FEATHER_SIGMA, as exported).
+   * Without a matte frame yet the layer draws unmodified and the frame is provisional.
+   */
+  #background(d: LayerDraw, clip: MediaClip, srcT: number): void {
+    d.bgMode = BG_MODE.off
+    const bg = clip.background
+    if (!bg || bg.mode === 'keep' || !this.#matteUrl(clip)) return
+    const src = this.#mattes.get(clip)
+    const frame = src?.info ? src.frame(srcT) : null
+    if (!frame) {
+      if (!src?.error) this.#complete = false
+      return
+    }
+    if (!frame.exact) this.#complete = false
+    d.matte.key = `m|${poolKey(clip)}`
+    d.matte.image = frame.image
+    d.matte.version = frame.version
+    d.featherPx = bg.feather * MATTE_FEATHER_SIGMA
+    d.bgBlurPx = bg.blur * BACKGROUND_BLUR_SIGMA
+    const rgb = hexToRgb(bg.color)
+    d.bgColor[0] = rgb[0]
+    d.bgColor[1] = rgb[1]
+    d.bgColor[2] = rgb[2]
+    d.bgMode = BG_MODE[bg.mode]
+    if (bg.mode !== 'image') return
+    const img = this.#bgImage(bg.assetId)
+    const f = img?.info ? img.frame() : null
+    if (!img?.info || !f) {
+      if (img && !img.error) this.#complete = false
+      d.bgMode = BG_MODE.color
+      return
+    }
+    d.bgImage.key = `bg|${bg.assetId ?? ''}`
+    d.bgImage.image = f.image
+    d.bgImage.version = f.version
+    coverRect(
+      d.layer.width / Math.max(1e-6, d.layer.height),
+      img.info.width / Math.max(1, img.info.height),
+      d.bgUV,
+    )
   }
 
   /** Keep decoders for visible + upcoming clips open and tell them what is wanted. */
@@ -626,15 +748,20 @@ class Engine implements PreviewEngine {
     const clips = this.#needed
     clips.length = n
     for (let i = 0; i < n; i++) clips[i] = slots[i]!.clip!
-    this.#pool.update(clips, n, performance.now())
+    const now = performance.now()
+    this.#pool.update(clips, n, now)
+    this.#mattes.update(clips, n, now)
     const playing = this.#playing && !this.#waiting
     for (let i = 0; i < n; i++) {
       const s = slots[i]!
       const clip = s.clip!
-      const src = this.#pool.get(clip)
-      if (!src || clip.type === 'sticker') continue
-      if (s.local >= 0) src.want(sourceTimeAt(clip, s.local), playing, sourceRateAt(clip, s.local))
-      else src.want(sourceTimeAt(clip, 0), false, sourceRateAt(clip, 0)) // pre-roll first frame
+      if (clip.type === 'sticker') continue
+      const local = s.local >= 0 ? s.local : 0
+      const t = sourceTimeAt(clip, local)
+      const rate = sourceRateAt(clip, local)
+      const play = s.local >= 0 && playing // pre-roll: first frame only
+      this.#pool.get(clip)?.want(t, play, rate)
+      this.#mattes.get(clip)?.want(t, play, rate)
     }
   }
 
@@ -669,6 +796,9 @@ class Engine implements PreviewEngine {
     this.#canvas.removeEventListener('webglcontextlost', this.#onLost)
     this.#canvas.removeEventListener('webglcontextrestored', this.#onRestored)
     this.#pool.closeAll()
+    this.#mattes.closeAll()
+    for (const s of this.#bgImages.values()) s.close()
+    this.#bgImages.clear()
     this.#images.clear()
     this.#audio.destroy()
     this.#text?.destroy()
@@ -677,6 +807,26 @@ class Engine implements PreviewEngine {
     this.#listeners.clear()
     const g = globalThis as { __rfPreviewStats?: PreviewStats }
     if (g.__rfPreviewStats === this.stats) delete g.__rfPreviewStats
+  }
+}
+
+/**
+ * Cover-fit rect (u0, v0, u1, v1 in image UV) of an image with aspect `ia` filling a frame
+ * with aspect `fa` — the export's `scale=…:force_original_aspect_ratio=increase,crop`.
+ */
+export function coverRect(fa: number, ia: number, out: Float32Array): void {
+  if (ia > fa) {
+    const w = fa / ia
+    out[0] = (1 - w) / 2
+    out[1] = 0
+    out[2] = (1 + w) / 2
+    out[3] = 1
+  } else {
+    const h = ia / fa
+    out[0] = 0
+    out[1] = (1 - h) / 2
+    out[2] = 1
+    out[3] = (1 + h) / 2
   }
 }
 

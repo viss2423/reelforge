@@ -1,6 +1,7 @@
 import { sec, type Us } from '@reelforge/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { bindPreviewEngine, startFallbackClock } from '@/editor/viewer/bindEngine.ts'
+import { setPreviewOverride } from '@/editor/viewer/previewOverride.ts'
 import type { PreviewEngine, PreviewEvent } from '@/preview/index.ts'
 import { createEditorStore, type EditorStoreApi } from '@/state/editorStore.ts'
 import { makeAsset, makeProject } from '../fixtures.ts'
@@ -41,6 +42,25 @@ beforeEach(() => {
 })
 
 describe('bindPreviewEngine', () => {
+  it('shows a gesture preview override without touching the store, then returns', () => {
+    const e = fakeEngine()
+    const unbind = bindPreviewEngine(e, store)
+    e.setProject.mockClear()
+    const preview = { ...s().project!, name: 'preview' }
+    setPreviewOverride(preview)
+    expect(e.setProject).toHaveBeenLastCalledWith(preview, s().assets)
+    // Store changes during the gesture keep showing the override.
+    s().upsertAsset(makeAsset())
+    expect(e.setProject).toHaveBeenLastCalledWith(preview, s().assets)
+    setPreviewOverride(null)
+    expect(e.setProject).toHaveBeenLastCalledWith(s().project, s().assets)
+    unbind()
+    e.setProject.mockClear()
+    setPreviewOverride(preview)
+    expect(e.setProject).not.toHaveBeenCalled()
+    setPreviewOverride(null)
+  })
+
   it('pushes the initial project, playhead and play state', () => {
     s().setPlayhead(sec(1))
     s().setPlaying(true)

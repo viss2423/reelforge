@@ -22,7 +22,7 @@ import { edit } from '../model/commands.ts'
 import { hasAudio, isAudioClip, isVideo } from '../model/draft.ts'
 import { setAudio } from '../model/edits.ts'
 import { Chips, PanelBody, Section, Toggle } from '../ui.tsx'
-import { landscapeClips, musicClips } from './flows.ts'
+import { landscapeClips, musicClips, type BeatCut } from './flows.ts'
 import {
   captionStyleFor,
   startBeatSync,
@@ -33,6 +33,7 @@ import {
   startScenes,
   startSilence,
 } from './launch.ts'
+import { AutoEditCard, useLlmInstalled, WriterTools } from './AiAssistant.tsx'
 import { TaskCard } from './TaskCard.tsx'
 import type { AiTaskId } from './tasks.ts'
 
@@ -44,11 +45,20 @@ const PACES = [
 ] as const
 type Pace = (typeof PACES)[number]['value']
 
-const EVERY = [
-  { value: 1, label: 'Every beat' },
-  { value: 2, label: 'Every 2' },
-  { value: 4, label: 'Every 4' },
+/** Camera tracking strength for auto reframe. */
+const TRACKING = [
+  { value: 'calm', label: 'Calm', strength: 0.15 },
+  { value: 'balanced', label: 'Balanced', strength: 0.5 },
+  { value: 'tight', label: 'Tight', strength: 0.85 },
 ] as const
+type Tracking = (typeof TRACKING)[number]['value']
+
+const CUTS: ReadonlyArray<{ value: BeatCut; label: string }> = [
+  { value: 'beat', label: 'Beat' },
+  { value: 'beat2', label: '2 beats' },
+  { value: 'bar', label: 'Bar' },
+  { value: 'bar2', label: '2 bars' },
+]
 
 function Tool({
   id,
@@ -125,7 +135,7 @@ function VoiceTools() {
 function BeatSyncTool() {
   const music = useEditorShallow((s) => (s.project ? musicClips(s.project) : []))
   const [chosen, setChosen] = useState<string | null>(null)
-  const [every, setEvery] = useState<1 | 2 | 4>(1)
+  const [cut, setCut] = useState<BeatCut>('beat')
   const clipId = chosen && music.some((m) => m.id === chosen) ? chosen : music[0]?.id
   return (
     <Tool
@@ -141,7 +151,7 @@ function BeatSyncTool() {
         <Button
           block
           disabled={!clipId}
-          onClick={() => clipId && startBeatSync({ musicClipId: clipId, every })}
+          onClick={() => clipId && startBeatSync({ musicClipId: clipId, cut })}
         >
           Sync to beat
         </Button>
@@ -156,13 +166,7 @@ function BeatSyncTool() {
         />
       )}
       {music.length > 0 && (
-        <SegmentedControl
-          label="Cut on"
-          size="sm"
-          options={EVERY}
-          value={every}
-          onChange={setEvery}
-        />
+        <SegmentedControl label="Cut on" size="sm" options={CUTS} value={cut} onChange={setCut} />
       )}
     </Tool>
   )
@@ -171,14 +175,17 @@ function BeatSyncTool() {
 export function AiPanel() {
   const packs = usePacksData()
   const [pace, setPace] = useState<Pace>('tight')
+  const [tracking, setTracking] = useState<Tracking>('balanced')
   const landscape = useEditor((s) => (s.project ? landscapeClips(s.project, s.assets).length : 0))
   const language = useEditor((s) => s.project?.captions?.language ?? 'auto')
+  const llm = useLlmInstalled()
   const captionStyle = () => {
     const c = captionStyleFor(packs)
     return { style: c.style, language, ...(c.ref ? { styleRef: c.ref } : {}) }
   }
   return (
     <PanelBody>
+      <AutoEditCard />
       <div className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-accent/20 to-violet/20 p-4">
         <div className="flex items-center gap-2">
           <Wand2 size={20} className="text-accent" />
@@ -187,13 +194,19 @@ export function AiPanel() {
         <p className="text-sm text-muted">
           Cuts silences and filler words, syncs to your music and adds captions — in one tap,
           undoable in one step.
+          {llm ? ' Long footage is first cut to its best 60 seconds.' : ''}
         </p>
         <TaskCard id="magic">
           <Button
             variant="primary"
             block
             icon={<Sparkles size={18} />}
-            onClick={() => startMagic(captionStyle())}
+            onClick={() =>
+              startMagic({
+                ...captionStyle(),
+                ...(llm ? { highlights: { targetSeconds: 60 } } : {}),
+              })
+            }
           >
             Magic edit
           </Button>
@@ -272,12 +285,34 @@ export function AiPanel() {
               : 'Only needed for landscape (16:9) clips'
           }
           action={
-            <Button block disabled={landscape === 0} onClick={() => startReframe()}>
+            <Button
+              block
+              disabled={landscape === 0}
+              onClick={() =>
+                startReframe(
+                  undefined,
+                  undefined,
+                  TRACKING.find((t) => t.value === tracking)!.strength,
+                )
+              }
+            >
               Reframe to 9:16
             </Button>
           }
-        />
+        >
+          {landscape > 0 && (
+            <SegmentedControl
+              label="Camera"
+              size="sm"
+              options={TRACKING}
+              value={tracking}
+              onChange={setTracking}
+            />
+          )}
+        </Tool>
       </Section>
+
+      <WriterTools />
 
       <VoiceTools />
     </PanelBody>

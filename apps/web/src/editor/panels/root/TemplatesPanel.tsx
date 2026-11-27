@@ -6,7 +6,7 @@ import { applyTemplate, formatTimecode, type Asset, type Project } from '@reelfo
 import { LayoutTemplate } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useCreateProject } from '@/api/queries.ts'
+import { useCreateProject, useTrends } from '@/api/queries.ts'
 import { AdaptiveModal } from '@/components/Dialog.tsx'
 import { Button } from '@/components/Button.tsx'
 import { toast } from '@/components/Toast.tsx'
@@ -55,7 +55,8 @@ export const applyTemplateInPlace = (
 
 export function TemplatesPanel() {
   const packs = usePacksData()
-  const templates = listTemplates(packs)
+  const trends = useTrends()
+  const templates = listTemplates(packs, trends.data)
   const [picked, setPicked] = useState<TemplateEntry | null>(null)
   const navigate = useNavigate()
   const create = useCreateProject()
@@ -107,9 +108,16 @@ export function TemplatesPanel() {
               aspect="portrait"
               onClick={() => setPicked(t)}
               badge={
-                <span className="absolute right-1 bottom-1 rounded bg-black/60 px-1 text-[10px] text-white tabular-nums">
-                  {t.template.slots.length} · {formatTimecode(t.duration, false)}
-                </span>
+                <>
+                  {t.fresh && (
+                    <span className="absolute top-1 left-1 rounded bg-accent px-1 text-[10px] font-semibold text-accent-fg">
+                      New today
+                    </span>
+                  )}
+                  <span className="absolute right-1 bottom-1 rounded bg-black/60 px-1 text-[10px] text-white tabular-nums">
+                    {t.template.slots.length} · {formatTimecode(t.duration, false)}
+                  </span>
+                </>
               }
             >
               {t.thumbPath ? (

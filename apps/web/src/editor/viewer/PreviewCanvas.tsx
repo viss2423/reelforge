@@ -11,6 +11,7 @@ import { createPreviewEngine, type PreviewEngine } from '@/preview/index.ts'
 import { editorStore } from '@/state/editorStore.ts'
 import { bindPreviewEngine, startFallbackClock } from './bindEngine.ts'
 import { backingSize, fitAspect } from './fit.ts'
+import { TransformOverlay } from './overlay/TransformOverlay.tsx'
 
 /**
  * The 9:16 preview surface. Sizes the canvas to the largest 9:16 box that fits its
@@ -54,6 +55,7 @@ export function PreviewCanvas({ className }: { className?: string }) {
     try {
       engine = createPreviewEngine(canvas, {
         mediaUrl: (id, variant) => api.mediaUrl(id, variant),
+        matteUrl: (id, version) => api.matteUrl(id, version),
         assUrl: (id, rev) => api.assUrl(id, rev),
         packFileUrl: (p) => api.packFileUrl(p),
         // Read once: fonts are fixed for the engine's lifetime (pack updates apply on reopen).
@@ -84,32 +86,33 @@ export function PreviewCanvas({ className }: { className?: string }) {
 
   return (
     <div ref={boxRef} className={cn('relative grid min-h-0 min-w-0 place-items-center', className)}>
-      <div
-        className="relative overflow-hidden rounded-lg bg-preview shadow-pop"
-        style={{ width: css.width, height: css.height }}
-      >
-        <canvas
-          ref={canvasRef}
-          width={backing.width || 1}
-          height={backing.height || 1}
-          className="block size-full"
-          data-testid="preview-canvas"
-        />
-        {failure !== null && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-white/70"
-            data-testid="preview-fallback"
-          >
-            <MonitorOff size={28} />
-            <p className="text-sm font-semibold">Preview unavailable</p>
-            <p className="text-xs text-white/50">{failure}</p>
-          </div>
-        )}
-        {waiting && failure === null && (
-          <div className="absolute inset-0 grid place-items-center bg-black/20 text-white">
-            <Spinner size={28} />
-          </div>
-        )}
+      {/* The overlay sits outside the clipped box so handles stay grabbable past the edges. */}
+      <div className="relative" style={{ width: css.width, height: css.height }}>
+        <div className="relative size-full overflow-hidden rounded-lg bg-preview shadow-pop">
+          <canvas
+            ref={canvasRef}
+            width={backing.width || 1}
+            height={backing.height || 1}
+            className="block size-full"
+            data-testid="preview-canvas"
+          />
+          {failure !== null && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-white/70"
+              data-testid="preview-fallback"
+            >
+              <MonitorOff size={28} />
+              <p className="text-sm font-semibold">Preview unavailable</p>
+              <p className="text-xs text-white/50">{failure}</p>
+            </div>
+          )}
+          {waiting && failure === null && (
+            <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 text-white">
+              <Spinner size={28} />
+            </div>
+          )}
+        </div>
+        <TransformOverlay width={css.width} height={css.height} />
       </div>
     </div>
   )

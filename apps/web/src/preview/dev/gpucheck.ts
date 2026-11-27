@@ -8,6 +8,7 @@
  */
 import { Adjustments, ChromaKey, MediaClip, TransitionType } from '@reelforge/core'
 import { adjustParams, applyAdjustmentsCpu } from '../color/adjustments.ts'
+import { compositeBackground, matteValue, type BackgroundKind } from '../color/background.ts'
 import { parseCube, sampleTetrahedral } from '../color/cube.ts'
 import {
   BLEND_ID,
@@ -17,7 +18,7 @@ import {
   type BlendMode,
 } from '../color/keying.ts'
 import { adjustUniforms, chromaKeyUniforms } from '../color/uniforms.ts'
-import { Compositor, createLayerDraw, type LayerDraw } from '../gl/compositor.ts'
+import { BG_MODE, Compositor, createLayerDraw, type LayerDraw } from '../gl/compositor.ts'
 import { LutStore } from '../gl/lut.ts'
 import {
   hblurApprox,
@@ -101,6 +102,82 @@ const K = makeImage((x, y) => {
   return [u8(200 - x), u8(80 + y), u8(40 + x * 2)]
 })
 
+/** Subject matte: a horizontal ramp with a hard-edged opaque box (R = G = B = alpha). */
+const M = makeImage((x, y) => {
+  const v = x > 20 && x < 52 && y > 30 && y < 90 ? 255 : u8((x * 255) / (W - 1))
+  return [v, v, v]
+})
+/** Flat colour image: blurring it must change nothing. */
+const FLAT = makeImage(() => [90, 160, 220])
+
+function backgroundChecks(
+  comp: Compositor,
+  frame: (paint: () => void) => ImageData,
+  dA: LayerDraw,
+  dFlat: LayerDraw,
+): GpuCheckResult[] {
+  const out: GpuCheckResult[] = []
+  const a = at(A)
+  const b = at(B)
+  const m = at(M)
+  const flat = at(FLAT)
+  const COLOR = [1, 0.5, 0.1] as const
+  const setMatte = (d: LayerDraw): void => {
+    d.matte.key = 'M'
+    d.matte.image = M
+    d.matte.version = 1
+  }
+  const run = (
+    name: string,
+    kind: BackgroundKind,
+    d: LayerDraw,
+    fg: Pixel,
+    back: Pixel,
+    setup: (d: LayerDraw) => void,
+  ): void => {
+    setMatte(d)
+    setup(d)
+    const img = frame(() => comp.layer('acc', d))
+    d.bgMode = BG_MODE.off
+    const ref: Pixel = (x, y, c) =>
+      255 *
+      compositeBackground(kind, fg(x, y, c) / 255, back(x, y, c) / 255, matteValue(m(x, y, 0)))
+    out.push(compare(img, ref, name))
+  }
+  run(
+    'background:remove',
+    'remove',
+    dA,
+    a,
+    () => 0,
+    (d) => (d.bgMode = BG_MODE.remove),
+  )
+  run(
+    'background:color',
+    'color',
+    dA,
+    a,
+    (_x, _y, c) => 255 * COLOR[c]!,
+    (d) => {
+      d.bgMode = BG_MODE.color
+      d.bgColor.set(COLOR)
+    },
+  )
+  run('background:image', 'image', dA, a, b, (d) => {
+    d.bgMode = BG_MODE.image
+    d.bgImage.key = 'bgB'
+    d.bgImage.image = B
+    d.bgImage.version = 1
+    d.bgUV.set([0, 0, 1, 1])
+  })
+  // a heavy blur of a flat image is the flat image: no border darkening, no matte leakage
+  run('background:blur', 'blur', dFlat, flat, flat, (d) => {
+    d.bgMode = BG_MODE.blur
+    d.bgBlurPx = 30
+  })
+  return out
+}
+
 function compare(out: ImageData, ref: Pixel, name: string): GpuCheckResult {
   let maxErr = 0
   let bad = 0
@@ -150,6 +227,7 @@ function run(): GpuCheckResult[] {
   const dB = draw(B, 'B')
   const dC = draw(C, 'C')
   const dK = draw(K, 'K')
+  const dFlat = draw(FLAT, 'FLAT')
   const results: GpuCheckResult[] = []
   const frame = (paint: () => void): ImageData => {
     comp.begin(W, H)
@@ -237,7 +315,11 @@ function run(): GpuCheckResult[] {
     results.push(compare(out, ref, `adjust:${name}`))
   }
   dC.adjOn = false
-  return results.concat(blendChecks(comp, frame, dA, dB), keyCheck(frame, comp, dK))
+  return results.concat(
+    blendChecks(comp, frame, dA, dB),
+    keyCheck(frame, comp, dK),
+    backgroundChecks(comp, frame, dA, dFlat),
+  )
 }
 
 function blendChecks(

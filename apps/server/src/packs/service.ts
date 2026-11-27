@@ -70,6 +70,18 @@ export interface PacksServiceOptions {
   requestTimeoutMs?: number
 }
 
+/**
+ * A locally generated pack served on top of the synced/bundled tree (the trend engine's
+ * `trending-live`), plus live `trendScore` overrides (`<packId>/<itemId>` → score) that
+ * re-rank existing items without touching their hash-verified files.
+ */
+export interface PacksOverlay {
+  manifest?: PackManifest | undefined
+  /** Directory holding the overlay pack's files (`<dir>/<file path>`). */
+  dir?: string | undefined
+  scores?: ReadonlyMap<string, number> | undefined
+}
+
 interface ActivePointer {
   dir: string
   version: string
@@ -155,6 +167,8 @@ export class PacksService {
   #pointer: ActivePointer | undefined
   #syncing: Promise<SyncResult> | undefined
   #timer: ReturnType<typeof setInterval> | undefined
+  #overlay: PacksOverlay = {}
+  #merged: PacksSnapshot | undefined
 
   constructor(opts: PacksServiceOptions) {
     this.#o = opts
@@ -163,6 +177,7 @@ export class PacksService {
 
   /** Loads the synced packs (or the bundled fallback) into memory. */
   async init(): Promise<PacksSnapshot> {
+    this.#merged = undefined
     await mkdir(this.#o.root, { recursive: true })
     try {
       this.#pointer = JSON.parse(
@@ -199,8 +214,28 @@ export class PacksService {
     return this.#snapshot
   }
 
+  /** The served view: the active tree plus the overlay pack and live trend scores. */
   get snapshot(): PacksSnapshot {
+    this.#merged ??= mergeOverlay(this.#snapshot, this.#overlay)
+    return this.#merged
+  }
+
+  /** The synced/bundled tree alone (no overlay). */
+  get base(): PacksSnapshot {
     return this.#snapshot
+  }
+
+  get overlay(): PacksOverlay {
+    return this.#overlay
+  }
+
+  /** Replaces the overlay; `emit` announces the change to clients like a sync does. */
+  setOverlay(overlay: PacksOverlay, emit = true): void {
+    if (overlay.manifest && !isSafePackId(overlay.manifest.id))
+      throw new Error(`unsafe overlay pack id: ${overlay.manifest.id}`)
+    this.#overlay = overlay
+    this.#merged = undefined
+    if (emit) this.#o.bus?.emit({ type: 'packs', version: this.version ?? 'none' })
   }
 
   /** Directory of the active pack tree (`DataPaths.packs` for jobs). */
@@ -208,12 +243,16 @@ export class PacksService {
     return this.#snapshot.dir
   }
 
+  /** Served version: changes with the tree, the overlay pack and the live scores. */
   get version(): string | undefined {
-    return this.#snapshot.index?.version
+    return this.snapshot.index?.version
   }
 
   /** Absolute path of a pack file (`<packId>/luts/x.cube`, `fonts/…`) or undefined if unsafe. */
   resolveFile(rel: string): string | undefined {
+    const { manifest, dir } = this.#overlay
+    if (manifest && dir && rel.startsWith(`${manifest.id}/`))
+      return resolveInside(dir, rel.slice(manifest.id.length + 1))
     return this.#snapshot.dir ? resolveInside(this.#snapshot.dir, rel) : undefined
   }
 
@@ -223,7 +262,7 @@ export class PacksService {
   ): PackManifest[K][number] | undefined {
     const slash = ref.indexOf('/')
     if (slash <= 0) return undefined
-    const pack = this.#snapshot.manifests.find((m) => m.id === ref.slice(0, slash))
+    const pack = this.snapshot.manifests.find((m) => m.id === ref.slice(0, slash))
     const id = ref.slice(slash + 1)
     return (pack?.[key] as Array<{ id: string }> | undefined)?.find((i) => i.id === id) as
       PackManifest[K][number] | undefined
@@ -327,7 +366,7 @@ export class PacksService {
     const headers: Record<string, string> = {}
     if (synced && this.#pointer?.etag) headers['if-none-match'] = this.#pointer.etag
     const res = await this.#get(`${base}/index.json`, headers)
-    if (res.status === 304) return { status: 'unchanged', version: this.version }
+    if (res.status === 304) return { status: 'unchanged', version: this.#snapshot.index?.version }
     const indexText = await res.text()
     const index = PackIndex.parse(JSON.parse(indexText))
     const etag = res.headers.get('etag') ?? undefined
@@ -431,6 +470,7 @@ export class PacksService {
       if (etag) pointer.etag = etag
       await this.#writePointer(pointer)
       this.#snapshot = { ...tree, source: 'synced', dir: path.join(this.#o.root, dirName) }
+      this.#merged = undefined
     } catch (err) {
       // Never let a cleanup failure (e.g. a file still locked on Windows) mask the real error;
       // a leftover staging dir is collected by the next sync.
@@ -440,7 +480,7 @@ export class PacksService {
       throw err
     }
     await this.#collectGarbage()
-    this.#o.bus?.emit({ type: 'packs', version: index.version })
+    this.#o.bus?.emit({ type: 'packs', version: this.version ?? index.version })
     const ms = Math.round(performance.now() - t0)
     this.#o.log.info({ version: index.version, downloaded, reused, ms }, 'packs updated')
     return { status: 'updated', version: index.version, downloaded, reused, ms }
@@ -466,4 +506,68 @@ export class PacksService {
       )
     }
   }
+}
+
+/** Short non-cryptographic hash (FNV-1a, base 36) for overlay version tags. */
+const hash36 = (text: string): string => {
+  let h = 2_166_136_261
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16_777_619)
+  return (h >>> 0).toString(36)
+}
+
+const ITEM_COLLECTIONS = [
+  'captionStyles',
+  'textPresets',
+  'filters',
+  'animations',
+  'transitions',
+  'effects',
+  'stickers',
+  'templates',
+] as const
+
+/** Applies an overlay to a tree snapshot. Pure: the base snapshot is never mutated. */
+export const mergeOverlay = (base: PacksSnapshot, overlay: PacksOverlay): PacksSnapshot => {
+  const { manifest, scores } = overlay
+  if (!manifest && !scores?.size) return base
+  const rescore = (m: PackManifest): PackManifest => {
+    if (!scores?.size) return m
+    const out: Record<string, unknown> = { ...m }
+    for (const c of ITEM_COLLECTIONS)
+      out[c] = (m[c] as Array<{ id: string; trendScore: number }>).map((item) => {
+        const s = scores.get(`${m.id}/${item.id}`)
+        return s === undefined || s === item.trendScore ? item : { ...item, trendScore: s }
+      })
+    return out as PackManifest
+  }
+  const manifests = base.manifests.filter((m) => m.id !== manifest?.id).map(rescore)
+  if (manifest) manifests.push(rescore(manifest))
+  const scoreTag = scores?.size ? hash36([...scores].map(([k, v]) => `${k}=${v}`).join()) : '0'
+  const packTag = manifest ? hash36(JSON.stringify(manifest)) : '0'
+  const tag = `live.${packTag}.${scoreTag}`
+  const entry = manifest && {
+    id: manifest.id,
+    version: manifest.version,
+    name: manifest.name,
+    description: manifest.description,
+    curatedAt: manifest.curatedAt,
+    tags: ['live'],
+  }
+  const index: PackIndex = base.index
+    ? {
+        ...base.index,
+        version: `${base.index.version}-${tag}`,
+        packs: [
+          ...base.index.packs.filter((p) => p.id !== manifest?.id),
+          ...(entry ? [entry] : []),
+        ],
+      }
+    : {
+        version: `0.0.0-${tag}`,
+        updatedAt: manifest?.curatedAt ?? '1970-01-01',
+        minAppVersion: '0.1.0',
+        packs: entry ? [entry] : [],
+        fonts: [],
+      }
+  return { ...base, index, manifests }
 }

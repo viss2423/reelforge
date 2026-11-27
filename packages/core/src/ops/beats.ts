@@ -37,26 +37,58 @@ function nearestBeat(beats: readonly Us[], t: number): Us | undefined {
   return best
 }
 
+/** Options for {@link syncToBeats}. */
+export interface BeatSyncOptions {
+  /** Use every n-th grid point: beats (1, 2, 4) or bars (1, 2, 4) depending on `unit`. */
+  every?: 1 | 2 | 4
+  /** Cut on beats (default) or on bar starts (downbeats). */
+  unit?: 'beat' | 'bar'
+  /**
+   * Bar starts (playback µs, ideally a subset of `beats`). Required for `unit: 'bar'` (without
+   * them every 4th beat is used); with `unit: 'beat'` they phase-align `every` 2/4 so the
+   * kept beats include the downbeats.
+   */
+  downbeats?: readonly Us[]
+  trackId?: string
+}
+
+const cleanGrid = (times: readonly Us[]): Us[] =>
+  [...new Set(times)].filter((b) => Number.isFinite(b) && b > 0).toSorted((a, b) => a - b)
+
+/** The beat/bar grid the cuts snap to (exported for tests and previews). */
+export function beatGrid(beats: readonly Us[], opts?: Omit<BeatSyncOptions, 'trackId'>): Us[] {
+  const every = opts?.every ?? 1
+  const unit = opts?.unit ?? 'beat'
+  const sorted = cleanGrid(beats)
+  const downs = cleanGrid(opts?.downbeats ?? [])
+  if (unit === 'bar') {
+    if (downs.length > 0) return downs.filter((_, i) => i % every === 0)
+    return sorted.filter((_, i) => i % (4 * every) === 0)
+  }
+  if (every === 1) return sorted
+  // Phase: the index of the first beat within 40 ms of a downbeat (bars start the groups).
+  let phase = 0
+  const first = downs[0]
+  if (first !== undefined) {
+    const k = sorted.findIndex((b) => Math.abs(b - first) <= 40_000)
+    if (k >= 0) phase = k % every
+  }
+  return sorted.filter((_, i) => i % every === phase)
+}
+
 /**
  * Re-time clip boundaries to beat markers (playback µs). Only `every`-th beat is used
- * (1, 2 or 4 → every beat, half-bar, bar). Clips are only ever SHORTENED so no source
- * beyond what the user picked is needed: each cut moves back to the latest usable beat.
+ * (1, 2 or 4 → every beat, half-bar, bar), or — with `unit: 'bar'` — every (n-th) bar start.
+ * Clips are only ever SHORTENED so no source beyond what the user picked is needed: each cut
+ * moves back to the latest usable grid point.
  *
  * Main track: each clip's end — or, with a transition into the next clip, the transition
  * midpoint — lands on a beat; the track ripples. Other tracks: each clip start snaps to the
  * nearest beat (when it is within half the clip's length and does not collide) and its end
  * moves back to the latest beat.
  */
-export function syncToBeats(
-  p: Project,
-  beats: readonly Us[],
-  opts?: { every?: 1 | 2 | 4; trackId?: string },
-): void {
-  const every = opts?.every ?? 1
-  const grid = [...new Set(beats)]
-    .filter((b) => Number.isFinite(b) && b > 0)
-    .toSorted((a, b) => a - b)
-    .filter((_, i) => i % every === 0)
+export function syncToBeats(p: Project, beats: readonly Us[], opts?: BeatSyncOptions): void {
+  const grid = beatGrid(beats, opts)
   if (grid.length === 0) return
   const track = opts?.trackId !== undefined ? getTrack(p, opts.trackId) : mainTrack(p)
   assertUnlocked(track)

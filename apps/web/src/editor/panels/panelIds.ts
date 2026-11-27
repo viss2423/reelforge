@@ -25,6 +25,7 @@ export const CLIP_PANEL = {
   effects: 'clip.effects',
   transform: 'clip.transform',
   chroma: 'clip.chroma',
+  background: 'clip.background',
   replace: 'clip.replace',
   transition: 'clip.transition',
 } as const

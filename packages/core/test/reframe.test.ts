@@ -105,4 +105,32 @@ describe('applyReframe', () => {
     expect(() => applyReframe(p, text.id, [{ t: 0, x: 0.5 }])).toThrow(OpError)
     expect(() => applyReframe(p, img.id, [])).toThrow(/empty/)
   })
+
+  it('zooms out to keep a wide group in frame and back in when it narrows', () => {
+    const { p, clips } = projectWithMain([4 * SEC])
+    const c = clips[0]!
+    const shown = 1080 / W // fraction of the source width the 9:16 frame shows at scale 1
+    applyReframe(p, c.id, [
+      { t: 0, x: 0.5 },
+      { t: 2 * SEC, x: 0.5, w: 1.5 * shown },
+      { t: 4 * SEC, x: 0.5 },
+    ])
+    expect(evaluate(c.transform.scale, 0)).toBeCloseTo(1, 3)
+    expect(evaluate(c.transform.scale, 2 * SEC)).toBeCloseTo(1 / 1.5, 3)
+    expect(evaluate(c.transform.scale, 4 * SEC)).toBeCloseTo(1, 3)
+    // Centred subject stays centred while zoomed (the canvas centre).
+    expect(evaluate(c.transform.x, 2 * SEC)).toBeCloseTo(540, 1)
+    expect(validateProject(p)).toEqual([])
+  })
+
+  it('never zooms below half the clip scale and leaves scale alone without widths', () => {
+    const { p, clips } = projectWithMain([2 * SEC])
+    const c = clips[0]!
+    c.transform.scale = { value: 1.2, keyframes: [] }
+    applyReframe(p, c.id, [{ t: 0, x: 0.5, w: 1 }])
+    expect(evaluate(c.transform.scale, 0)).toBeCloseTo(0.6, 3)
+    const { p: q, clips: d } = projectWithMain([2 * SEC])
+    applyReframe(q, d[0]!.id, [{ t: 0, x: 0.3 }])
+    expect(d[0]!.transform.scale).toEqual({ value: 1, keyframes: [] })
+  })
 })

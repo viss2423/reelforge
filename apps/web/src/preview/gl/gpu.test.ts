@@ -78,6 +78,7 @@ describe.skipIf(!HAS_CHROMIUM)('GPU shaders vs CPU references (Chromium)', () =>
     expect(names).toContain('identity')
     expect(names).toContain('lut3d')
     expect(names).toContain('chromakey')
+    for (const m of ['remove', 'color', 'image', 'blur']) expect(names).toContain(`background:${m}`)
     expect(names.filter((n) => n.startsWith('transition:')).length).toBe(
       TransitionType.options.length * 5,
     )

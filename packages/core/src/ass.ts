@@ -30,6 +30,20 @@ export interface AssContext {
   resolveAnimation(ref: string): AnimationPreset | undefined
   /** Optional time window (timeline us); events outside are omitted. */
   range?: { start: number; end: number }
+  /**
+   * Which text to include (default `all`): `behind` = only text clips flagged
+   * `behindSubject` (drawn under the matte-cut subject), `front` = everything else
+   * (other text clips + captions).
+   */
+  layer?: 'all' | 'front' | 'behind'
+}
+
+/** True when the project has a visible text clip drawn behind the subject. */
+export function hasBehindText(project: Project): boolean {
+  return project.tracks.some(
+    (t) =>
+      t.kind === 'text' && !t.hidden && t.clips.some((c) => c.type === 'text' && c.behindSubject),
+  )
 }
 
 /** Layers reserved per track (box, shadow, main passes). */
@@ -37,6 +51,7 @@ const LAYERS_PER_TRACK = 3
 
 /** Build the complete .ass document for a project. Pure and deterministic. */
 export function buildAss(project: Project, ctx: AssContext): string {
+  const layer = ctx.layer ?? 'all'
   const styles = new StyleRegistry()
   const sink = new EventSink(
     ctx.range ? { start: toCs(ctx.range.start), end: toCs(ctx.range.end) } : undefined,
@@ -45,11 +60,12 @@ export function buildAss(project: Project, ctx: AssContext): string {
     if (track.hidden || track.kind !== 'text') return
     for (const clip of track.clips) {
       if (clip.type !== 'text') continue
+      if (layer !== 'all' && !!clip.behindSubject !== (layer === 'behind')) continue
       const anims = resolveAnimations(clip, (ref) => ctx.resolveAnimation(ref))
       emitTextClip(clip, anims, trackIndex * LAYERS_PER_TRACK, styles, sink)
     }
   })
-  if (project.captions) {
+  if (project.captions && layer !== 'behind') {
     emitCaptions(project.captions, project.tracks.length * LAYERS_PER_TRACK, styles, sink)
   }
 

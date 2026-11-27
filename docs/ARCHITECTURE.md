@@ -87,10 +87,16 @@ src/ids.ts           id generation (crypto.randomUUID-based, short)
 - `trimClip(p, clipId, { start?, end? })` — edges in timeline time; main track ripples.
 - `moveClip(p, clipId, { trackId?, start?, index? })`
 - `deleteClips(p, clipIds, { ripple })`, `duplicateClip(p, clipId) → Clip`
+- `slipClip(p, clipId, delta, { asset })` / `slipLimits` — moves a clip's content (in-point) inside its fixed span; clamped to the source, returns the applied delta.
+- `rollEdit(p, clipId, delta, { assets })` / `rollLimits` — moves the cut between a main clip and the one before it; total length and all other clips unchanged.
+- `trimClip(..., { ripple: true })` — on free tracks, later clips on the track shift by the duration change.
+- `copyClips(p, ids) → ClipboardData` (plain JSON) / `pasteClips(p, data, { at })` — cross-track copy/paste with fresh ids; `moveClips(p, moves)` — atomic group move.
 - `setClipSpeed(p, clipId, speed)` — recomputes duration; keeps start.
 - `removeSourceRanges(p, clipId, ranges: {start,end}[])` — used by silence/filler removal: ranges are in the asset's **source** time; splits and removes, ripples main track, remaps captions.
 - `buildCaptions(p, transcripts: Record<assetId, Word[]>, style)` — maps source-time words through main-track (and overlay video) clips into timeline time, drops words in cut regions.
-- `syncToBeats(p, beats: Us[], { every?: 1|2|4, trackId? })` — re-times main-track clip boundaries to beat markers.
+- `syncToBeats(p, beats: Us[], { every?: 1|2|4, unit?: 'beat'|'bar', downbeats?: Us[], trackId? })` — re-times main-track clip boundaries to beat markers; with `unit: 'bar'` (and `downbeats`) cuts land on bar starts, and `every` 2/4 beats are phase-aligned to the downbeats. `beatGrid(beats, opts)` returns the grid it snaps to.
+- `insertMusicClip(p, { asset, sourceStart?, length?, duck?, beats?, downbeats? })` — the music bed: from the chorus, trimmed to the reel, fades, beat/bar markers, replaces old music; `musicCredits`, `withoutMusic` (export "No music").
+- `assembleAutoEdit(p, plan, assets) → AutoEditStats` — Auto Edit in one dispatch: moments in story order, look, music via `insertMusicClip`, cuts on beats or — with a clear downbeat grid (`hasClearDownbeats`, `musicSyncOptions`) — on bars, captions, hook text. `applyCaptionEmphasis` styles LLM-picked keywords.
 - `applyTemplate(template, assets, { packs }) → Project`
 - `applyReframe(p, clipId, path: {t: Us, x: number}[])` — keyframes `transform.x` to follow subject.
 - `normalizeMainTrack(p)` — enforces contiguity; called by ops that touch main.
@@ -131,6 +137,16 @@ sidechain ducking, `amix`, `loudnorm` → AAC 320k.
 
 Snapshot tests assert graphs; server integration tests render real files and ffprobe them.
 
+**AI background.** `MediaClip.background` (`keep|remove|blur|color|image`, `feather`) and
+`TextClip.behindSubject` are optional schema fields. With `ctx.resolveMatte(assetId)` returning the
+asset's matte (`matte.mkv`), a clip's pre stage also decodes the matte with identical trim / speed /
+crop / flip / scale and merges it (`alphamerge`, then `overlay` on a blurred copy, colour or cover-fitted
+image; `remove` leaves alpha for the sprite path). Text behind subject: `buildAss(…, { layer })` splits the
+text into `front` / `behind` documents (`ctx.assPath` / `ctx.assBehindPath`); the behind text is burned
+into the composite and the main track is rendered again as a transparent, matte-cut "subject pass" laid
+over it. Clips without a ready matte export untouched. The preview applies the same math in the layer
+shader (`uBgMode`), checked against FFmpeg and the CPU twin (`preview/color/background.ts`).
+
 ## Server (`@reelforge/server`)
 
 Contracts live in `apps/server/src/contracts.ts` (DataPaths, Toolchain, Store, JobContext,
@@ -160,51 +176,61 @@ Auth is a device token sent as `Authorization: Bearer <token>` **or** the `rf_to
 HttpOnly cookie (so `<video src>` works). Loopback clients on the host may obtain a token
 without a code.
 
-| Method | Path                                                                             | Body → Response                                                                                       |
-| ------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| GET    | `/api/health`                                                                    | → `{ ok, version }`                                                                                   |
-| GET    | `/api/pair/info`                                                                 | loopback only → `{ code, expiresAt, urls[], qrSvg }`                                                  |
-| POST   | `/api/pair`                                                                      | `{ code, deviceName }` → `{ token, deviceId }` + cookie (rate limited)                                |
-| POST   | `/api/pair/local`                                                                | loopback only → `{ token, deviceId }` + cookie                                                        |
-| GET    | `/api/devices` / DELETE `/api/devices/:id`                                       | list / revoke paired devices                                                                          |
-| GET    | `/api/system`                                                                    | `{ version, cpu, memory, disk, toolchain: { ffmpegVersion, hwEncoders, whisper… }, urls, tailscale }` |
-| GET    | `/api/projects`                                                                  | → summaries                                                                                           |
-| POST   | `/api/projects`                                                                  | `{ name, templateRef?, assetIds? }` → Project                                                         |
-| GET    | `/api/projects/:id`                                                              | → Project                                                                                             |
-| PUT    | `/api/projects/:id`                                                              | `{ project, expectedRevision, deviceId }` → `{ revision }` · 409 `{ project }`                        |
-| DELETE | `/api/projects/:id`                                                              |                                                                                                       |
-| POST   | `/api/projects/:id/duplicate`                                                    | → Project                                                                                             |
-| POST   | `/api/uploads`                                                                   | `{ name, size, mime }` → `{ uploadId, chunkSize }`                                                    |
-| PUT    | `/api/uploads/:id/chunks/:index`                                                 | raw bytes → `{ received }` (idempotent)                                                               |
-| GET    | `/api/uploads/:id`                                                               | → `{ received: number[] }` (resume)                                                                   |
-| POST   | `/api/uploads/:id/complete`                                                      | → Asset (enqueues probe→proxy/thumbnails/waveform)                                                    |
-| GET    | `/api/assets` · `/api/assets/:id` · DELETE `/api/assets/:id`                     |                                                                                                       |
-| GET    | `/api/assets/:id/original` · `/proxy`                                            | video/audio bytes, HTTP Range                                                                         |
-| GET    | `/api/assets/:id/thumbs.jpg` · `/thumbs.json` · `/poster.jpg` · `/waveform.json` |                                                                                                       |
-| POST   | `/api/jobs`                                                                      | `{ kind, payload, projectId?, assetId? }` → Job                                                       |
-| GET    | `/api/jobs?active=1&projectId=` · `/api/jobs/:id`                                |                                                                                                       |
-| POST   | `/api/jobs/:id/cancel`                                                           |                                                                                                       |
-| GET    | `/api/exports/:jobId/file`                                                       | MP4, Range, `?download=1` sets Content-Disposition                                                    |
-| GET    | `/api/projects/:id/ass`                                                          | generated `.ass` for the preview (JASSUB)                                                             |
-| GET    | `/api/packs`                                                                     | → `{ index, manifests }`                                                                              |
-| GET    | `/api/packs/files/*`                                                             | LUTs, stickers, thumbs, fonts (immutable cache headers)                                               |
-| POST   | `/api/packs/sync`                                                                | trigger update now                                                                                    |
-| WS     | `/api/events`                                                                    | stream of `ServerEvent` (zod in core); auth may be `?token=`; `{"type":"ping"}`→pong                  |
+| Method | Path                                                                             | Body → Response                                                                                          |
+| ------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/health`                                                                    | → `{ ok, version }`                                                                                      |
+| GET    | `/api/pair/info`                                                                 | loopback only → `{ code, expiresAt, urls[], qrSvg }`                                                     |
+| POST   | `/api/pair`                                                                      | `{ code, deviceName }` → `{ token, deviceId }` + cookie (rate limited)                                   |
+| POST   | `/api/pair/local`                                                                | loopback only → `{ token, deviceId }` + cookie                                                           |
+| GET    | `/api/devices` / DELETE `/api/devices/:id`                                       | list / revoke paired devices                                                                             |
+| GET    | `/api/system`                                                                    | `{ version, cpu, memory, disk, toolchain: { ffmpegVersion, hwEncoders, whisper… }, urls, tailscale }`    |
+| GET    | `/api/projects`                                                                  | → summaries                                                                                              |
+| POST   | `/api/projects`                                                                  | `{ name, templateRef?, assetIds? }` → Project                                                            |
+| GET    | `/api/projects/:id`                                                              | → Project                                                                                                |
+| PUT    | `/api/projects/:id`                                                              | `{ project, expectedRevision, deviceId }` → `{ revision }` · 409 `{ project }`                           |
+| DELETE | `/api/projects/:id`                                                              |                                                                                                          |
+| POST   | `/api/projects/:id/duplicate`                                                    | → Project                                                                                                |
+| POST   | `/api/uploads`                                                                   | `{ name, size, mime }` → `{ uploadId, chunkSize }`                                                       |
+| PUT    | `/api/uploads/:id/chunks/:index`                                                 | raw bytes → `{ received }` (idempotent)                                                                  |
+| GET    | `/api/uploads/:id`                                                               | → `{ received: number[] }` (resume)                                                                      |
+| POST   | `/api/uploads/:id/complete`                                                      | → Asset (enqueues probe→proxy/thumbnails/waveform)                                                       |
+| GET    | `/api/assets` · `/api/assets/:id` · DELETE `/api/assets/:id`                     |                                                                                                          |
+| GET    | `/api/assets/:id/original` · `/proxy`                                            | video/audio bytes, HTTP Range                                                                            |
+| GET    | `/api/assets/:id/thumbs.jpg` · `/thumbs.json` · `/poster.jpg` · `/waveform.json` |                                                                                                          |
+| GET    | `/api/assets/:id/matte?v=`                                                       | AI subject mask proxy (H.264 video / PNG still), 404 until the `matte` job is done                       |
+| POST   | `/api/jobs`                                                                      | `{ kind, payload, projectId?, assetId? }` → Job                                                          |
+| GET    | `/api/jobs?active=1&projectId=` · `/api/jobs/:id`                                |                                                                                                          |
+| POST   | `/api/jobs/:id/cancel`                                                           |                                                                                                          |
+| GET    | `/api/exports/:jobId/file`                                                       | MP4, Range, `?download=1` sets Content-Disposition                                                       |
+| GET    | `/api/projects/:id/ass`                                                          | generated `.ass` for the preview (JASSUB)                                                                |
+| GET    | `/api/music/sources` · `/search` · `/tracks/:id` · `/tracks/:id/preview`         | royalty-free music library, 10 s chorus previews (see `apps/server/src/music/README.md`)                 |
+| POST   | `/api/music/suggest` · `/api/music/import`                                       | ranked suggestions (job `music.suggest`, trend-matched by default) · import a pick as an audio asset     |
+| GET    | `/api/trends` · POST `/api/trends/refresh` · `/ideas` · PUT `/settings`          | trend engine (see `apps/server/src/trends/README.md`)                                                    |
+| GET    | `/api/trends/sounds/preview-info` · `/preview` · POST `/beats`                   | trending-sound beat grid; synced Deezer preview only with `TRENDS_SOUND_PREVIEW=1` (terms: music README) |
+| GET    | `/api/assets/:id/matte?v=`                                                       | subject-matte proxy for the preview                                                                      |
+| GET    | `/api/packs`                                                                     | → `{ index, manifests }`                                                                                 |
+| GET    | `/api/packs/files/*`                                                             | LUTs, stickers, thumbs, fonts (immutable cache headers)                                                  |
+| POST   | `/api/packs/sync`                                                                | trigger update now                                                                                       |
+| WS     | `/api/events`                                                                    | stream of `ServerEvent` (zod in core); auth may be `?token=`; `{"type":"ping"}`→pong                     |
 
 The server also serves `apps/web/dist` at `/` (SPA fallback) and, on plain HTTP, a pairing
 landing page with the local CA download so phones can trust HTTPS and install the PWA.
 
 ### Job kinds → resource class
 
-| kind                        | class      | notes                                                                   |
-| --------------------------- | ---------- | ----------------------------------------------------------------------- |
-| probe, waveform, thumbnails | io / cpu   | fast, high priority                                                     |
-| proxy                       | gpu-encode | 540×960, H.264, GOP 15, AAC — instant scrubbing on phones               |
-| export, preview             | gpu-encode | AMF/NVENC/QSV → libx264/libx265/libsvtav1 fallback                      |
-| transcribe                  | ai         | whisper.cpp, word timestamps, cached per asset                          |
-| silence, scenes             | cpu        | FFmpeg `silencedetect` / `scdet`                                        |
-| beats                       | cpu        | onset/tempo detection in a worker thread on decoded PCM                 |
-| reframe                     | ai         | ONNX face detection (onnxruntime-node, DirectML on Windows) + smoothing |
+| kind                             | class      | notes                                                                                                                   |
+| -------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| probe, waveform, thumbnails      | io / cpu   | fast, high priority                                                                                                     |
+| proxy                            | gpu-encode | 540×960, H.264, GOP 15, AAC — instant scrubbing on phones                                                               |
+| export, preview                  | gpu-encode | AMF/NVENC/QSV → libx264/libx265/libsvtav1 fallback                                                                      |
+| transcribe                       | ai         | whisper.cpp, word timestamps, cached per asset                                                                          |
+| silence, scenes                  | cpu        | FFmpeg `silencedetect` / `scdet`                                                                                        |
+| beats                            | cpu        | Beat This! neural beat/downbeat tracker (log-mel in a worker, ONNX), DSP fallback                                       |
+| reframe                          | ai         | D-FINE people/objects + YuNet faces + saliency, speaker/group planner, spring camera (YuNet-only fast mode as fallback) |
+| matte                            | ai         | MODNet subject matte → `matte.mkv` (FFV1, export) + `matte-proxy.mp4` (preview); cached on `asset.matte`                |
+| highlights, copywriter, emphasis | ai         | local LLM (llama.cpp Vulkan, `src/ai/llm/`): best moments, hook/caption/hashtags, caption keywords                      |
+| music.suggest                    | cpu        | royalty-free search, trend-matched ranking, BPM/chorus analysis of the best picks (`src/music`)                         |
+| trends                           | ai         | daily trend refresh: free sources → ranking → LLM-generated live pack (`src/trends`), lowest priority                   |
 
 ## Web (`@reelforge/web`)
 
@@ -265,6 +291,21 @@ See `packages/core/src/packs.ts`. Packs live in this repo under `packs/` and are
 every install (default every 6 h, and on demand). A pack bump is a normal PR: anyone can
 contribute new caption styles, templates, LUTs, transitions and effects that are trending.
 `scripts/build-packs.mjs` computes sha256/size for every file and regenerates `index.json`.
+
+## Upgrade round: how the pieces connect
+
+- **Trends ← LLM**: `startServer` passes `sharedLlm(paths)` (llama.cpp, lazy, 5 min idle unload)
+  to the TrendsService, so the daily `trends` job writes new caption styles, hooks and
+  templates into the live pack (ranking/remixes only when no model is installed). Non-LLM
+  `ai` jobs (transcribe, reframe, matte) are wrapped in `exclusiveAi` so two big models never
+  share the 16 GB.
+- **Trending → Auto Edit**: "Make this reel" opens `/?autoedit=1&topic=…&vibe=…`
+  (`apps/web/src/lib/trends.ts`).
+- **Auto Edit ← music/beats/trends**: `music.suggest` (`order: 'trend'`) → `/api/music/import`
+  (beats, downbeats, chorus) → core `insertMusicClip` inside `assembleAutoEdit`; cuts on bars
+  when the downbeats are clear; the newest generated caption style/text preset matching the
+  vibe wins (`trendBoosts`).
+- **Music ← trends**: the music service ranks against `TrendsService.soundProfiles()`.
 
 ## Testing
 

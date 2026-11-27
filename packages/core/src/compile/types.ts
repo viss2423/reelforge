@@ -37,6 +37,14 @@ export interface CompileContext {
   output: string
   /** Path of the .ass file the server wrote from buildAss(); omitted if no text/captions. */
   assPath?: string
+  /**
+   * `.ass` with only the "behind subject" text clips (buildAss `layer: 'behind'`); drawn
+   * under the main track's matte-cut subject. When set, `assPath` holds the other text
+   * (`layer: 'front'`). Ignored (and the server should use `layer: 'all'`) without mattes.
+   */
+  assBehindPath?: string
+  /** Subject matte video (gray, display orientation, source timing) of an asset, if ready. */
+  resolveMatte?(assetId: string): string | undefined
   fontsDir: string
   filterGraphPath: string
   resolveLut(ref: string): string | undefined

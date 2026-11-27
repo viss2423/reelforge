@@ -19,6 +19,7 @@ import {
   stepFrames,
   type CommandResult,
 } from './actions.ts'
+import { copySelection, cutSelection, pasteAtPlayhead } from './clipboard.ts'
 
 export const ZOOM_STEP = 1.25
 
@@ -77,6 +78,9 @@ export const DEFAULT_SHORTCUTS: readonly Shortcut[] = [
   { keys: ['z'], mod: true, shift: true, label: 'Redo', run: (s) => s.getState().redo() },
   { keys: ['y'], mod: true, label: 'Redo', run: (s) => s.getState().redo() },
   { keys: ['d'], mod: true, label: 'Duplicate', run: (s) => duplicateSelection(s) },
+  { keys: ['c'], mod: true, shift: false, label: 'Copy', run: (s) => copySelection(s) },
+  { keys: ['x'], mod: true, shift: false, label: 'Cut', run: (s) => cutSelection(s) },
+  { keys: ['v'], mod: true, shift: false, label: 'Paste', run: (s) => pasteAtPlayhead(s) },
   { keys: ['s'], mod: false, label: 'Split at playhead', run: (s) => splitAtPlayhead(s) },
   {
     keys: ['Delete', 'Backspace'],

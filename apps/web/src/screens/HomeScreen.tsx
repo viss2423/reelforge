@@ -1,5 +1,5 @@
-import { Clapperboard, Film, Plus, Upload } from 'lucide-react'
-import { Link } from 'react-router'
+import { Clapperboard, Film, Plus, Sparkles, Upload } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router'
 import { useJobs, useProjects, selectExports } from '@/api/queries.ts'
 import { Button } from '@/components/Button.tsx'
 import { EmptyState } from '@/components/EmptyState.tsx'
@@ -7,6 +7,7 @@ import { FileButton } from '@/components/FileButton.tsx'
 import { Skeleton } from '@/components/Skeleton.tsx'
 import { formatRelative } from '@/lib/format.ts'
 import { AppFrame, SectionTitle } from './AppFrame.tsx'
+import { AutoEditSheet } from './home/AutoEditSheet.tsx'
 import { ProjectCard } from './home/ProjectCard.tsx'
 import { TemplateCarousel } from './home/Templates.tsx'
 import { useStartProject } from './home/useImport.ts'
@@ -21,6 +22,13 @@ export function HomeScreen() {
   const projects = useProjects()
   const recentExports = useJobs(selectRecentExports)
   const { start, pending } = useStartProject()
+  // `?autoedit=1&topic=…&vibe=…` (from the trends screen) opens Auto edit prefilled.
+  const [params, setParams] = useSearchParams()
+  const autoEditOpen = params.get('autoedit') === '1'
+  const openAutoEdit = () => setParams({ autoedit: '1' })
+  const closeAutoEdit = () => setParams({}, { replace: true })
+  const topic = params.get('topic') ?? undefined
+  const vibe = params.get('vibe') ?? undefined
 
   return (
     <AppFrame title="Projects">
@@ -44,6 +52,26 @@ export function HomeScreen() {
           New project
         </button>
       </div>
+
+      <button
+        type="button"
+        data-testid="auto-edit"
+        onClick={openAutoEdit}
+        className="mt-3 flex w-full items-center gap-3 rounded-card bg-gradient-to-br from-violet/30 to-accent/20 p-4 text-left sm:max-w-md"
+      >
+        <Sparkles size={24} className="shrink-0 text-violet" />
+        <span className="flex min-w-0 flex-col">
+          <span className="font-semibold">Auto edit</span>
+          <span className="text-sm text-muted">Raw clips in, finished reel out</span>
+        </span>
+      </button>
+      {autoEditOpen && (
+        <AutoEditSheet
+          open
+          onClose={closeAutoEdit}
+          prefill={{ ...(topic ? { topic } : {}), ...(vibe ? { vibe } : {}) }}
+        />
+      )}
 
       <TemplateCarousel />
 

@@ -4,6 +4,7 @@ import type { Readable } from 'node:stream'
 import type { Asset } from '@reelforge/core'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
+import { matteProxyFile } from '../../ai/matte/index.ts'
 import { assetDir, assetFile, type AssetVariant } from '../../paths.ts'
 import { type AppDeps, deviceOf, parse } from '../deps.ts'
 import { HttpError, notFound } from '../errors.ts'
@@ -102,6 +103,17 @@ export const mediaRoutes = (app: FastifyInstance, deps: AppDeps): void => {
     }
   app.get('/api/assets/:id/original', stream('original'))
   app.get('/api/assets/:id/proxy', stream('proxy'))
+  // Preview mask of the AI matte (H.264 for videos, PNG for stills). Clients add `?v=<matte
+  // version>` so the immutable cache never serves a rebuilt matte stale.
+  app.get('/api/assets/:id/matte', async (req, reply) => {
+    const asset = getAsset(parse(IdParams, req.params).id)
+    if (asset.matte?.status !== 'ready')
+      throw new HttpError(404, 'not_ready', `matte is ${asset.matte?.status ?? 'missing'}`)
+    return sendFile(req, reply, matteProxyFile(paths, asset), {
+      cache: 'immutable',
+      type: asset.kind === 'image' ? 'image/png' : 'video/mp4',
+    })
+  })
 
   app.get('/api/assets/:id/:file', async (req, reply) => {
     const params = parse(IdParams.extend({ file: z.string() }), req.params)

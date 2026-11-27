@@ -19,6 +19,7 @@ import {
   type AudioClip,
   type AudioProps,
   type ChromaKey,
+  type ClipBackground,
   type Clip,
   type Crop,
   type EffectRef,
@@ -238,6 +239,19 @@ export const setChroma = (d: Project, clipId: string, patch: Partial<ChromaKey>)
   c.chromaKey = { ...DEFAULT_CHROMA, ...c.chromaKey, ...patch }
 }
 
+/** Schema defaults of an AI background. */
+export const DEFAULT_BACKGROUND: Readonly<ClipBackground> = Object.freeze({
+  mode: 'keep',
+  color: '#000000',
+  blur: 50,
+  feather: 0,
+})
+
+export const setBackground = (d: Project, clipId: string, patch: Partial<ClipBackground>): void => {
+  const c = need(clipOf(d, clipId, isMedia), clipId, 'media')
+  c.background = { ...DEFAULT_BACKGROUND, ...c.background, ...patch }
+}
+
 /* ------------------------------------------------------------------ transitions */
 
 /** Longest allowed transition into main clip `index` (half of either neighbour). */
@@ -380,6 +394,13 @@ export const resetTransform = (d: Project, clipId: string): void => {
 
 export const setText = (d: Project, clipId: string, text: string): void => {
   need(clipOf(d, clipId, isText), clipId, 'text').text = text
+}
+
+/** "Text behind subject": the main-track subject (from its matte) is drawn over the text. */
+export const setBehindSubject = (d: Project, clipId: string, on: boolean): void => {
+  const c = need(clipOf(d, clipId, isText), clipId, 'text')
+  if (on) c.behindSubject = true
+  else delete c.behindSubject
 }
 
 export const setTextStyle = (d: Project, clipId: string, patch: Partial<TextStyle>): void => {

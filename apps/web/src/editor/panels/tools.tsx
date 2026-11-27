@@ -11,6 +11,7 @@ import {
   CopyPlus,
   Crop,
   Diamond,
+  Eraser,
   Gauge,
   LayoutTemplate,
   Music,
@@ -192,7 +193,10 @@ export const toolsFor = (
       pressed: (c) => isVideo(c) && c.reverse,
     })
   if (isMedia(clip))
-    tools.push({ id: 'chroma', label: 'Chroma key', icon: Pipette, panel: CLIP_PANEL.chroma })
+    tools.push(
+      { id: 'background', label: 'Background', icon: Eraser, panel: CLIP_PANEL.background },
+      { id: 'chroma', label: 'Chroma key', icon: Pipette, panel: CLIP_PANEL.chroma },
+    )
   if (isMedia(clip) || clip.type === 'audio')
     tools.push({ id: 'replace', label: 'Replace', icon: Replace, panel: CLIP_PANEL.replace })
   if (isMedia(clip) && trackKind === 'main' && index > 0)

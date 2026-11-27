@@ -45,11 +45,13 @@ export const readSilence = (result: unknown): Range[] => {
   return out
 }
 
-/** `beats` → beat times (source time) and tempo. */
-export const readBeats = (result: unknown): { beats: Us[]; bpm: number } => {
+/** `beats` → beat and bar-start times (source time) and tempo. */
+export const readBeats = (result: unknown): { beats: Us[]; downbeats: Us[]; bpm: number } => {
   if (!isObj(result)) throw bad('beats')
   return {
     beats: usList(result.beats, 'beats').sort((a, b) => a - b),
+    downbeats:
+      result.downbeats === undefined ? [] : usList(result.downbeats, 'beats').sort((a, b) => a - b),
     bpm: typeof result.bpm === 'number' ? result.bpm : 0,
   }
 }
@@ -60,13 +62,120 @@ export const readScenes = (result: unknown): Us[] => {
   return usList(result.scenes, 'scenes').sort((a, b) => a - b)
 }
 
-/** `reframe` → subject path ({ t: source µs, x: 0..1 of the source width }). */
-export const readReframe = (result: unknown): { t: Us; x: number }[] => {
+/**
+ * `reframe` → subject path ({ t: source µs, x: 0..1 of the source width, w?: visible width
+ * 0..1 when a group has to stay in frame }).
+ */
+export const readReframe = (result: unknown): { t: Us; x: number; w?: number }[] => {
   if (!isObj(result) || !Array.isArray(result.path)) throw bad('reframe')
-  const out: { t: Us; x: number }[] = []
+  const out: { t: Us; x: number; w?: number }[] = []
+  const unit = (v: number) => Math.min(1, Math.max(0, v))
   for (const p of result.path) {
-    if (isObj(p) && isUs(p.t) && typeof p.x === 'number' && Number.isFinite(p.x))
-      out.push({ t: Math.round(p.t), x: Math.min(1, Math.max(0, p.x)) })
+    if (isObj(p) && isUs(p.t) && typeof p.x === 'number' && Number.isFinite(p.x)) {
+      const w = typeof p.w === 'number' && Number.isFinite(p.w) && p.w > 0 ? unit(p.w) : undefined
+      out.push({ t: Math.round(p.t), x: unit(p.x), ...(w !== undefined ? { w } : {}) })
+    }
   }
   return out
+}
+
+/** One chosen moment of a highlights variant (source time). */
+export interface HighlightMoment {
+  assetId: string
+  start: Us
+  end: Us
+  role: 'hook' | 'value' | 'payoff'
+  reason: string
+}
+
+export interface HighlightVariant {
+  id: string
+  label: string
+  moments: HighlightMoment[]
+  duration: Us
+}
+
+export interface Highlights {
+  ranker: 'llm' | 'heuristic'
+  variants: HighlightVariant[]
+}
+
+const ROLES = new Set(['hook', 'value', 'payoff'])
+
+/** `highlights` → variants of story-ordered moments. */
+export const readHighlights = (result: unknown): Highlights => {
+  if (!isObj(result) || !Array.isArray(result.variants)) throw bad('highlights')
+  const variants: HighlightVariant[] = []
+  for (const v of result.variants) {
+    if (!isObj(v) || !Array.isArray(v.moments)) continue
+    const moments: HighlightMoment[] = []
+    for (const m of v.moments) {
+      if (!isObj(m) || typeof m.assetId !== 'string' || !isUs(m.start) || !isUs(m.end)) continue
+      if (m.end <= m.start) continue
+      moments.push({
+        assetId: m.assetId,
+        start: Math.round(m.start),
+        end: Math.round(m.end),
+        role:
+          typeof m.role === 'string' && ROLES.has(m.role)
+            ? (m.role as HighlightMoment['role'])
+            : 'value',
+        reason: typeof m.reason === 'string' ? m.reason : '',
+      })
+    }
+    if (!moments.length) continue
+    variants.push({
+      id: typeof v.id === 'string' ? v.id : `v${variants.length}`,
+      label: typeof v.label === 'string' ? v.label : `Version ${variants.length + 1}`,
+      moments,
+      duration: moments.reduce((n, m) => n + m.end - m.start, 0),
+    })
+  }
+  if (!variants.length) throw bad('highlights')
+  return { ranker: result.ranker === 'llm' ? 'llm' : 'heuristic', variants }
+}
+
+export interface Copy {
+  hooks: string[]
+  caption: string
+  hashtags: string[]
+}
+
+const strings = (v: unknown): string[] =>
+  Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string' && s.trim() !== '') : []
+
+/** `copywriter` → hook lines, caption, hashtags. */
+export const readCopy = (result: unknown): Copy => {
+  if (!isObj(result)) throw bad('copywriter')
+  const hooks = strings(result.hooks)
+  if (!hooks.length) throw bad('copywriter')
+  return {
+    hooks,
+    caption: typeof result.caption === 'string' ? result.caption : '',
+    hashtags: strings(result.hashtags),
+  }
+}
+
+export interface Emphasis {
+  marks: { index: number; emoji?: string }[]
+  chapters: { index: number; title: string }[]
+}
+
+/** `emphasis` → caption word indices to highlight (+ emoji) and chapter starts. */
+export const readEmphasis = (result: unknown): Emphasis => {
+  if (!isObj(result) || !Array.isArray(result.marks)) throw bad('emphasis')
+  const marks: Emphasis['marks'] = []
+  for (const m of result.marks) {
+    if (!isObj(m) || !isUs(m.index)) continue
+    marks.push({
+      index: Math.round(m.index),
+      ...(typeof m.emoji === 'string' && m.emoji ? { emoji: m.emoji } : {}),
+    })
+  }
+  const chapters: Emphasis['chapters'] = []
+  for (const c of Array.isArray(result.chapters) ? result.chapters : []) {
+    if (isObj(c) && isUs(c.index) && typeof c.title === 'string' && c.title.trim())
+      chapters.push({ index: Math.round(c.index), title: c.title.trim() })
+  }
+  return { marks, chapters }
 }

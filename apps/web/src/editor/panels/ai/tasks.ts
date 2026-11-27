@@ -13,7 +13,18 @@ import { describeError } from '../model/commands.ts'
 import type { FlowContext } from './flows.ts'
 import type { JobDeps } from './jobs.ts'
 
-export type AiTaskId = 'silence' | 'fillers' | 'captions' | 'beats' | 'scenes' | 'reframe' | 'magic'
+export type AiTaskId =
+  | 'silence'
+  | 'fillers'
+  | 'captions'
+  | 'beats'
+  | 'scenes'
+  | 'reframe'
+  | 'magic'
+  | 'autoedit'
+  | 'highlights'
+  | 'copy'
+  | 'emphasis'
 
 /** What a finished flow hands back: a message, or a preview the user confirms. */
 export type TaskOutcome =

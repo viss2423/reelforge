@@ -198,7 +198,7 @@ export const fakeCore = (real: CoreModule) => {
       },
     ),
     syncToBeats: vi.fn<CoreModule['syncToBeats']>(
-      (_p: P, _beats: readonly number[], _opts?: { every?: 1 | 2 | 4 }) => {},
+      (_p: P, _beats: readonly number[], _opts?: Core.BeatSyncOptions) => {},
     ),
     applyReframe: vi.fn<CoreModule['applyReframe']>(
       (p: P, clipId: string, path: ReadonlyArray<{ t: number; x: number }>) => {

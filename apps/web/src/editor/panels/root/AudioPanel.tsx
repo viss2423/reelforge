@@ -1,5 +1,6 @@
 /**
- * Audio tool: add music (upload or library) and record a voiceover on the device. New
+ * Audio tool: automatic royalty-free music, the music library browser, uploads of your own
+ * tracks and a voiceover recorded on the device. New
  * audio lands at the playhead; a voiceover lands where recording started, so it lines up
  * with the picture that was playing while it was spoken.
  */
@@ -16,6 +17,8 @@ import { useAssetsMap } from '@/state/selectors.ts'
 import { isAssetPlaceable } from '../../actions.ts'
 import { describeError, edit } from '../model/commands.ts'
 import { uploadAndWait } from '../upload.ts'
+import { AutoMusicSection, MusicLibrarySection } from './AutoMusic.tsx'
+import { TrendingSounds } from './TrendingSounds.tsx'
 import { Hint, PanelBody, Section } from '../ui.tsx'
 import { canRecord, startRecording, type ActiveRecording } from './recorder.ts'
 
@@ -49,7 +52,7 @@ function MusicSection() {
   }
   return (
     <Section
-      title="Music"
+      title="Your music"
       action={
         <FileButton
           onFiles={(f) => void upload(f)}
@@ -210,6 +213,9 @@ function VoiceoverSection() {
 export function AudioPanel() {
   return (
     <PanelBody>
+      <AutoMusicSection />
+      <TrendingSounds />
+      <MusicLibrarySection />
       <MusicSection />
       <VoiceoverSection />
     </PanelBody>
