@@ -198,11 +198,19 @@ export class TabDriver {
 
   /** Scrolls the element into view and taps its centre. */
   async tapOn(selector: string, nth = 0): Promise<void> {
+    const before = await this.box(selector, nth)
     await this.eval(
       ([sel, i]: [string, number]) =>
-        document.querySelectorAll(sel)[i]?.scrollIntoView({ block: 'nearest' }),
+        document
+          .querySelectorAll(sel)
+          [i]?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' }),
       [selector, nth],
     )
+    // Android Chrome drops the click of a tap that lands right after a scroll (it treats it
+    // as stopping a fling), so give a scroll that just happened time to settle.
+    const after = await this.box(selector, nth)
+    if (before && after && (before.x !== after.x || before.y !== after.y))
+      await new Promise((r) => setTimeout(r, 400))
     // Wait until it stops moving (sheets slide in): a tap mid-animation lands elsewhere.
     let b = await this.waitBox(selector, nth)
     for (let i = 0; i < 30; i++) {

@@ -83,6 +83,10 @@ interface Measurements {
   playback?: { fps: number; frameMs: number; waits: number; inexactFrames: number }
   heapMB?: number
   exportMs?: number
+  autoMusicMs?: number
+  matteMs?: number
+  autoEditMs?: number
+  trends?: { topics: number; sounds: number; ms: number }
   pwa?: { serviceWorker?: string; installabilityErrors: string[] }
   errors: string[]
 }
@@ -112,6 +116,151 @@ test.describe('real Android device', () => {
   const clipSel = '[data-testid="timeline-clip"]'
   const clipCount = () =>
     tab.eval<number>(() => document.querySelectorAll('[data-testid="timeline-clip"]').length)
+  /** Taps the first visible button (or radio) whose accessible name or text matches. */
+  const tapText = async (text: string, within = 'body') => {
+    await tab.waitFor(
+      `button "${text}"`,
+      ([t, w]: [string, string]) => {
+        document.querySelector('[data-rf-tap]')?.removeAttribute('data-rf-tap')
+        const el = [...document.querySelectorAll(`${w} button, ${w} [role="radio"]`)].find(
+          (b) =>
+            (b.getAttribute('aria-label') ?? b.textContent ?? '').trim() === t &&
+            (b as HTMLElement).offsetParent !== null,
+        )
+        el?.setAttribute('data-rf-tap', '')
+        return !!el
+      },
+      { arg: [text, within] },
+    )
+    await tab.tapOn('[data-rf-tap]')
+  }
+  /** Text of the first visible alert, prefixed so a test can tell it from success. */
+  const failure = () => {
+    const a = document.querySelector('[role="alert"]')?.textContent
+    return a ? `ERROR ${a}` : ''
+  }
+  /**
+   * Real finger input (`adb shell input`): the OS touch pipeline, exactly like a person.
+   * CSS px → screen px needs the page's offset on screen (Chrome's own UI above it), found
+   * once by tapping a transparent overlay and reading where the page saw the touch.
+   */
+  let toScreen: ((x: number, y: number) => [number, number]) | undefined
+  const screenMap = async () => {
+    if (toScreen) return toScreen
+    await tab.eval(() => {
+      const o = document.createElement('div')
+      o.id = 'rf-calibrate'
+      o.style.cssText = 'position:fixed;inset:0;z-index:2147483647'
+      o.addEventListener('pointerdown', (e) => {
+        o.dataset.at = `${e.clientX},${e.clientY}`
+      })
+      document.body.append(o)
+    })
+    const [sx, sy] = [400, 1200]
+    await adb(serial, 'shell', 'input', 'tap', String(sx), String(sy))
+    const at = await tab.waitFor<string>('calibration tap', () => {
+      const o = document.getElementById('rf-calibrate')
+      return o?.dataset.at
+    })
+    const dpr = await tab.eval<number>(() => {
+      document.getElementById('rf-calibrate')?.remove()
+      return devicePixelRatio
+    })
+    const [cx, cy] = at.split(',').map(Number) as [number, number]
+    const [ox, oy] = [sx - cx * dpr, sy - cy * dpr]
+    toScreen = (x, y) => [Math.round(ox + x * dpr), Math.round(oy + y * dpr)]
+    return toScreen
+  }
+  const fingerTap = async (selector: string) => {
+    const map = await screenMap()
+    const vw = await tab.eval<number>(() => innerWidth)
+    /** The part of the element inside the viewport, horizontally. */
+    const visible = (b: { x: number; width: number }) => {
+      const lo = Math.max(0, b.x)
+      const hi = Math.min(vw, b.x + b.width)
+      return { lo, hi, enough: hi - lo >= Math.min(b.width, 40) - 0.5 }
+    }
+    // Mostly off-screen in a horizontal strip (the tool bar)? Swipe it into view like a person.
+    for (let i = 0; i < 6; i++) {
+      const b = await tab.waitBox(selector)
+      if (visible(b).enough) break
+      const [, y] = map(0, b.y + b.height / 2)
+      const [l] = map(vw * 0.25, 0)
+      const [r] = map(vw * 0.75, 0)
+      const [from, to] = b.x < 0 ? [l, r] : [r, l]
+      await adb(
+        serial,
+        'shell',
+        'input',
+        'swipe',
+        String(from),
+        String(y),
+        String(to),
+        String(y),
+        '400',
+      )
+      await new Promise((res) => setTimeout(res, 700))
+    }
+    // A tap during a fling only stops it (as on any phone): wait for the strip to come to rest.
+    let box = await tab.waitBox(selector)
+    for (let still = 0, i = 0; still < 2 && i < 30; i++) {
+      await new Promise((res) => setTimeout(res, 120))
+      const next = await tab.waitBox(selector)
+      still = Math.abs(next.x - box.x) < 0.5 && Math.abs(next.y - box.y) < 0.5 ? still + 1 : 0
+      box = next
+    }
+    const { lo, hi } = visible(box)
+    const [x, y] = map((lo + hi) / 2, box.y + box.height / 2)
+    await adb(serial, 'shell', 'input', 'tap', String(x), String(y))
+  }
+  /** Closes the open tool sheet the way a person does: swipe its handle down. */
+  const closeSheet = async () => {
+    const sel = '[data-testid="sheet-handle"]'
+    const vh = await tab.eval<number>(() => innerHeight)
+    // Wait until the sheet has finished sliding in (handle on screen and still).
+    let h = await tab.waitBox(sel)
+    for (let i = 0; i < 40; i++) {
+      await new Promise((r) => setTimeout(r, 80))
+      const next = await tab.waitBox(sel)
+      const still = Math.abs(next.y - h.y) < 0.5
+      h = next
+      if (still && h.y < vh - h.height) break
+    }
+    const map = await screenMap()
+    const [x1, y1] = map(h.x + h.width / 2, h.y + h.height / 2)
+    const [, y2] = map(0, vh - 8)
+    await adb(
+      serial,
+      'shell',
+      'input',
+      'swipe',
+      String(x1),
+      String(y1),
+      String(x1),
+      String(y2),
+      '250',
+    )
+    // The sheet stays mounted (it animates closed); closed = no tool is pressed any more.
+    await tab.waitFor(
+      'sheet closed',
+      () => !document.querySelector('[role="toolbar"] [aria-pressed="true"]'),
+    )
+    // Human pace: Chrome on Android ignores a tap that lands within ~1 s of a swipe it
+    // treated as a fling (measured on the OnePlus: the click never fires).
+    await new Promise((r) => setTimeout(r, 1000))
+  }
+  /** Opens a tool panel from the tool bar with a real tap. */
+  const openTool = async (id: string) => {
+    const sel = `[role="toolbar"] [data-tool="${id}"]`
+    await fingerTap(sel)
+    await tab.waitFor(
+      `${id} panel`,
+      (q: string) => document.querySelector(q)?.getAttribute('aria-pressed') === 'true',
+      { arg: sel },
+    )
+  }
+  const audioClips = async () =>
+    (await project()).tracks.filter((t) => t.kind === 'audio').flatMap((t) => t.clips).length
 
   test.beforeAll(async () => {
     test.setTimeout(120_000)
@@ -132,11 +281,11 @@ test.describe('real Android device', () => {
         async (r) => (r.ok ? ((await r.json()) as { Browser: string }) : undefined),
         () => undefined,
       )
-    if (!(await version())) {
-      const intent = ['am', 'start', '-a', 'android.intent.action.VIEW', '-d', `'${MARKER}'`]
-      await adb(serial, 'shell', ...intent, 'com.android.chrome')
-      await expect.poll(async () => !!(await version()), { timeout: 20_000 }).toBe(true)
-    }
+    // Always (re)open the marker page: it starts Chrome if needed and, just as important,
+    // brings it to the foreground — a backgrounded Chrome never fires load events or renders.
+    const intent = ['am', 'start', '-a', 'android.intent.action.VIEW', '-d', `'${MARKER}'`]
+    await adb(serial, 'shell', ...intent, 'com.android.chrome')
+    await expect.poll(async () => !!(await version()), { timeout: 20_000 }).toBe(true)
     m.chrome = (await version())!.Browser
     tab = await TabDriver.open(DEVTOOLS)
     // The phone does not trust the host's local CA (installing it would change the phone);
@@ -168,6 +317,18 @@ test.describe('real Android device', () => {
         body: Buffer.from('{"error":"off"}').toString('base64'),
       })
     })
+  })
+
+  // A failed step attaches what the phone actually showed (the OS screenshot, Chrome UI included).
+  // Playwright requires the fixtures argument to be a destructuring pattern.
+  // oxlint-disable-next-line no-empty-pattern
+  test.afterEach(async ({}, info) => {
+    if (!serial || info.status === info.expectedStatus) return
+    const file = info.outputPath('phone.png')
+    await adb(serial, 'shell', 'screencap', '-p', '/sdcard/rf-e2e.png')
+    await adb(serial, 'pull', '/sdcard/rf-e2e.png', file)
+    await adb(serial, 'shell', 'rm', '/sdcard/rf-e2e.png')
+    await info.attach('phone', { path: file, contentType: 'image/png' })
   })
 
   test.afterAll(async () => {
@@ -238,13 +399,19 @@ test.describe('real Android device', () => {
     // First frame after a cold load of the editor.
     const t0 = Date.now()
     await tab.goto(`${BASE_URL}/p/${projectId}`)
-    await tab.waitFor(
-      'first exact frame',
-      () =>
-        (globalThis as { __rfPreviewStats?: { frameExact: boolean } }).__rfPreviewStats
-          ?.frameExact === true,
-      { timeout: 20_000 },
-    )
+    await tab
+      .waitFor(
+        'first exact frame',
+        () =>
+          (globalThis as { __rfPreviewStats?: { frameExact: boolean } }).__rfPreviewStats
+            ?.frameExact === true,
+        { timeout: 20_000 },
+      )
+      .catch(async (err: unknown) => {
+        // Say why: decoder, GPU context, fetches, decoded frames.
+        throw new Error(`${String(err)}
+preview stats: ${JSON.stringify(await stats())}`)
+      })
     m.firstFrameMs = Date.now() - t0
     expect((await stats())!.decoder).toBe('webcodecs')
 
@@ -399,12 +566,80 @@ test.describe('real Android device', () => {
       const labels = [...document.querySelectorAll('button')].map((b) => b.textContent?.trim())
       return labels.includes('Generate captions') && labels.includes('Find silences')
     })
-    await tab.tapOn('[role="toolbar"] [data-tool="ai"]')
+    await closeSheet()
+  })
+
+  test('auto music: a real trend-matched royalty-free track lands on the timeline', async () => {
+    test.setTimeout(180_000)
+    await openTool('audio')
+    const before = await audioClips()
+    const t0 = Date.now()
+    await tab.tapOn('[data-testid="auto-music"]', 0)
+    const pick = await tab.waitFor<string>(
+      'auto music pick',
+      `(${String(failure)})() || document.querySelector('[data-testid="auto-music-pick"]')?.textContent`,
+      { timeout: 150_000 },
+    )
+    expect(pick).not.toMatch(/^ERROR/)
+    m.autoMusicMs = Date.now() - t0
+    await saved()
+    await expect.poll(audioClips).toBeGreaterThan(before)
+    await closeSheet()
+  })
+
+  test('background removal runs on the host with the real model', async () => {
+    test.setTimeout(240_000)
+    const main = (await project()).tracks.find((t) => t.kind === 'main')!.clips[0]!.id
+    await fingerTap(`${clipSel}[data-clip-id="${main}"]`)
+    await tab.waitFor(
+      'clip selected',
+      (id: string) =>
+        document
+          .querySelector(`[data-testid="timeline-clip"][data-clip-id="${id}"]`)
+          ?.hasAttribute('data-selected'),
+      { arg: main },
+    )
+    await openTool('background')
+    await tapText('Remove', '[role="radiogroup"][aria-label="Background"]')
+    const t0 = Date.now()
+    const outcome = await tab.waitFor<string>(
+      'subject separated',
+      `(${String(failure)})() || (document.body.innerText.includes('Subject separated.') && 'done')`,
+      { timeout: 220_000 },
+    )
+    expect(outcome).toBe('done')
+    m.matteMs = Date.now() - t0
+    await saved()
+    await closeSheet()
+    await tab.eval(() =>
+      document.querySelector<HTMLButtonElement>('[role="toolbar"] [aria-label="Done"]')?.click(),
+    )
+  })
+
+  test('auto edit this project with the local LLM, variants to choose from', async () => {
+    test.setTimeout(300_000)
+    await openTool('ai')
+    await tapText('Auto edit this project')
+    const t0 = Date.now()
+    const outcome = await tab.waitFor<string>(
+      'auto edit variants',
+      `(${String(failure)})() || (!!document.querySelector('[data-testid="autoedit-variants"]') && 'done')`,
+      { timeout: 280_000 },
+    )
+    expect(outcome).toBe('done')
+    m.autoEditMs = Date.now() - t0
+    const variants = await tab.eval<number>(
+      () => document.querySelectorAll('[data-testid="autoedit-variants"] [role="radio"]').length,
+    )
+    expect(variants).toBeGreaterThan(0)
+    await saved()
+    expect(await clipCount()).toBeGreaterThan(0)
+    await closeSheet()
   })
 
   test('exports and downloads the MP4 on the phone', async () => {
     test.setTimeout(180_000)
-    await tab.tapOn('[data-testid="export-open"]')
+    await fingerTap('[data-testid="export-open"]')
     const t0 = Date.now()
     await tab.tapOn('[data-testid="export-start"]')
     const outcome = await tab.waitFor<string>(
@@ -432,6 +667,24 @@ test.describe('real Android device', () => {
     )
     expect(file).toMatchObject({ status: 200, type: 'video/mp4', brand: 'ftyp' })
     expect(file.size).toBeGreaterThan(50_000)
+  })
+
+  test('Trending tab shows live topics on the phone', async () => {
+    test.setTimeout(240_000)
+    await tab.goto(`${BASE_URL}/trending`)
+    await tab.waitBox('[data-testid="trending"]')
+    const t0 = Date.now()
+    const counts = await tab.waitFor<{ topics: number; sounds: number }>(
+      'trend topics',
+      () => {
+        const topics = document.querySelectorAll('[data-testid="trend-topics"] li').length
+        const sounds = document.querySelectorAll('[data-testid="trend-sounds"] li').length
+        return topics > 0 ? { topics, sounds } : undefined
+      },
+      { timeout: 220_000 },
+    )
+    m.trends = { ...counts, ms: Date.now() - t0 }
+    expect(counts.topics).toBeGreaterThan(0)
   })
 
   test('is an installable PWA (manifest, service worker, installability)', async () => {
