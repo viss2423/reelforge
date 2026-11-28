@@ -134,27 +134,18 @@ export const run = (
     if (opts.onStdoutData && child.stdout) {
       const out = child.stdout
       const consume = opts.onStdoutData
-      out.on('data', (chunk: Buffer) => {
-        if (consumerError !== undefined) return
-        let r: void | Promise<void>
+      // Pulled one chunk at a time: the next read waits for the consumer. (Not pause() in a
+      // 'data' handler: when the child exits Node resumes such streams, and a chunk would
+      // then arrive while the previous one is still being consumed.)
+      inFlight = (async () => {
         try {
-          r = consume(chunk)
+          for await (const chunk of out) await consume(chunk as Buffer)
         } catch (err) {
+          // Leaving the loop destroys stdout; stop the producer too.
           consumerError ??= err
           kill(child)
-          return
         }
-        if (r instanceof Promise) {
-          out.pause()
-          inFlight = r.then(
-            () => out.resume(),
-            (err: unknown) => {
-              consumerError ??= err
-              kill(child)
-            },
-          )
-        }
-      })
+      })()
     } else if (opts.onStdoutLine && child.stdout) {
       child.stdout.on('data', lineSplitter(opts.onStdoutLine))
     }

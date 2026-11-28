@@ -45,6 +45,30 @@ describe('run', () => {
     expect(maxInFlight).toBe(1)
   })
 
+  it('never overlaps chunks when the child exits while the consumer is busy', async () => {
+    // Node resumes a child's paused stdio when it exits: the runner must not rely on pause().
+    const seen: string[] = []
+    let inFlight = 0
+    let maxInFlight = 0
+    await run(
+      node,
+      script(
+        "let i = 0; const next = () => i < 8 ? process.stdout.write('c' + i++ + ';', next) : process.exit(0); next()",
+      ),
+      {
+        onStdoutData: async (chunk) => {
+          inFlight++
+          maxInFlight = Math.max(maxInFlight, inFlight)
+          await new Promise((r) => setTimeout(r, 60))
+          seen.push(chunk.toString())
+          inFlight--
+        },
+      },
+    )
+    expect(maxInFlight).toBe(1)
+    expect(seen.join('')).toBe('c0;c1;c2;c3;c4;c5;c6;c7;')
+  })
+
   it('resolves with non-zero exit codes; runChecked turns them into ToolError with the stderr tail', async () => {
     const r = await run(node, script("console.error('boom'); process.exit(3)"))
     expect(r.code).toBe(3)
