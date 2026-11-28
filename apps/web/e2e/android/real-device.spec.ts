@@ -140,6 +140,30 @@ test.describe('real Android device', () => {
     return a ? `ERROR ${a}` : ''
   }
   /**
+   * `adb shell input`, but only while this test's tab is what's on screen: real input goes
+   * to whatever is showing, and it must never land in another app or another tab the owner
+   * has open.
+   */
+  const input = async (...args: string[]) => {
+    const visible = await tab.eval<string>(() => document.visibilityState).catch(() => '?')
+    if (visible !== 'visible')
+      throw new Error(
+        'not sending real input: the test tab is not on screen (another tab or app is in front). Leave the phone alone during the pass.',
+      )
+    const top = await adb(
+      serial,
+      'shell',
+      'dumpsys activity activities | grep -m1 topResumedActivity',
+    )
+    // "topResumedActivity=ActivityRecord{… u0 com.android.chrome/….Main t2}" → the package.
+    const app = / u\d+ ([\w.]+)\//.exec(top)?.[1]
+    if (app !== 'com.android.chrome')
+      throw new Error(
+        `not sending real input: ${app ?? 'another app'} is in front, not Chrome. Leave the phone on Chrome during the pass.`,
+      )
+    await adb(serial, 'shell', 'input', ...args)
+  }
+  /**
    * Real finger input (`adb shell input`): the OS touch pipeline, exactly like a person.
    * CSS px → screen px needs the page's offset on screen (Chrome's own UI above it), found
    * once by tapping a transparent overlay and reading where the page saw the touch.
@@ -157,7 +181,7 @@ test.describe('real Android device', () => {
       document.body.append(o)
     })
     const [sx, sy] = [400, 1200]
-    await adb(serial, 'shell', 'input', 'tap', String(sx), String(sy))
+    await input('tap', String(sx), String(sy))
     const at = await tab.waitFor<string>('calibration tap', () => {
       const o = document.getElementById('rf-calibrate')
       return o?.dataset.at
@@ -188,17 +212,7 @@ test.describe('real Android device', () => {
       const [l] = map(vw * 0.25, 0)
       const [r] = map(vw * 0.75, 0)
       const [from, to] = b.x < 0 ? [l, r] : [r, l]
-      await adb(
-        serial,
-        'shell',
-        'input',
-        'swipe',
-        String(from),
-        String(y),
-        String(to),
-        String(y),
-        '400',
-      )
+      await input('swipe', String(from), String(y), String(to), String(y), '400')
       await new Promise((res) => setTimeout(res, 700))
     }
     // A tap during a fling only stops it (as on any phone): wait for the strip to come to rest.
@@ -211,7 +225,7 @@ test.describe('real Android device', () => {
     }
     const { lo, hi } = visible(box)
     const [x, y] = map((lo + hi) / 2, box.y + box.height / 2)
-    await adb(serial, 'shell', 'input', 'tap', String(x), String(y))
+    await input('tap', String(x), String(y))
   }
   /** Closes the open tool sheet the way a person does: swipe its handle down. */
   const closeSheet = async () => {
@@ -229,17 +243,7 @@ test.describe('real Android device', () => {
     const map = await screenMap()
     const [x1, y1] = map(h.x + h.width / 2, h.y + h.height / 2)
     const [, y2] = map(0, vh - 8)
-    await adb(
-      serial,
-      'shell',
-      'input',
-      'swipe',
-      String(x1),
-      String(y1),
-      String(x1),
-      String(y2),
-      '250',
-    )
+    await input('swipe', String(x1), String(y1), String(x1), String(y2), '250')
     // The sheet stays mounted (it animates closed); closed = no tool is pressed any more.
     await tab.waitFor(
       'sheet closed',
@@ -310,6 +314,8 @@ test.describe('real Android device', () => {
     // The phone does not trust the host's local CA (installing it would change the phone);
     // ignore certificate errors in this tab's DevTools session only.
     await tab.send('Security.setIgnoreCertificateErrors', { ignore: true })
+    // Start unpaired even when an interrupted run never reached its cleanup.
+    await tab.send('Storage.clearDataForOrigin', { origin: BASE_URL, storageTypes: 'all' })
     await tab.send('Runtime.enable')
     await tab.send('Network.enable')
     tab.on('Runtime.exceptionThrown', (p) => {

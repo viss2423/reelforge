@@ -93,14 +93,33 @@ export class TabDriver {
     browserWs.close()
     const host = new URL(endpoint).host
     const ws = await connect(`ws://${host}/devtools/page/${targetId}`)
-    return new TabDriver(endpoint, { id: targetId, url: 'about:blank' }, ws)
+    const tab = new TabDriver(endpoint, { id: targetId, url: 'about:blank' }, ws)
+    // A new tab can open behind the current one: a background tab never renders or acks
+    // input (Input.dispatchTouchEvent would wait forever). Make it the visible tab.
+    await fetch(`${endpoint}/json/activate/${targetId}`)
+    await tab.send('Page.bringToFront')
+    return tab
   }
 
   send<T = Record<string, unknown>>(method: string, params: object = {}): Promise<T> {
     const id = ++this.#seq
     this.#ws.send(JSON.stringify({ id, method, params }))
     return new Promise<T>((resolve, reject) => {
-      this.#pending.set(id, { resolve: resolve as (v: unknown) => void, reject })
+      // A frozen tab never answers: fail with the method instead of hanging the run.
+      const timer = setTimeout(() => {
+        this.#pending.delete(id)
+        reject(new Error(`DevTools ${method} got no answer in 30 s`))
+      }, 30_000)
+      this.#pending.set(id, {
+        resolve: (v: unknown) => {
+          clearTimeout(timer)
+          ;(resolve as (v: unknown) => void)(v)
+        },
+        reject: (err: Error) => {
+          clearTimeout(timer)
+          reject(err)
+        },
+      })
     })
   }
 
@@ -126,16 +145,33 @@ export class TabDriver {
     return r.result.value as T
   }
 
-  async goto(url: string): Promise<void> {
+  /**
+   * Navigates and waits for the load. The load event is the signal; polling readyState
+   * covers a missed event, and a timeout says where the page got stuck instead of hanging.
+   */
+  async goto(url: string, timeout = 30_000): Promise<void> {
     await this.send('Page.enable')
-    const loaded = new Promise<void>((resolve) => {
-      const off = this.on('Page.loadEventFired', () => {
-        off()
-        resolve()
-      })
+    const before = await this.eval<string>(() => location.href).catch(() => '')
+    let fired = false
+    const off = this.on('Page.loadEventFired', () => {
+      fired = true
     })
-    await this.send('Page.navigate', { url })
-    await loaded
+    try {
+      const nav = await this.send<{ errorText?: string }>('Page.navigate', { url })
+      if (nav.errorText) throw new Error(`navigation to ${url} failed: ${nav.errorText}`)
+      const end = Date.now() + timeout
+      for (;;) {
+        if (fired) return
+        const s = await this.eval<string>(() => `${document.readyState} ${location.href}`).catch(
+          () => '',
+        )
+        if (s.startsWith('complete ') && s.slice(9) !== before) return
+        if (Date.now() > end) throw new Error(`timed out loading ${url} (now: ${s || '?'})`)
+        await new Promise((r) => setTimeout(r, 200))
+      }
+    } finally {
+      off()
+    }
   }
 
   /** Polls `fn` in the page until it returns a truthy value (which is returned). */
