@@ -88,10 +88,14 @@ const renderAt = (path: string) => {
 
 const paired = () => auth.setSession({ token: 'tok', deviceId: 'dev1' })
 
-describe('routes', () => {
+// Every screen is a lazy route chunk: its first import in a worker pays the module
+// transform, which under a loaded full-workspace run can take several seconds.
+const LAZY = { timeout: 15_000 }
+
+describe('routes', { timeout: 20_000 }, () => {
   it('sends an unpaired device to /pair (after trying loopback pairing)', async () => {
     const router = renderAt('/exports')
-    expect(await screen.findByText('Connect to your ReelForge')).toBeTruthy()
+    expect(await screen.findByText('Connect to your ReelForge', {}, LAZY)).toBeTruthy()
     expect(router.state.location.pathname).toBe('/pair')
     expect(router.state.location.search).toBe('?next=%2Fexports')
     expect(fetchMock.mock.calls.some(([u]) => urlOf(u).endsWith('/api/pair/local'))).toBe(true)
@@ -99,7 +103,7 @@ describe('routes', () => {
 
   it('pairs automatically from a QR link and continues to next', async () => {
     const router = renderAt('/pair?code=123456&next=%2Fsettings')
-    await waitFor(() => expect(router.state.location.pathname).toBe('/settings'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/settings'), LAZY)
     const pairCall = fetchMock.mock.calls.find(([u]) => urlOf(u).endsWith('/api/pair'))
     const body = pairCall?.[1]?.body
     expect(JSON.parse(typeof body === 'string' ? body : 'null')).toMatchObject({ code: '123456' })
@@ -110,42 +114,38 @@ describe('routes', () => {
   it('shows an actionable error for a wrong code', async () => {
     table['POST /api/pair'] = () => ({ status: 401, body: { message: 'bad code' } })
     renderAt('/pair?code=000000')
-    expect((await screen.findByRole('alert')).textContent).toMatch(/wrong or has expired/)
+    expect((await screen.findByRole('alert', {}, LAZY)).textContent).toMatch(/wrong or has expired/)
   })
 
   it('never redirects off-site after pairing', async () => {
     const router = renderAt('/pair?code=123456&next=%2F%2Fevil.example')
-    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'), LAZY)
   })
 
   it('renders Home with the projects grid', async () => {
     paired()
     renderAt('/')
-    expect(await screen.findByRole('heading', { name: 'Projects' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Projects' }, LAZY)).toBeTruthy()
     expect(await screen.findByText('Beach day')).toBeTruthy()
   })
 
   it('renders Exports and Settings', async () => {
     paired()
     renderAt('/exports')
-    expect(await screen.findByText('No exports yet')).toBeTruthy()
+    expect(await screen.findByText('No exports yet', {}, LAZY)).toBeTruthy()
   })
 
   it('renders Settings', async () => {
     paired()
     renderAt('/settings')
-    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Settings' }, LAZY)).toBeTruthy()
   })
 
   it('renders the share target with nothing shared', async () => {
     paired()
     renderAt('/share-target')
-    expect(await screen.findByText('Nothing to import')).toBeTruthy()
+    expect(await screen.findByText('Nothing to import', {}, LAZY)).toBeTruthy()
   })
-
-  // The editor route is a lazy chunk (timeline, panels, preview engine): its first import
-  // under a loaded full-suite run can take several seconds.
-  const LAZY = { timeout: 15_000 }
 
   it('opens the editor: project in the store, preview fallback, slots mounted', async () => {
     paired()
@@ -157,16 +157,16 @@ describe('routes', () => {
     expect(screen.getByTestId('timeline')).toBeTruthy()
     expect(screen.getByRole('toolbar', { name: 'Tools' })).toBeTruthy()
     expect(screen.getByTestId('timecode').textContent).toBe('0:00 / 0:05')
-  }, 20_000)
+  })
 
   it('shows "Project not found" for a deleted project', async () => {
     paired()
     renderAt('/p/gone')
     expect(await screen.findByText('Project not found', {}, LAZY)).toBeTruthy()
-  }, 20_000)
+  })
 
   it('renders the 404 page', async () => {
     renderAt('/definitely/not/here')
-    expect(await screen.findByText('Page not found')).toBeTruthy()
+    expect(await screen.findByText('Page not found', {}, LAZY)).toBeTruthy()
   })
 })

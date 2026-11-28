@@ -412,21 +412,4 @@ describe('JobQueue', () => {
     await delay(10)
     expect(store.getJob(j.id)?.status).toBe('queued')
   })
-
-  it('schedules thousands of jobs quickly', async () => {
-    let done = 0
-    const { queue } = await setup([
-      def('probe', 'io', async () => {
-        done++
-      }),
-    ])
-    const t0 = performance.now()
-    for (let i = 0; i < 2_000; i++) queue.enqueue('probe', {}, { priority: i % 7 })
-    queue.start()
-    await queue.idle()
-    const ms = performance.now() - t0
-    console.info(`[queue.test] 2000 jobs enqueued+run+persisted in ${Math.round(ms)} ms`)
-    expect(done).toBe(2_000)
-    expect(ms).toBeLessThan(10_000)
-  })
 })

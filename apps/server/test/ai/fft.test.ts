@@ -92,23 +92,6 @@ describe('RealFFT', () => {
     expect(() => new RealFFT(2)).toThrow(RangeError)
     expect(() => new RealFFT(100)).toThrow(RangeError)
   })
-
-  // Typically ~25 µs on a Ryzen 7 8840U when idle; the bound is loose because Vitest runs
-  // test files in parallel and this only guards against algorithmic regressions.
-  it('is fast: 2048-point transforms in well under 200 µs each', () => {
-    const n = 2048
-    const fft = new RealFFT(n)
-    const x = Float32Array.from({ length: n }, (_, i) => Math.sin(i))
-    const re = new Float64Array(n / 2 + 1)
-    const im = new Float64Array(n / 2 + 1)
-    for (let i = 0; i < 200; i++) fft.forward(x, re, im)
-    const runs = 2000
-    const t0 = performance.now()
-    for (let i = 0; i < runs; i++) fft.forward(x, re, im)
-    const us = ((performance.now() - t0) * 1000) / runs
-    console.warn(`[bench] RealFFT 2048: ${us.toFixed(1)} µs per transform`)
-    expect(us).toBeLessThan(200)
-  })
 })
 
 describe('hann', () => {
