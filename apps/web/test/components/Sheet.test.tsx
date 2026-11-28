@@ -192,6 +192,54 @@ describe('Sheet', () => {
   })
 })
 
+describe('Sheet fit', () => {
+  /** happy-dom has no layout: give the handle and the content wrapper real heights. */
+  const fakeLayout = (content: number) =>
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.dataset.testid === 'sheet-handle') return 58
+      if (this.parentElement?.parentElement?.getAttribute('role') === 'dialog') return content
+      return 0
+    })
+
+  it('is no taller than its content, capped by the snap points', () => {
+    fakeLayout(200)
+    render(
+      <Sheet open onClose={() => undefined} title="Background" snapPoints={[0.5, 0.9]} fit>
+        <p>tiles</p>
+      </Sheet>,
+    )
+    enter()
+    // 200 content + 58 header, instead of the 500 px first snap.
+    expect(panel().style.height).toBe('258px')
+    expect(translateY()).toBe(0)
+  })
+
+  it('tall content keeps the snap points', () => {
+    fakeLayout(2000)
+    render(
+      <Sheet open onClose={() => undefined} title="Audio" snapPoints={[0.5, 0.9]} fit>
+        <p>long list</p>
+      </Sheet>,
+    )
+    enter()
+    expect(panel().style.height).toBe('900px')
+    expect(translateY()).toBe(400)
+  })
+
+  it('without layout (0 px) it falls back to the snap points', () => {
+    fakeLayout(0)
+    render(
+      <Sheet open onClose={() => undefined} title="Text" snapPoints={[0.4]} fit>
+        <p>content</p>
+      </Sheet>,
+    )
+    enter()
+    expect(panel().style.height).toBe('400px')
+  })
+})
+
 describe('Sheet closing', () => {
   it('lets taps through while it animates closed', () => {
     const { rerender } = render(

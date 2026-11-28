@@ -134,6 +134,7 @@ export function TimelineOptions({
             onClose={() => setSheet(false)}
             title="Timeline"
             snapPoints={[0.6, 0.9]}
+            fit
           >
             <div className="flex flex-col gap-4 px-4 pb-4">
               <section aria-label="Editing" className="-mx-2.5 flex flex-col">

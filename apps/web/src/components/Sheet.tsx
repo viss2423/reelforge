@@ -57,6 +57,11 @@ export interface SheetProps {
   modal?: boolean
   dismissible?: boolean
   headerAction?: ReactNode
+  /**
+   * Size to the content: never taller than it needs (still capped by the snap points), so
+   * a short panel doesn't cover the stage with empty space.
+   */
+  fit?: boolean
   children: ReactNode
   className?: string
 }
@@ -78,6 +83,7 @@ export function Sheet({
   modal = true,
   dismissible = true,
   headerAction,
+  fit = false,
   children,
   className,
 }: SheetProps) {
@@ -88,6 +94,12 @@ export function Sheet({
   const [dragY, setDragY] = useState<number | null>(null)
   const [entered, setEntered] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+  const handleRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  /** Height of the handle + header row (measured; 56 until then). */
+  const [chromeH, setChromeH] = useState(56)
+  /** Natural height of handle + content (fit mode); null until measured. */
+  const [fitH, setFitH] = useState<number | null>(null)
   const restoreFocus = useRef<HTMLElement | null>(null)
   /**
    * Live drag state. `h` is the dragged height, kept here as well as in `dragY`: a fast
@@ -102,7 +114,7 @@ export function Sheet({
     h: number
   } | null>(null)
 
-  const heights = snapPoints.map((f) => Math.round(f * vh))
+  const heights = snapPoints.map((f) => Math.min(Math.round(f * vh), fitH ?? Infinity))
   const maxH = heights.at(-1) ?? vh
   const snapH = heights[Math.min(snap, heights.length - 1)] ?? maxH
 
@@ -133,6 +145,27 @@ export function Sheet({
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
   }, [mounted, entered])
+
+  // Header height, and in fit mode the content's natural height (it changes with tabs,
+  // steps and loading). 0 = not laid out (a DOM without layout): keep the defaults.
+  useLayoutEffect(() => {
+    const content = contentRef.current
+    const handle = handleRef.current
+    if (!mounted || !content || !handle) return
+    const measure = () => {
+      const chrome = handle.offsetHeight
+      if (chrome > 0) setChromeH(chrome)
+      if (!fit) return
+      const h = content.offsetHeight
+      setFitH(h > 0 && chrome > 0 ? h + chrome : null)
+    }
+    measure()
+    if (!fit || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measure)
+    ro.observe(content)
+    ro.observe(handle)
+    return () => ro.disconnect()
+  }, [fit, mounted])
 
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight)
@@ -228,6 +261,7 @@ export function Sheet({
         style={{ height: maxH, transform: `translate3d(0, ${translate}px, 0)` }}
       >
         <div
+          ref={handleRef}
           data-testid="sheet-handle"
           className="shrink-0 cursor-grab touch-none select-none active:cursor-grabbing"
           onPointerDown={onPointerDown}
@@ -243,10 +277,12 @@ export function Sheet({
         </div>
         {/* Content scrolls inside the visible part only. */}
         <div
-          className="min-h-0 overflow-y-auto overscroll-contain pb-safe"
-          style={{ height: snapH - 56 }}
+          className="min-h-0 overflow-y-auto overscroll-contain"
+          style={{ height: snapH - chromeH }}
         >
-          {children}
+          <div ref={contentRef} className="pb-safe">
+            {children}
+          </div>
         </div>
       </div>
     </div>,

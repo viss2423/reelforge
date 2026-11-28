@@ -86,12 +86,15 @@ export function Dialog({
   )
 }
 
-/** Dialog on desktop, bottom sheet on phones — same props. */
-export function AdaptiveModal(props: DialogProps & { snapPoints?: readonly number[] }) {
+/** Dialog on desktop, bottom sheet on phones (sized to its content unless `fit` is false). */
+export function AdaptiveModal(
+  props: DialogProps & { snapPoints?: readonly number[]; fit?: boolean },
+) {
   const desktop = useIsDesktop()
   if (desktop) return <Dialog {...props} />
   const { open, onClose, title, description, children, footer, locked, snapPoints, className } =
     props
+  const fit = props.fit ?? true
   return (
     <Sheet
       open={open}
@@ -99,6 +102,7 @@ export function AdaptiveModal(props: DialogProps & { snapPoints?: readonly numbe
       title={title}
       dismissible={!locked}
       snapPoints={snapPoints ?? [0.88]}
+      fit={fit}
       {...(className ? { className } : {})}
     >
       <div className="px-4 pb-4">

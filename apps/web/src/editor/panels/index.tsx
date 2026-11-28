@@ -145,6 +145,7 @@ function MoreSheet({ dock, open, onClose }: { dock: Dock; open: boolean; onClose
       onClose={onClose}
       title="Tools"
       snapPoints={dock.more.length > 1 ? [0.5, 0.85] : [0.4]}
+      fit
     >
       <div className="flex flex-col gap-5 px-4 pb-4" data-testid="dock-more-sheet">
         {dock.more.map((g) => (
@@ -285,6 +286,7 @@ function PanelSheets() {
       title={def.title}
       modal={false}
       snapPoints={def.snap}
+      fit
     >
       {def.render()}
     </Sheet>
