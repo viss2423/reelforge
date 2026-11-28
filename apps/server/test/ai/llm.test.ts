@@ -17,7 +17,9 @@ import {
   condense,
   copyPrompt,
   COPY_SCHEMA,
+  MIN_HASHTAGS,
   parseCopy,
+  topUpHashtags,
 } from '../../src/ai/llm/copywriter.ts'
 import {
   chaptersPrompt,
@@ -577,11 +579,35 @@ describe('copywriter', () => {
     ).toEqual({
       hooks: ['A b c', 'Hey you'],
       caption: 'Nice',
-      hashtags: ['#x1', '#y2'],
+      // Topped up to the minimum with broad tags.
+      hashtags: ['#x1', '#y2', '#reels', '#reelsinstagram', '#explore'],
     })
     expect(() => parseCopy({ hooks: ['', '#'], caption: 'c', hashtags: [] })).toThrow(
       /no usable hook/,
     )
+  })
+
+  it('tops short hashtag lists up from the topic and vibe, then broad tags', () => {
+    // The model's tags merge on cleaning ("#Travel" = "travel"): 2 left.
+    const tags = cleanHashtags(['#Travel', 'travel', '#BaliTrip'])
+    expect(topUpHashtags(tags, { topic: 'Bali street food', vibe: 'Cinematic' })).toEqual([
+      '#travel',
+      '#balitrip',
+      '#balistreetfood',
+      '#bali',
+      '#street',
+    ])
+    expect(topUpHashtags(tags)).toEqual([
+      '#travel',
+      '#balitrip',
+      '#reels',
+      '#reelsinstagram',
+      '#explore',
+    ])
+    expect(topUpHashtags(tags, { vibe: 'Cinematic' })).toHaveLength(MIN_HASHTAGS)
+    // Already enough: untouched.
+    const seven = ['#a1', '#b2', '#c3', '#d4', '#e5', '#f6', '#g7']
+    expect(topUpHashtags(seven, { topic: 'x' })).toEqual(seven)
   })
 })
 
@@ -718,7 +744,7 @@ describe('LLM jobs', () => {
     const copyCtx = makeContext('copywriter', { assetIds: ['v1'], language: 'en' }, paths, store)
     expect(await jobs(true).copywriter!.handler(copyCtx)).toMatchObject({
       hooks: ['One', 'Two two', 'Three'],
-      hashtags: ['#pasta', '#food'],
+      hashtags: ['#pasta', '#food', '#reels', '#reelsinstagram', '#explore'],
     })
     await expect(jobs(false).copywriter!.handler(copyCtx)).rejects.toBeInstanceOf(
       LlmUnavailableError,

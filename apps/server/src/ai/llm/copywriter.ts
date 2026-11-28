@@ -123,6 +123,29 @@ export const cleanHashtags = (tags: readonly string[]): string[] => {
   return out.slice(0, 10)
 }
 
+/** The fewest hashtags a result carries (what the UI and the docs promise). */
+export const MIN_HASHTAGS = 5
+
+/** Broad tags that suit any reel: the last resort when the model's own run short. */
+const EVERGREEN = ['#reels', '#reelsinstagram', '#explore', '#viral', '#trending']
+
+/**
+ * Cleaning can merge or drop the model's tags ("#Travel" and "travel" are one tag), so
+ * a result may come back short: tops it up from the topic and vibe, then broad tags.
+ */
+export const topUpHashtags = (
+  tags: readonly string[],
+  ctx: { topic?: string | undefined; vibe?: string | undefined } = {},
+): string[] => {
+  if (tags.length >= MIN_HASHTAGS) return [...tags]
+  const words = [ctx.topic, ctx.vibe].flatMap((t) => (t ? [t, ...t.split(/\s+/)] : []))
+  const extra = cleanHashtags(words).filter((t) => t.length > 3)
+  return cleanHashtags([...tags, ...extra, ...EVERGREEN]).slice(
+    0,
+    Math.max(MIN_HASHTAGS, tags.length),
+  )
+}
+
 /** Strips quotes/hashtags/emoji clutter models sometimes add to hook lines. */
 export const cleanHook = (s: string): string =>
   s
@@ -131,11 +154,18 @@ export const cleanHook = (s: string): string =>
     .replace(/\s+/g, ' ')
     .trim()
 
-export const parseCopy = (json: unknown): Pick<CopyResult, 'hooks' | 'caption' | 'hashtags'> => {
+export const parseCopy = (
+  json: unknown,
+  ctx: { topic?: string | undefined; vibe?: string | undefined } = {},
+): Pick<CopyResult, 'hooks' | 'caption' | 'hashtags'> => {
   const a = Answer.parse(json)
   const hooks = [...new Set(a.hooks.map(cleanHook).filter((h) => h.length >= 3))]
   if (!hooks.length) throw new Error('The AI wrote no usable hook text')
-  return { hooks, caption: a.caption.trim(), hashtags: cleanHashtags(a.hashtags) }
+  return {
+    hooks,
+    caption: a.caption.trim(),
+    hashtags: topUpHashtags(cleanHashtags(a.hashtags), ctx),
+  }
 }
 
 export interface CopyInput extends CopyPromptInput {
@@ -156,7 +186,7 @@ export const writeCopy = async (i: CopyInput): Promise<CopyResult> => {
   const info = await i.llm.info?.()
   return {
     language: i.language ?? 'auto',
-    ...parseCopy(r.json),
+    ...parseCopy(r.json, i),
     tokensPerSecond: r.tokensPerSecond,
     ...(info ? { model: info.model } : {}),
     ms: Math.round(performance.now() - started),
