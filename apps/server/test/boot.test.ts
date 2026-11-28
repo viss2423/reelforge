@@ -1,5 +1,6 @@
 import https from 'node:https'
 import http from 'node:http'
+import os from 'node:os'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { loadConfig } from '../src/config.ts'
 import { startServer, type ServerHandle } from '../src/server.ts'
@@ -34,7 +35,6 @@ describe.skipIf(!tools)('boot smoke test', () => {
       REELFORGE_DATA: tmp.dir,
       HTTP_PORT: '0',
       HTTPS_PORT: '0',
-      HOST: '127.0.0.1',
       SKIP_ENCODER_PROBE: '1',
       PACKS_URL: 'http://127.0.0.1:9/packs',
       FFMPEG_PATH: tools!.ffmpeg,
@@ -62,6 +62,20 @@ describe.skipIf(!tools)('boot smoke test', () => {
     ).rejects.toThrow(/self[- ]signed|unable to verify|certificate/i)
     agent.destroy()
   })
+
+  // The default host is dual stack: `localhost` may resolve to ::1 first.
+  const hasIpv6 = Object.values(os.networkInterfaces()).some((list) =>
+    list?.some((a) => a.family === 'IPv6' && a.internal),
+  )
+  it.each([['127.0.0.1'], ...(hasIpv6 ? [['[::1]']] : [])])(
+    'answers on %s (IPv4 and IPv6 loopback)',
+    async (host) => {
+      const agent = new https.Agent({ rejectUnauthorized: false })
+      const res = await get(`https://${host}:${server.httpsPort}/api/health`, { agent })
+      expect(res.status).toBe(200)
+      agent.destroy()
+    },
+  )
 
   it('rejects unauthenticated API calls and lets loopback pair', async () => {
     const agent = new https.Agent({ ca: server.caPem })

@@ -75,6 +75,8 @@ describe('certificates', () => {
     expect(leaf.ca).toBe(false)
     expect(leaf.checkIssued(ca)).toBe(true)
     expect(leaf.verify(ca.publicKey)).toBe(true)
+    // Only the leaf is served: the root is already trusted by the client.
+    expect(material.cert.match(/BEGIN CERTIFICATE/g)).toHaveLength(1)
 
     const san = leaf.subjectAltName ?? ''
     for (const name of ['localhost', 'studio-pc', 'studio-pc.local'])

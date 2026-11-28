@@ -29,6 +29,22 @@ import { detectToolchain, type EncoderCache, type PlatformToolchain } from './to
 import type { LlmPort } from './trends/llm-port.ts'
 import { TrendsService, trendsJob, type TrendsSettings } from './trends/service.ts'
 
+/**
+ * Listens and returns the bound port. The default host '::' is dual stack: `localhost`
+ * and `.local` names can resolve to IPv6 first, and some clients (WebKit) don't fall back
+ * to IPv4. A host without IPv6 binds 0.0.0.0 instead.
+ */
+const listen = async (app: FastifyInstance, port: number, host: string): Promise<number> => {
+  try {
+    await app.listen({ port, host })
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (host !== '::' || (code !== 'EAFNOSUPPORT' && code !== 'EADDRNOTAVAIL')) throw err
+    await app.listen({ port, host: '0.0.0.0' })
+  }
+  return (app.server.address() as AddressInfo).port
+}
+
 const ENCODER_CACHE_KEY = 'toolchain.encoders'
 const MAINTENANCE_INTERVAL_MS = 3_600_000
 const INTERFACE_POLL_MS = 30_000
@@ -225,8 +241,7 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       https: { key: tls.key, cert: tls.cert },
     })
     cleanup.push(() => app.close())
-    await app.listen({ port: config.httpsPort, host: config.host })
-    httpsPort = (app.server.address() as AddressInfo).port
+    httpsPort = await listen(app, config.httpsPort, config.host)
 
     // New LAN address / Wi-Fi network → new leaf, swapped into live TLS without a restart.
     certs.watch(INTERFACE_POLL_MS, (next) => {
@@ -241,8 +256,7 @@ export const startServer = async (config: Config, opts: StartOptions): Promise<S
       log,
     })
     cleanup.push(() => landing.close())
-    await landing.listen({ port: config.httpPort, host: config.host })
-    const httpPort = (landing.server.address() as AddressInfo).port
+    const httpPort = await listen(landing, config.httpPort, config.host)
 
     if (config.mdns) {
       const mdns = startMdns({ log })

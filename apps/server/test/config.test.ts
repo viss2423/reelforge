@@ -35,7 +35,7 @@ describe('config', () => {
       dataDir: path.join(os.homedir(), '.reelforge'),
       httpPort: 8080,
       httpsPort: 8443,
-      host: '0.0.0.0',
+      host: '::',
       packsUrl: 'https://raw.githubusercontent.com/viss2423/reelforge/main/packs',
       packsSyncIntervalMs: 6 * 3_600_000,
       logLevel: 'info',

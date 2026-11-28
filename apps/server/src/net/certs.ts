@@ -36,7 +36,11 @@ export interface SanSet {
 export interface TlsMaterial {
   /** Leaf private key (PKCS#8 PEM). */
   key: string
-  /** Leaf certificate followed by the CA certificate (PEM chain). */
+  /**
+   * Leaf certificate only (PEM). The CA is a root the client must already trust, so it is
+   * not served: that saves handshake bytes, and some TLS stacks (WebKit's) refuse a chain
+   * that carries its own self-signed root.
+   */
   cert: string
   /** CA certificate (PEM). */
   ca: string
@@ -274,7 +278,7 @@ export class CertManager {
     const ca = this.#ca!
     return {
       key,
-      cert: cert + ca.pem,
+      cert,
       ca: ca.pem,
       caDer: Buffer.from(ca.cert.rawData),
       notAfter,

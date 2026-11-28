@@ -138,7 +138,7 @@ Environment variables (all optional):
 | -------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
 | `REELFORGE_DATA`                                         | `~/.reelforge`            | Projects, media, exports, models, certificates                                       |
 | `REELFORGE_HTTPS_PORT` / `REELFORGE_HTTP_PORT`           | `8443` / `8080`           | Ports                                                                                |
-| `HOST`                                                   | `0.0.0.0`                 | Bind address                                                                         |
+| `HOST`                                                   | `::`                      | Bind address (`::` = IPv6 and IPv4; falls back to `0.0.0.0` without IPv6)            |
 | `FFMPEG_PATH`                                            | auto                      | FFmpeg binary or directory                                                           |
 | `MDNS`                                                   | off                       | Answer `reelforge.local` on the LAN                                                  |
 | `MAX_UPLOAD_SIZE`                                        | `20GB`                    | Largest single upload                                                                |

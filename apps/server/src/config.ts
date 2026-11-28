@@ -135,7 +135,8 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config => {
     dataDir,
     httpPort: port(pick(env, 'HTTP_PORT'), 8080, 'HTTP_PORT'),
     httpsPort: port(pick(env, 'HTTPS_PORT'), 8443, 'HTTPS_PORT'),
-    host: env.HOST || '0.0.0.0',
+    // '::' = every address, IPv6 and IPv4 (dual stack); falls back to 0.0.0.0 without IPv6.
+    host: env.HOST || '::',
     packsUrl,
     packsSyncIntervalMs: parseDuration(env.PACKS_SYNC_INTERVAL || '6h'),
     logLevel: env.LOG_LEVEL || 'info',
