@@ -8,6 +8,7 @@ export * from './builtins.ts'
 export * from './ops/index.ts'
 export * from './validate.ts'
 export * from './ass.ts'
+export * from './text.ts'
 /** Text block measurement shared by the ASS generator and on-canvas editing (hit boxes). */
 export { fontSpec, measureText, wrapText, type FontSpec } from './ass/layout.ts'
 export * from './compile/index.ts'

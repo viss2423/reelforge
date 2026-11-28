@@ -10,7 +10,12 @@
  * Reel ideas per topic come from the LLM when available, else from a template-based
  * fallback, so the Trending Now screen is never empty.
  */
-import type { CaptionStylePreset, TemplatePreset, TextPreset } from '@reelforge/core'
+import {
+  displayTitle,
+  type CaptionStylePreset,
+  type TemplatePreset,
+  type TextPreset,
+} from '@reelforge/core'
 import { z } from 'zod'
 import { editTempo, genreBpm } from './bpm.ts'
 import {
@@ -60,15 +65,13 @@ export interface Sound {
 /** Top sounds with a tempo (measured, else the genre's typical tempo). */
 export const soundsOf = (signals: readonly TrendSignal[], n = 8): Sound[] =>
   topOf(signals, 'sound', n).map((s) => ({
-    title: titleCase(s.text),
+    title: displayTitle(s.text),
     artist: s.meta?.artist,
     bpm: editTempo(s.meta?.bpm ?? genreBpm(s.meta?.genre)),
     measured: s.meta?.bpm !== undefined,
     weight: s.weight,
     ...(s.meta?.genre ? { genre: s.meta.genre } : {}),
   }))
-
-const titleCase = (s: string): string => s.replace(/\b\p{L}/gu, (c) => c.toUpperCase())
 
 /** Score for a fresh item: hot because it is built from what is trending today. */
 const freshScore = (weight: number): number => Math.round(85 + 12 * Math.min(1, weight))
@@ -386,7 +389,7 @@ export const fallbackIdea = (
     .join('')
   return {
     topic,
-    title: titleCase(topic).slice(0, 60),
+    title: displayTitle(topic).slice(0, 60),
     hooks,
     shots: shots.length >= 2 ? shots : [`Hook shot about ${topic}`, 'Payoff shot'],
     caption: `${hooks[0]} 👀`,

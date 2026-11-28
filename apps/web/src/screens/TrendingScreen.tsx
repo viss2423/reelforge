@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode, type TouchEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { displayTitle } from '@reelforge/core'
 import { api } from '@/api/index.ts'
 import { usePacks, useRefreshTrends, useTrendIdea, useTrends } from '@/api/queries.ts'
 import type { ReelIdea, Trends } from '@/api/schemas.ts'
@@ -318,7 +319,7 @@ function TrendingContent({
                   {i + 1}
                 </span>
                 <span className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="truncate text-[16px] font-semibold capitalize">{s.text}</span>
+                  <span className="truncate text-[16px] font-semibold">{displayTitle(s.text)}</span>
                   <SourceDots ids={s.sources} />
                 </span>
               </button>
@@ -362,10 +363,10 @@ function TrendingContent({
                   type="button"
                   aria-label={`Reel idea for ${s.text}`}
                   onClick={() => onTopic(s.text)}
-                  className="flex h-10 items-center gap-2 rounded-full bg-surface-2 px-3.5 text-sm font-medium capitalize transition-colors hover:bg-surface-3"
+                  className="flex h-10 items-center gap-2 rounded-full bg-surface-2 px-3.5 text-sm font-medium transition-colors hover:bg-surface-3"
                 >
                   {s.format && <Sparkles size={14} aria-hidden className="text-violet" />}
-                  {s.text}
+                  {displayTitle(s.text)}
                   <SourceDots ids={s.sources} />
                 </button>
               </li>
