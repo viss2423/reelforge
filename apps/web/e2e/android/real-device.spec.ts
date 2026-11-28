@@ -442,7 +442,9 @@ preview stats: ${JSON.stringify(await stats())}`)
       const first = await tab.waitBox(clipSel, 0)
       const last = await tab.waitBox(clipSel, -1)
       const lo = Math.max(first.x, vp.x) + 4
-      const hi = Math.min(last.x + last.width, vp.x + vp.width) - 4
+      // The ruler's right corner holds the timeline "⋯" button: a tap there opens its sheet.
+      const options = await tab.waitBox('[data-testid="timeline-options"]')
+      const hi = Math.min(last.x + last.width, vp.x + vp.width, options.x - 8) - 4
       await tab.eval(() => {
         type S = { time: number; frameExact: boolean }
         const s = () => (globalThis as { __rfPreviewStats?: S }).__rfPreviewStats!

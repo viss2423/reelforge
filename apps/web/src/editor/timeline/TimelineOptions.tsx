@@ -75,9 +75,10 @@ export function TimelineOptions({
   const roll = useEditPref('roll')
   const modes = ripple || roll
   return (
+    // The fade lets taps through to the ruler (they seek); only the buttons take them.
     <div
       data-tl-ignore
-      className="absolute top-0 right-0 z-40 flex items-center gap-0.5 bg-gradient-to-l from-surface from-70% to-transparent pr-1.5 pl-5"
+      className="pointer-events-none absolute top-0 right-0 z-40 flex items-center gap-0.5 bg-gradient-to-l from-surface from-70% to-transparent pr-1.5 pl-5 [&>*]:pointer-events-auto"
       style={{ height: RULER_HEIGHT }}
     >
       {desktop && (

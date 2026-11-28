@@ -82,7 +82,8 @@ type State =
     }
   /** Two-finger box selection (the box follows the midpoint of the fingers). */
   | { kind: 'marquee2'; a: number; b: number; session: MarqueeSession }
-  | { kind: 'drag'; id: number; session: DragSession }
+  /** `x`/`y`: where the drag began, to tell a held finger from a dragging one. */
+  | { kind: 'drag'; id: number; session: DragSession; x: number; y: number; touch: boolean }
   /** Drag cancelled with Escape: ignore the pointer until it lifts. */
   | { kind: 'cancelled'; id: number }
 
@@ -188,7 +189,15 @@ export class TimelineGestures {
 
   #startDrag(id: number, session: DragSession, pinned: readonly string[] = []): void {
     this.#deps.view.beginSession(session, pinned)
-    this.#state = { kind: 'drag', id, session }
+    const at = this.#pointers.get(id)
+    this.#state = {
+      kind: 'drag',
+      id,
+      session,
+      x: at?.clientX ?? 0,
+      y: at?.clientY ?? 0,
+      touch: at?.touch ?? false,
+    }
   }
 
   #select(hit: ClipHit, additive: boolean): void {
@@ -224,6 +233,12 @@ export class TimelineGestures {
     this.#velocity.add(performance.now(), x, y)
     this.#deps.view.setPanning(true)
     this.#state = { kind: 'pan', id, x, y, touch }
+  }
+
+  /** Whether the finger holding a drag has really moved (past the touch threshold). */
+  #dragged(st: Extract<State, { kind: 'drag' }>): boolean {
+    const p = this.#pointers.get(st.id)
+    return !!p && Math.hypot(p.clientX - st.x, p.clientY - st.y) >= DRAG_THRESHOLD_TOUCH
   }
 
   #startPinch(): void {
@@ -274,7 +289,14 @@ export class TimelineGestures {
     }
     view.stopAnimation()
     if (this.#pointers.size === 2) {
-      if (this.#state.kind === 'press' || this.#state.kind === 'pan') this.#startPinch()
+      const st = this.#state
+      if (st.kind === 'drag' && st.touch && !this.#dragged(st)) {
+        // A pinch whose first finger landed on a trim handle (or the ruler): zoom, don't
+        // trim. The drag hasn't changed anything yet, so dropping it loses nothing.
+        st.session.cancel()
+        view.endSession()
+        this.#startPinch()
+      } else if (st.kind === 'press' || st.kind === 'pan') this.#startPinch()
       return
     }
     if (this.#pointers.size > 2 || this.#state.kind !== 'idle') return

@@ -521,6 +521,46 @@ describe('zoom and pan', () => {
     expect(ops.moveClip).not.toHaveBeenCalled()
   })
 
+  it('a pinch whose first finger lands on a trim handle zooms instead of trimming', async () => {
+    await mount()
+    act(() => s().select(['m1']))
+    const t = { type: 'touch' as const }
+    const y = ROW_Y.main
+    const width = clipEl('m1')!.style.width
+    // Finger 1 on m1's end handle (touch handles exist only on the selected clip).
+    down(cx(sec(4)) - 2, y, { ...t, id: 1 })
+    move(cx(sec(4)) - 4, y, { ...t, id: 1 })
+    down(cx(sec(4)) + 96, y, { ...t, id: 2 })
+    move(cx(sec(4)) - 52, y, { ...t, id: 1 })
+    move(cx(sec(4)) + 148, y, { ...t, id: 2 })
+    await frame()
+    expect(s().zoom).toBeCloseTo(200)
+    up(cx(sec(4)) - 52, y, { ...t, id: 1 })
+    up(cx(sec(4)) + 148, y, { ...t, id: 2 })
+    expect(ops.trimClip).not.toHaveBeenCalled()
+    expect(ops.moveClip).not.toHaveBeenCalled()
+    expect(Number.parseFloat(clipEl('m1')!.style.width)).toBeCloseTo(
+      2 * Number.parseFloat(width),
+      3,
+    )
+  })
+
+  it('once a trim is under way, a second finger does not hijack it', async () => {
+    await mount()
+    act(() => s().select(['m1']))
+    const t = { type: 'touch' as const }
+    const y = ROW_Y.main
+    down(cx(sec(4)) - 2, y, { ...t, id: 1 })
+    move(cx(sec(4.5)) - 2, y, { ...t, id: 1 })
+    down(cx(sec(7)), y, { ...t, id: 2 })
+    move(cx(sec(5)) - 2, y, { ...t, id: 1 })
+    up(cx(sec(5)) - 2, y, { ...t, id: 1 })
+    up(cx(sec(7)), y, { ...t, id: 2 })
+    expect(s().zoom).toBe(100)
+    expect(ops.trimClip).toHaveBeenCalledTimes(1)
+    expect(ops.trimClip.mock.calls[0]!.slice(1)).toEqual(['m1', { end: 5_000_000 }])
+  })
+
   it('wheel pans horizontally', async () => {
     await mount(project([track('main', mainClips(10, 10, 10), 'main')]))
     wheel({ deltaX: 120 })
